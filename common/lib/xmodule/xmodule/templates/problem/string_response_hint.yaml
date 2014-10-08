@@ -1,0 +1,37 @@
+---
+metadata:
+    display_name: Text Input with Hints and Feedback
+    tab: hint
+    markdown: |
+        In a text input problem, the answer is defined using "=".  Alternate correct answers can be defined using "or=", and incorrect answers by "not=".  Note that the answer is graded as correct if it matches every character of the expected answer. This can be a problem with international spelling, dates, or anything where the format of the answer is not clear.
+
+        Feedback can be provided for expected answers, both correct and incorrect.  Targeted feedback for correct answers is an opportunity to reinforce why the answer is correct.  This is particularly useful in text input questions since the student has to supply the answer. 
+
+        Additionally, feedback is an opportunity to address student misconceptions represented by incorrect answers. The feedback for the incorrect answers should be based on the common mistakes students make.  Also, feedback for text input questions should provide some guidance to the student about how to arrive at the correct answer.  
+
+        >>What is the largest state in the U.S. in terms of land area?<<
+
+        =Alaska {{Alaska is the largest state in the U.S. in terms of not only land area, but also total area and water area. Alaska is 576,400 square miles, more than double the land area of the second largest state, Texas.}}
+
+        not=Texas {{While many people think Texas is the largest state in terms of land area, it is actually the second largest of the 50 U.S. states containing 261,797 square miles.}}
+
+        not=California {{California is the third largest state in the U.S. in terms of land area containing 155,959 square miles.}}
+
+data: |
+  <problem>
+    <p>In a text input problem, the answer is defined using "=".  Alternate correct answers can be defined using "or=", and incorrect answers by "not=".  Note that the answer is graded as correct if it matches every character of the expected answer. This can be a problem with international spelling, dates, or anything where the format of the answer is not clear.</p>
+
+    <p>Feedback can be provided for expected answers, both correct and incorrect.  Targeted feedback for correct answers is an opportunity to reinforce why the answer is correct.  This is particularly useful in text input questions since the student has to supply the answer. </p>
+
+    <p>Additionally, feedback is an opportunity to address student misconceptions represented by incorrect answers. The feedback for the incorrect answers should be based on the common mistakes students make.  Also, feedback for text input questions should provide some guidance to the student about how to arrive at the correct answer.  </p>
+
+    <p>What is the largest state in the U.S. in terms of land area?</p>
+
+    <stringresponse answer="Alaska" type="ci" >
+      <correcthint>Alaska is the largest state in the U.S. in terms of not only land area, but also total area and water area. Alaska is 576,400 square miles, more than double the land area of the second largest state, Texas.</correcthint>
+      <stringequalhint answer="Texas">While many people think Texas is the largest state in terms of land area, it is actually the second largest of the 50 U.S. states containing 261,797 square miles.</stringequalhint>
+      <stringequalhint answer="California">California is the third largest state in the U.S. in terms of land area containing 155,959 square miles.</stringequalhint>
+      <textline label="What is the largest state in the U.S. in terms of land area?" size="20"/>
+    </stringresponse>
+
+  </problem>

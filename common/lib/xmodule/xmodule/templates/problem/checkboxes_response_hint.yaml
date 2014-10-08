@@ -1,0 +1,58 @@
+---
+metadata:
+    display_name: Checkboxes with Hints and Feedback
+    tab: hint
+    markdown: |
+      In a checkbox, or check-all-that-apply question, students must make a decision about each answer choice (whether or not to check the option) which helps you to more easily diagnose where students are struggling. In this way, check-all-that-apply questions are like a series of related true-or-false questions. As with true-or-false questions, when an option should be checked (i.e., it is "true"), feedback should address why an option is correct (if checked) or that the student missed selecting a correct option (if left unchecked).  When an option should not be checked (i.e., it is "false"), feedback should address the underlying misconception or incorrect portion(s) in the option (if checked).
+      
+      Ideally, compound feedback would be provided for all possible combinations of answers. In practice, that can be time-consuming for problems with more than three options. A good compromise is to write individual feedback for each option, and compound feedback for common combinations of answers or combinations of answers that address common student misconceptions.  In general, when writing compound feedback, identify the options that are correctly checked with supporting rationale as to why each is correct. Then address the misconceptions, or incorrectly checked options.  Lastly, if there is more than one unchecked option, identify that there missing correct answers. 
+      
+      The compound feedback will be shown first if it exists for a given set of answer options. If no compound feedback is present, individual feedback is shown.  Feedback is defined for each answer option, for both the selected (checked) and unselected (unchecked) states.  This is indicated using the keywords "selected" (or "S") and "unselected (or "U").
+
+      Compound feedback is specified by using A, B, C, etc to indicate the relevant answer options, with each letter separated by a space.  For example, "(A C)" indicates that the feedback will be provided if the student has checked the first and third answer options.  Try it below!      
+
+      >>Which of the following is an example of a fruit? Check all that apply.<<
+
+      [x] apple  {{ selected: You are correct that an apple is classified as a fruit because it is the fertilized ovary that comes from an apple tree and contains seeds. }, { unselected: Remember that an apple is also a fruit.}}
+      [x] pumpkin {{ selected: You are correct that a pumpkin is classified as a fruit because it is the fertilized ovary of a squash plant and contains seeds. }, { unselected: Remember that a pumpkin is also a fruit.}}
+      [ ] potato   {{ U: You are correct that a potato is classified as a vegetable because it is an edible part of a plant in tuber form.}, { S: A potato is a vegetable, not a fruit because it does not come from the flower on a plant or tree and does not contain seeds.}}
+      [x] tomato  {{ S: You are correct that a tomato is classified as a fruit because it is the fertilized ovary of a tomato plant and contains seeds. }, { U: Many people mistakenly think a tomato is a vegetable. However, because a tomato is the fertilized ovary of a tomato plant and contains seeds it is classified as a fruit.}}
+
+
+      {{ ((A B D)) An apple, pumpkin, and tomato are all fruits as they all are fertilized ovaries of a plant and contain seeds. }}
+      {{ ((A B C D)) You are correct that an apple, pumpkin, and tomato are all fruits as they all are fertilized ovaries of a plant and contain seeds. However, a potato is not a fruit as it is an edible part of a plant in tuber form and is classified as a vegetable.  }}
+
+data: |
+      <problem>
+      <p>In a checkbox, or check-all-that-apply question, students must make a decision about each answer choice (whether or not to check the option) which helps you to more easily diagnose where students are struggling. In this way, check-all-that-apply questions are like a series of related true-or-false questions. As with true-or-false questions, when an option should be checked (i.e., it is "true"), feedback should address why an option is correct (if checked) or that the student missed selecting a correct option (if left unchecked).  When an option should not be checked (i.e., it is "false"), feedback should address the underlying misconception or incorrect portion(s) in the option (if checked).</p>
+
+      <p>Ideally, compound feedback would be provided for all possible combinations of answers. In practice, that can be time-consuming for problems with more than three options. A good compromise is to write individual feedback for each option, and compound feedback for common combinations of answers or combinations of answers that address common student misconceptions.  In general, when writing compound feedback, identify the options that are correctly checked with supporting rationale as to why each is correct. Then address the misconceptions, or incorrectly checked options.  Lastly, if there is more than one unchecked option, identify that there missing correct answers.  </p>
+
+      <p>The compound feedback will be shown first if it exists for a given set of answer options. If no compound feedback is present, individual feedback is shown.  Feedback is defined for each answer option, for both the selected (checked) and unselected (unchecked) states.  This is indicated using the keywords "selected" (or "S") and "unselected (or "U").</p>
+
+      <p>Compound feedback is specified by using A, B, C, etc to indicate the relevant answer options, with each letter separated by a space.  For example, "(A C)" indicates that the feedback will be provided if the student has checked the first and third answer options.  Try it below!</p>
+      <p>Which of the following is an example of a fruit? Check all that apply.</p>
+        <choiceresponse>
+          <checkboxgroup label="Which of the following is an example of a fruit? Check all that apply." direction="vertical">
+            <choice correct="true">apple
+              <choicehint selected="true">You are correct that an apple is classified as a fruit because it is the fertilized ovary that comes from an apple tree and contains seeds.</choicehint>
+              <choicehint selected="false">Remember that an apple is also a fruit.</choicehint>
+            </choice>
+            <choice correct="true">pumpkin
+              <choicehint selected="true">You are correct that a pumpkin is classified as a fruit because it is the fertilized ovary of a squash plant and contains seeds.</choicehint>
+              <choicehint selected="false">Remember that a pumpkin is also a fruit.</choicehint>
+            </choice>
+            <choice correct="false">potato
+              <choicehint selected="true">A potato is a vegetable, not a fruit because it does not come from the flower on a plant or tree and does not contain seeds.</choicehint>
+              <choicehint selected="false">You are correct that a potato is classified as a vegetable because it is an edible part of a plant in tuber form.</choicehint>
+            </choice>
+            <choice correct="true">tomato
+              <choicehint selected="true">You are correct that a tomato is classified as a fruit because it is the fertilized ovary of a tomato plant and contains seeds.</choicehint>
+              <choicehint selected="false">Many people mistakenly think a tomato is a vegetable. However, because a tomato is the fertilized ovary of a tomato plant and contains seeds it is classified as a fruit.</choicehint>
+            </choice>
+
+            <compoundhint value="A B D">An apple, pumpkin, and tomato are all fruits as they all are fertilized ovaries of a plant and contain seeds.</compoundhint>
+            <compoundhint value="A B C D">You are correct that an apple, pumpkin, and tomato are all fruits as they all are fertilized ovaries of a plant and contain seeds. However, a potato is not a fruit as it is an edible part of a plant in tuber form and is classified as a vegetable.</compoundhint>
+          </checkboxgroup>
+        </choiceresponse>
+      </problem>

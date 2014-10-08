@@ -1,0 +1,42 @@
+---
+metadata:
+    display_name: Numerical Input with Hints and Feedback
+    tab: hint
+    markdown: |
+        A numerical input problem accepts a line of text input from the student, and evaluates the input for correctness based on its numerical value.  The answer is correct if it is within a specified numerical tolerance of the expected answer. 
+
+        Feedback for the correct answer should reinforce the process for arriving at the numerical value.  For numerical input questions, feedback is only available for correct answers so it is often helpful to include hints and/or an explanation.
+
+        >>What is the arithmetic mean for the following set of numbers? (1, 5, 6, 3, 5)<<
+
+        = 4 {{The mean for this set of numbers is 20 / 5 which equals 4.}}
+
+        ||The mean is calculated by summing the set of numbers and dividing by n.||
+
+        [explanation]
+        The mean is calculated by summing the set of numbers and dividing by n. In this case: (1 + 5 + 6 + 3 + 5) / 5 = 20 / 5 = 4.
+        [explanation]
+
+data: |
+    <problem>
+    <p>A numerical input problem accepts a line of text input from the student, and evaluates the input for correctness based on its numerical value.  The answer is correct if it is within a specified numerical tolerance of the expected answer. </p>
+
+    <p>Feedback for the correct answer should reinforce the process for arriving at the numerical value.  For numerical input questions, feedback is only available for correct answers so it is often helpful to include hints and/or an explanation.</p>
+
+    <p>What is the arithmetic mean for the following set of numbers? (1, 5, 6, 3, 5)</p>
+    <numericalresponse answer="4">
+      <formulaequationinput label="What is the arithmetic mean for the following set of numbers? (1, 5, 6, 3, 5)" />
+      <correcthint>The mean for this set of numbers is 20 / 5 which equals 4.</correcthint>
+    </numericalresponse>
+
+    <solution>
+      <div class="detailed-solution">
+        <p>Explanation</p>
+        <p>The mean is calculated by summing the set of numbers and dividing by n. In this case: (1 + 5 + 6 + 3 + 5) / 5 = 20 / 5 = 4.</p>
+      </div>
+    </solution>
+
+    <demandhint>
+      <hint>The mean is calculated by summing the set of numbers and dividing by n.</hint>
+    </demandhint>
+    </problem>

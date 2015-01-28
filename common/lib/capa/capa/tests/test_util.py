@@ -81,6 +81,19 @@ class UtilTest(unittest.TestCase):
         self.assertFalse(result)
         result = compare_with_tolerance(infinity, infinity, '1.0', False)
         self.assertTrue(result)
+        # Test absolute tolerance for smaller values
+        result = compare_with_tolerance(100.01, 100.0, 0.01, False)
+        self.assertTrue(result)
+        result = compare_with_tolerance(100.001, 100.0, 0.001, False)
+        self.assertTrue(result)
+        result = compare_with_tolerance(100.01, 100.0, '0.01%', False)
+        self.assertTrue(result)
+        result = compare_with_tolerance(100.002, 100.0, 0.001, False)
+        self.assertFalse(result)
+        result = compare_with_tolerance(0.4, 0.44, 0.01, False)
+        self.assertFalse(result)
+        result = compare_with_tolerance(100.01, 100.0, 0.010, False)
+        self.assertTrue(result)
 
     def test_sanitize_html(self):
         """

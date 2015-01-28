@@ -64,6 +64,14 @@ def compare_with_tolerance(student_complex, instructor_complex, tolerance=defaul
         # `tolerance` both equal to infinity. Then, below we would have
         # `inf <= inf` which is a fail. Instead, compare directly.
         return student_complex == instructor_complex
+
+    if isinstance(student_complex, float) and isinstance(instructor_complex, float):
+        # use Decimal class to avoid rounding errors
+        student_decimal = Decimal(str(student_complex))
+        instructor_decimal = Decimal(str(instructor_complex))
+        tolerance_decimal = Decimal(str(tolerance))
+        return abs(student_decimal - instructor_decimal) <= tolerance_decimal
+
     else:
         # v1 and v2 are, in general, complex numbers:
         # there are some notes about backward compatibility issue: see responsetypes.get_staff_ans()).

@@ -37,7 +37,8 @@ from instructor_task.tasks_helper import (
     upload_grades_csv,
     upload_problem_grade_report,
     upload_students_csv,
-    cohort_students_and_upload
+    cohort_students_and_upload,
+    upload_may_enroll_csv,
 )
 
 
@@ -182,6 +183,19 @@ def calculate_students_features_csv(entry_id, xmodule_instance_args):
     # Translators: This is a past-tense verb that is inserted into task progress messages as {action}.
     action_name = ugettext_noop('generated')
     task_fn = partial(upload_students_csv, xmodule_instance_args)
+    return run_main_task(entry_id, task_fn, action_name)
+
+
+@task(base=BaseInstructorTask, routing_key=settings.GRADES_DOWNLOAD_ROUTING_KEY)  # pylint: disable=not-callable
+def calculate_may_enroll_csv(entry_id, xmodule_instance_args):
+    """
+    Compute information about invited students who have not enrolled
+    in a given course yet and upload the CSV to an S3 bucket for
+    download.
+    """
+    # Translators: This is a past-tense verb that is inserted into task progress messages as {action}.
+    action_name = ugettext_noop('generated')
+    task_fn = partial(upload_may_enroll_csv, xmodule_instance_args)
     return run_main_task(entry_id, task_fn, action_name)
 
 

@@ -1742,6 +1742,11 @@ class TestInstructorAPILevelsDataDump(ModuleStoreTestCase, LoginEnrollmentTestCa
         for student in self.students:
             CourseEnrollment.enroll(student, self.course.id)
 
+        self.students_who_may_enroll = self.students + [UserFactory() for _ in xrange(6, 11)]
+        for student in self.students_who_may_enroll:
+            CourseEnrollmentAllowed.objects.create(
+                email=student.email, course_id=self.course.id)
+
     def test_invalidate_sale_record(self):
         """
         Testing the sale invalidating scenario.
@@ -2021,6 +2026,29 @@ class TestInstructorAPILevelsDataDump(ModuleStoreTestCase, LoginEnrollmentTestCa
         res_json = json.loads(response.content)
 
         self.assertEqual('cohort' in res_json['feature_names'], is_cohorted)
+
+    def test_get_students_who_may_enroll(self):
+        """
+        Test whether get_students_who_may_enroll returns an appropriate
+        status message when users request a CSV file of students who
+        may enroll in a course.
+        """
+        url = reverse(
+            'get_students_who_may_enroll',
+            kwargs={'course_id': self.course.id.to_deprecated_string()})
+        # Successful case:
+        response = self.client.get(url, {})
+        res_json = json.loads(response.content)
+        self.assertIn('status', res_json)
+        self.assertNotIn('already in progress', res_json['status'])
+        # CSV generation already in progress:
+        with patch('instructor_task.api.submit_calculate_may_enroll_csv') as submit_task_function:
+            error = AlreadyRunningError()
+            submit_task_function.side_effect = error
+            response = self.client.get(url, {})
+            res_json = json.loads(response.content)
+            self.assertIn('status', res_json)
+            self.assertIn('already in progress', res_json['status'])
 
     @patch.object(instructor.views.api, 'anonymous_id_for_user', Mock(return_value='42'))
     @patch.object(instructor.views.api, 'unique_id_for_user', Mock(return_value='41'))

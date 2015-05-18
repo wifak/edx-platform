@@ -20,13 +20,17 @@ from openedx.core.djangoapps.course_groups.tests.helpers import CohortFactory
 import openedx.core.djangoapps.user_api.course_tag.api as course_tag_api
 from openedx.core.djangoapps.user_api.partition_schemes import RandomUserPartitionScheme
 from student.tests.factories import UserFactory
-from student.models import CourseEnrollment
+from student.models import CourseEnrollment, CourseEnrollmentAllowed
 from verify_student.tests.factories import SoftwareSecurePhotoVerificationFactory
 from xmodule.modulestore.tests.factories import CourseFactory, ItemFactory
 from xmodule.partitions.partitions import Group, UserPartition
 from instructor_task.models import ReportStore
 from instructor_task.tasks_helper import (
-    cohort_students_and_upload, upload_grades_csv, upload_problem_grade_report, upload_students_csv
+    cohort_students_and_upload,
+    upload_grades_csv,
+    upload_problem_grade_report,
+    upload_students_csv,
+    upload_may_enroll_csv,
 )
 from openedx.core.djangoapps.util.testing import ContentGroupTestCase, TestConditionalContent
 
@@ -551,6 +555,53 @@ class TestStudentReport(TestReportMixin, InstructorTaskCourseTestCase):
         # This assertion simply confirms that the generation completed with no errors
         num_students = len(students)
         self.assertDictContainsSubset({'attempted': num_students, 'succeeded': num_students, 'failed': 0}, result)
+
+
+@ddt.ddt
+class TestListMayEnroll(TestReportMixin, InstructorTaskCourseTestCase):
+    """
+    Tests that generation of CSV files containing information about
+    students who may enroll in a given course (but have not signed up
+    for it yet) works.
+    """
+    def _create_enrollment(self, email):
+        "Factory method for creating CourseEnrollmentAllowed objects."
+        return CourseEnrollmentAllowed.objects.create(
+            email=email, course_id=self.course.id)
+
+    def setUp(self):
+        super(TestListMayEnroll, self).setUp()
+        self.course = CourseFactory.create()
+
+    def test_success(self):
+        self._create_enrollment('user@example.com')
+        task_input = {'features': []}
+        with patch('instructor_task.tasks_helper._get_current_task'):
+            result = upload_may_enroll_csv(None, None, self.course.id, task_input, 'calculated')
+        report_store = ReportStore.from_config()
+        links = report_store.links_for(self.course.id)
+
+        self.assertEquals(len(links), 1)
+        self.assertDictContainsSubset({'attempted': 1, 'succeeded': 1, 'failed': 0}, result)
+
+    @ddt.data([u'student@example.com', u'ni\xf1o@example.com'])
+    def test_unicode_email_addresses(self, enrollments):
+        """
+        Test handling of unicode characters in email addresses of students
+        who may enroll in a course.
+        """
+        for email in enrollments:
+            self._create_enrollment(email)
+
+        self.current_task = Mock()  # pylint: disable=attribute-defined-outside-init
+        self.current_task.update_state = Mock()
+        task_input = {'features': ['email']}
+        with patch('instructor_task.tasks_helper._get_current_task') as mock_current_task:
+            mock_current_task.return_value = self.current_task
+            result = upload_may_enroll_csv(None, None, self.course.id, task_input, 'calculated')
+        # This assertion simply confirms that the generation completed with no errors
+        num_enrollments = len(enrollments)
+        self.assertDictContainsSubset({'attempted': num_enrollments, 'succeeded': num_enrollments, 'failed': 0}, result)
 
 
 class MockDefaultStorage(object):

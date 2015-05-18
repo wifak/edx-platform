@@ -22,6 +22,7 @@ from instructor_task.tasks import (
     calculate_problem_grade_report,
     calculate_students_features_csv,
     cohort_students,
+    calculate_may_enroll_csv,
 )
 
 from instructor_task.api_helper import (
@@ -355,6 +356,21 @@ def submit_calculate_students_features_csv(request, course_key, features):
     """
     task_type = 'profile_info_csv'
     task_class = calculate_students_features_csv
+    task_input = {'features': features}
+    task_key = ""
+
+    return submit_task(request, task_type, task_class, course_key, task_input, task_key)
+
+
+def submit_calculate_may_enroll_csv(request, course_key, features):
+    """
+    Submits a task to generate a CSV file containing information about
+    invited students who have not enrolled in a given course yet.
+
+    Raises AlreadyRunningError if said file is already being updated.
+    """
+    task_type = 'may_enroll_info_csv'
+    task_class = calculate_may_enroll_csv
     task_input = {'features': features}
     task_key = ""
 

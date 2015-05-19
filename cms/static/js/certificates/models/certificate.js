@@ -11,6 +11,7 @@ function(Backbone, Signatory, SignatoryCollection, _, str, gettext) {
         defaults: {
             name: 'Default Name',
             description: 'Default Description',
+            org_logo_path: '',
             version: 1
         },
 

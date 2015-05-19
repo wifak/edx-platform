@@ -1704,6 +1704,9 @@ INSTALLED_APPS = (
     'rest_framework',
     'openedx.core.djangoapps.user_api',
 
+    # Team API
+    'openedx.core.djangoapps.team_api',
+
     # Shopping cart
     'shoppingcart',
 

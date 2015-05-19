@@ -254,7 +254,7 @@ class UserCourseEnrollmentsList(generics.ListAPIView):
         db_str += 'number of enrollments: ' + str(len(x)) + '\n'
         db_str += 'time to calculate x: ' + str(time.time() - db_start_calc_x) + '\n'
 
-        db_str += 'time for entire method: ' + str(time.time() - db_start_all) + '\n\n'
+        db_str += 'time for entire method: ' + str(time.time() - db_start_all) + '\n'
         os.system('echo "' + db_str + '" >> /edx/app/edxapp/edx-platform/test.log')
         return x
 

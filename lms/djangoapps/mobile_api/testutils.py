@@ -126,6 +126,9 @@ class MobileAuthUserTestMixin(MobileAuthTestMixin):
         self.api_response(expected_response_code=404, username=other.username)
 
 
+import time
+from os import system
+
 @ddt.ddt
 class MobileCourseAccessTestMixin(MobileAPIMilestonesMixin):
     """
@@ -151,7 +154,10 @@ class MobileCourseAccessTestMixin(MobileAPIMilestonesMixin):
     def test_success(self):
         self.init_course_access()
 
+        db_request_start = time.time()
         response = self.api_response(expected_response_code=None)
+        db_str = 'time for entire request: ' + str(time.time() - db_request_start) + '\n\n'
+        system('echo "' + db_str + '" >> /edx/app/edxapp/edx-platform/test.log')
         self.verify_success(response)  # allow subclasses to override verification
 
     def test_course_not_found(self):

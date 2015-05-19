@@ -15,7 +15,7 @@ class AutoAuthPage(PageObject):
     this url will create a user and log them in.
     """
 
-    CONTENT_REGEX = r'.+? user (?P<username>\S+) \((?P<email>.+?)\) with password \S+ and user_id (?P<user_id>\d+)$'
+    CONTENT_REGEX = r'.+? user (?P<username>\S+) \((?P<email>.+?)\) with password \S+ and user_id (?P<user_id>\d+) and anonymous user_id (?P<anonymous_user_id>[0-9a-fA-F]+)$'
 
     def __init__(self, browser, username=None, email=None, password=None, staff=None, course_id=None, roles=None):
         """

@@ -1766,6 +1766,9 @@ INSTALLED_APPS = (
 
     # Credit courses
     'openedx.core.djangoapps.credit',
+
+    # Course teams
+    'teams',
 )
 
 ######################### CSRF #########################################

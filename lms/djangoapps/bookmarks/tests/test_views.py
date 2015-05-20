@@ -98,7 +98,7 @@ class BookmarksViewTestsMixin(ModuleStoreTestCase):
             user=self.user,
             course_key=unicode(self.other_course.id),
             usage_key=self.other_vertical.location,
-            display_name=self.other_vertical.display_name
+            xblock_cache__display_name=self.other_vertical.display_name
         )
 
     def assert_valid_bookmark_response(self, response_data, bookmark, optional_fields=False):

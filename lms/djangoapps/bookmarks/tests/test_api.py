@@ -47,7 +47,7 @@ class BookmarksAPITests(ModuleStoreTestCase):
             user=self.user,
             course_key=self.course_id,
             usage_key=self.vertical.location,
-            display_name=self.vertical.display_name
+            xblock_cache__display_name=self.vertical.display_name
         )
 
         self.course_2 = CourseFactory.create(display_name='An Introduction to API Testing 2')
@@ -64,7 +64,7 @@ class BookmarksAPITests(ModuleStoreTestCase):
             user=self.user,
             course_key=self.course_2.id,
             usage_key=self.vertical_2.location,
-            display_name=self.vertical_2.display_name
+            xblock_cache__display_name=self.vertical_2.display_name
         )
         self.all_fields = DEFAULT_FIELDS + OPTIONAL_FIELDS
 

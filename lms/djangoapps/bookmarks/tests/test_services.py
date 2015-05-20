@@ -43,7 +43,7 @@ class BookmarksAPITests(ModuleStoreTestCase):
             user=self.user,
             course_key=self.course_id,
             usage_key=self.vertical.location,
-            display_name=self.vertical.display_name
+            xblock_cache__display_name=self.vertical.display_name
         )
         self.bookmark_service = BookmarksService(user=self.user)
 

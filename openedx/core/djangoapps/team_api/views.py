@@ -25,6 +25,7 @@ from openedx.core.lib.api.parsers import MergePatchParser
 from openedx.core.lib.api.permissions import IsUserInUrlOrStaff, IsStaffOrReadOnly
 from openedx.core.lib.api.serializers import PaginationSerializer
 #from ..errors import UserNotFound, UserNotAuthorized
+from xmodule.modulestore.django import modulestore
 
 from opaque_keys import InvalidKeyError
 from opaque_keys.edx.keys import CourseKey
@@ -195,3 +196,22 @@ class TeamMembershipDetailView(APIView):
             return Response(MembershipSerializer(membership).data)
         except CourseTeamMembership.DoesNotExist:
             return Response(status=status.HTTP_404_NOT_FOUND)
+
+
+class TopicListView(APIView):
+    def get(self, request):
+        """/api/team/v0/topics/?course_id={course_id}"""
+        try:
+            course_id = CourseKey.from_string(request.DATA['course_id'])
+            course_module = modulestore().get_course(course_id)
+            if course_module is None:  # course is None if not found
+                return Response(status=status.HTTP_404_NOT_FOUND)
+            return Response(course_module.teams_topics)  # May be None
+        except InvalidKeyError:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+
+
+class TopicDetailView(APIView):
+    def get(self, request, topic_id, course_id):
+        """/api/team/v0/topics/{topic_id},{course_id}/"""
+        pass

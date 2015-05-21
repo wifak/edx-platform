@@ -5,6 +5,7 @@ For more information, see:
 https://openedx.atlassian.net/wiki/display/TNL/Team+API
 """
 from rest_framework.views import APIView
+from rest_framework.generics import ListAPIView
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework import permissions
@@ -19,6 +20,7 @@ from openedx.core.lib.api.authentication import (
 )
 from openedx.core.lib.api.parsers import MergePatchParser
 from openedx.core.lib.api.permissions import IsUserInUrlOrStaff
+from openedx.core.lib.api.serializers import PaginationSerializer
 #from ..errors import UserNotFound, UserNotAuthorized
 
 from opaque_keys.edx.keys import CourseKey
@@ -27,36 +29,41 @@ from .models import CourseTeam, CourseTeamMembership
 from .serializers import CourseTeamSerializer, MembershipSerializer
 
 
-class TeamsListView(APIView):
+class TeamsListView(ListAPIView):
 
-    authentication_classes = (OAuth2AuthenticationAllowInactiveUser, SessionAuthenticationAllowInactiveUser)
-    #permission_classes = (permissions.IsAuthenticated,)
+    # SessionAuthenticationAllowInactiveUser must come first to return a 403 for unauthenticated users
+    authentication_classes = (SessionAuthenticationAllowInactiveUser, OAuth2AuthenticationAllowInactiveUser)
+    permission_classes = (permissions.IsAuthenticated,)
 
-    def get(self, request):
+    paginate_by = 10
+    paginate_by_param = 'page_size'
+    pagination_serializer_class = PaginationSerializer
+    serializer_class = CourseTeamSerializer
+
+    def get_queryset(self):
         """
         GET /api/team/v0/teams/
         """
 
-        serializer = CourseTeamSerializer(CourseTeam.objects.all(), many=True)
-        return Response(serializer.data)
+        return CourseTeam.objects.all()
 
-    def post(self, request):
-        """
-        POST /api/team/v0/teams/
-        """
-
-        course_id = CourseKey.from_string(request.DATA['course_id'])
-
-        team = CourseTeam.create(
-            name=request.DATA['name'],
-            course_id=course_id,
-            description=request.DATA['description'],
-            topic_id=request.DATA['topic_id'],
-            country=request.DATA.get('country'),
-            language=request.DATA.get('language'),
-        )
-
-        return Response(CourseTeamSerializer(team).data)
+    # def post(self, request):
+    #     """
+    #     POST /api/team/v0/teams/
+    #     """
+    #
+    #     course_id = CourseKey.from_string(request.DATA['course_id'])
+    #
+    #     team = CourseTeam.create(
+    #         name=request.DATA['name'],
+    #         course_id=course_id,
+    #         description=request.DATA['description'],
+    #         topic_id=request.DATA['topic_id'],
+    #         country=request.DATA.get('country'),
+    #         language=request.DATA.get('language'),
+    #     )
+    #
+    #     return Response(CourseTeamSerializer(team).data)
 
 
 class TeamsDetailView(APIView):

@@ -15,7 +15,7 @@ from django.core.urlresolvers import reverse
 import xmodule.graders as xmgraders
 from django.core.exceptions import ObjectDoesNotExist
 from microsite_configuration import microsite
-from student.models import CourseEnrollment, CourseEnrollmentAllowed
+from student.models import CourseEnrollmentAllowed
 
 
 STUDENT_FEATURES = ('id', 'username', 'first_name', 'last_name', 'is_staff', 'email')

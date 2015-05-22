@@ -86,6 +86,12 @@ REPORTS_DATA = (
         'instructor_api_endpoint': 'get_students_features',
         'task_api_endpoint': 'instructor_task.api.submit_calculate_students_features_csv',
         'extra_instructor_api_kwargs': {'csv': '/csv'}
+    },
+    {
+        'report_type': 'students who may enroll',
+        'instructor_api_endpoint': 'get_students_who_may_enroll',
+        'task_api_endpoint': 'instructor_task.api.submit_calculate_may_enroll_csv',
+        'extra_instructor_api_kwargs': {},
     }
 )
 

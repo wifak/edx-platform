@@ -1045,10 +1045,10 @@ def get_students_who_may_enroll(request, course_id):
     query_features = ['email']
     try:
         instructor_task.api.submit_calculate_may_enroll_csv(request, course_key, query_features)
-        success_status = _("Your list of invited students who have not enrolled yet is being generated! You can view the status of the generation task in the 'Pending Instructor Tasks' section.")
+        success_status = _("Your students who may enroll report is being generated! You can view the status of the generation task in the 'Pending Instructor Tasks' section.")
         return JsonResponse({"status": success_status})
     except AlreadyRunningError:
-        already_running_status = _("A task for generating a list of invited students who have not enrolled yet is already in progress. Check the 'Pending Instructor Tasks' table for the status of the task. When completed, the report will be available for download in the table below.")
+        already_running_status = _("A students who may enroll report generation task is already in progress. Check the 'Pending Instructor Tasks' table for the status of the task. When completed, the report will be available for download in the table below.")
         return JsonResponse({"status": already_running_status})
 
 

@@ -75,3 +75,11 @@ class IsUserInUrlOrStaff(IsUserInUrl):
             return True
 
         return super(IsUserInUrlOrStaff, self).has_permission(request, view)
+
+
+class IsStaffOrReadOnly(permissions.BasePermission):
+    """
+    Permission that checks to see if the user is staff, permitting only read-only access if they are not.
+    """
+    def has_permission(self, request, view):
+        return request.user.is_staff or request.method in permissions.SAFE_METHODS

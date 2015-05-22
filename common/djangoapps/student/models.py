@@ -59,6 +59,26 @@ log = logging.getLogger(__name__)
 AUDIT_LOG = logging.getLogger("audit")
 SessionStore = import_module(settings.SESSION_ENGINE).SessionStore  # pylint: disable=invalid-name
 
+UN_ENROLLED_TO_ALLOWED_TO_ENROLL = 'from unenrolled to allowed to enroll'
+ALLOWED_TO_ENROLL_TO_ENROLL = 'from allowed to enroll to enrolled'
+ENROLL_TO_ENROLL = 'from enrolled to enrolled'
+ENROLL_TO_UN_ENROLL = 'from enrolled to unenrolled'
+UN_ENROLL_TO_ENROLL = 'from unenrolled to enrolled'
+ALLOWED_TO_ENROLL_TO_UN_ENROLL = 'from allowed to enroll to enrolled'
+UN_ENROLL_TO_UN_ENROLL = 'from unenrolled to unenrolled'
+DEFAULT_TRANSITION_STATE = 'N/A'
+
+TRANSITION_STATES = (
+    (UN_ENROLLED_TO_ALLOWED_TO_ENROLL, ALLOWED_TO_ENROLL_TO_ENROLL),
+    (ALLOWED_TO_ENROLL_TO_ENROLL, ALLOWED_TO_ENROLL_TO_ENROLL),
+    (ENROLL_TO_ENROLL, ENROLL_TO_ENROLL),
+    (ENROLL_TO_UN_ENROLL, ENROLL_TO_UN_ENROLL),
+    (UN_ENROLL_TO_ENROLL, UN_ENROLL_TO_ENROLL),
+    (ALLOWED_TO_ENROLL_TO_UN_ENROLL, ALLOWED_TO_ENROLL_TO_UN_ENROLL),
+    (UN_ENROLL_TO_UN_ENROLL, UN_ENROLL_TO_UN_ENROLL),
+    (DEFAULT_TRANSITION_STATE, DEFAULT_TRANSITION_STATE)
+)
+
 
 class AnonymousUserId(models.Model):
     """
@@ -1289,6 +1309,54 @@ class CourseEnrollment(models.Model):
         Check the course enrollment mode is verified or not
         """
         return CourseMode.is_verified_slug(self.mode)
+
+
+class ManualEnrollmentAudit(models.Model):
+    """
+    Table for track which enrollments were performed through manual enrollment.
+    """
+    enrollment = models.ForeignKey(CourseEnrollment, null=True)
+    enrolled_by = models.ForeignKey(User, null=True)
+    enrolled_email = models.CharField(max_length=255, db_index=True)
+    time_stamp = models.DateTimeField(auto_now_add=True, null=True)
+    state_transition = models.CharField(max_length=255, choices=TRANSITION_STATES)
+    reason = models.TextField(null=True)
+
+    @classmethod
+    def create_manual_enrollment_audit(cls, user, email, state_transition, reason, enrollment=None):
+        """
+        saves the student manual enrollment information
+        """
+        cls.objects.create(
+            enrolled_by=user,
+            enrolled_email=email,
+            state_transition=state_transition,
+            reason=reason,
+            enrollment=enrollment
+        )
+
+    @classmethod
+    def get_manual_enrollment_by_email(cls, email):
+        """
+        return manual enrollment by email
+        """
+        try:
+            manual_enrollment = cls.objects.filter(enrolled_email=email).latest('time_stamp')
+        except cls.DoesNotExist:
+            manual_enrollment = None
+        return manual_enrollment
+
+    @classmethod
+    def get_manual_enrollment(cls, enrollment):
+        """
+        return the manual enrollment object if student enrollment
+        matches else returns None.
+        """
+        try:
+            manual_enrollment = cls.objects.filter(enrollment=enrollment).latest('time_stamp')
+        except cls.DoesNotExist:
+            manual_enrollment = None
+        return manual_enrollment
 
 
 class CourseEnrollmentAllowed(models.Model):

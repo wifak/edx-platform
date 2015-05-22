@@ -9,7 +9,7 @@ from courseware.courses import get_course_by_id
 from instructor.enrollment_report import BaseAbstractEnrollmentReportProvider
 from shoppingcart.models import RegistrationCodeRedemption, PaidCourseRegistration, CouponRedemption, OrderItem, \
     InvoiceTransaction
-from student.models import CourseEnrollment
+from student.models import CourseEnrollment, ManualEnrollmentAudit
 
 
 class PaidCourseEnrollmentReportProvider(BaseAbstractEnrollmentReportProvider):
@@ -53,7 +53,13 @@ class PaidCourseEnrollmentReportProvider(BaseAbstractEnrollmentReportProvider):
             elif paid_course_reg_item is not None:
                 enrollment_source = _('Credit Card - Individual')
             else:
-                enrollment_source = _('Manually Enrolled')
+                manual_enrollment = ManualEnrollmentAudit.get_manual_enrollment(course_enrollment)
+                if manual_enrollment is not None:
+                    enrollment_source = _(
+                        'manually enrolled by user_id {user_id}, enrollment state transition: {transition}'
+                    ).format(user_id=manual_enrollment.enrolled_by_id, transition=manual_enrollment.state_transition)
+                else:
+                    enrollment_source = _('Manually Enrolled')
 
         enrollment_date = course_enrollment.created.strftime("%B %d, %Y")
         currently_enrolled = course_enrollment.is_active

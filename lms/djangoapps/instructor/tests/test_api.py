@@ -1745,7 +1745,8 @@ class TestInstructorAPILevelsDataDump(ModuleStoreTestCase, LoginEnrollmentTestCa
         self.students_who_may_enroll = self.students + [UserFactory() for _ in range(5)]
         for student in self.students_who_may_enroll:
             CourseEnrollmentAllowed.objects.create(
-                email=student.email, course_id=self.course.id)
+                email=student.email, course_id=self.course.id
+            )
 
     def test_invalidate_sale_record(self):
         """
@@ -2035,7 +2036,8 @@ class TestInstructorAPILevelsDataDump(ModuleStoreTestCase, LoginEnrollmentTestCa
         """
         url = reverse(
             'get_students_who_may_enroll',
-            kwargs={'course_id': self.course.id.to_deprecated_string()})
+            kwargs={'course_id': self.course.id.to_deprecated_string()}
+        )
         # Successful case:
         response = self.client.get(url, {})
         res_json = json.loads(response.content)

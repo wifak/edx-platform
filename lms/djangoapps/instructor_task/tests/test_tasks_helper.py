@@ -567,7 +567,8 @@ class TestListMayEnroll(TestReportMixin, InstructorTaskCourseTestCase):
     def _create_enrollment(self, email):
         "Factory method for creating CourseEnrollmentAllowed objects."
         return CourseEnrollmentAllowed.objects.create(
-            email=email, course_id=self.course.id)
+            email=email, course_id=self.course.id
+        )
 
     def setUp(self):
         super(TestListMayEnroll, self).setUp()

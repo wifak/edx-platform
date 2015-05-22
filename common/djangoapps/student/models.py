@@ -1316,8 +1316,10 @@ class CourseEnrollmentAllowed(models.Model):
         """
         may_enroll = CourseEnrollmentAllowed.may_enroll_in(course_id)
         enrolled = CourseEnrollment.users_enrolled_in(course_id)
-        return sum(1 for student in may_enroll if not
-                   enrolled.filter(email=student.email).exists())
+        return sum(
+            1 for student in may_enroll if not
+            enrolled.filter(email=student.email).exists()
+        )
 
 
 @total_ordering

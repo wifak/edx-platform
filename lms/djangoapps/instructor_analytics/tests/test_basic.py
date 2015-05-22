@@ -47,7 +47,8 @@ class TestAnalyticsBasic(ModuleStoreTestCase):
         self.students_who_may_enroll = list(self.users) + [UserFactory() for _ in xrange(5)]
         for student in self.students_who_may_enroll:
             CourseEnrollmentAllowed.objects.create(
-                email=student.email, course_id=self.course_key)
+                email=student.email, course_id=self.course_key
+            )
 
     def test_enrolled_students_features_username(self):
         self.assertIn('username', AVAILABLE_FEATURES)

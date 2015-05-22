@@ -1742,7 +1742,7 @@ class TestInstructorAPILevelsDataDump(ModuleStoreTestCase, LoginEnrollmentTestCa
         for student in self.students:
             CourseEnrollment.enroll(student, self.course.id)
 
-        self.students_who_may_enroll = self.students + [UserFactory() for _ in xrange(6, 11)]
+        self.students_who_may_enroll = self.students + [UserFactory() for _ in range(5)]
         for student in self.students_who_may_enroll:
             CourseEnrollmentAllowed.objects.create(
                 email=student.email, course_id=self.course.id)

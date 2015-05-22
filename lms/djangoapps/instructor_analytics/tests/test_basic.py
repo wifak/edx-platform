@@ -44,7 +44,7 @@ class TestAnalyticsBasic(ModuleStoreTestCase):
                 "company": "Open edX Inc {}".format(user.id),
             })
             user.profile.save()
-        self.students_who_may_enroll = list(self.users) + [UserFactory() for _ in xrange(30, 35)]
+        self.students_who_may_enroll = list(self.users) + [UserFactory() for _ in xrange(5)]
         for student in self.students_who_may_enroll:
             CourseEnrollmentAllowed.objects.create(
                 email=student.email, course_id=self.course_key)

@@ -873,8 +873,8 @@ def upload_may_enroll_csv(_xmodule_instance_args, _entry_id, course_id, task_inp
     """
     start_time = time()
     start_date = datetime.now(UTC)
-    num_students = CourseEnrollmentAllowed.num_may_enroll_and_unenrolled(course_id)
-    task_progress = TaskProgress(action_name, num_students, start_time)
+    num_reports = 1
+    task_progress = TaskProgress(action_name, num_reports, start_time)
     current_step = {'step': 'Calculating info about students who may enroll'}
     task_progress.update_task_state(extra_meta=current_step)
 

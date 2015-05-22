@@ -1310,18 +1310,6 @@ class CourseEnrollmentAllowed(models.Model):
             enrolled.filter(email=student.email).exists()
         )
 
-    @classmethod
-    def num_may_enroll_and_unenrolled(cls, course_id):
-        """
-        Return number of students who may enroll in a course.
-
-        Students who have already enrolled in the course are ignored
-        when computing this number.
-
-        `course_id` identifies the course for which to compute this number.
-        """
-        return len(list(CourseEnrollmentAllowed.may_enroll_and_unenrolled(course_id)))
-
 
 @total_ordering
 class CourseAccessRole(models.Model):

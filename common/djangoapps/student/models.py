@@ -1294,32 +1294,33 @@ class CourseEnrollmentAllowed(models.Model):
         return "[CourseEnrollmentAllowed] %s: %s (%s)" % (self.email, self.course_id, self.created)
 
     @classmethod
-    def may_enroll_in(cls, course_id):
+    def may_enroll_and_unenrolled(cls, course_id):
         """
         Return QuerySet of students who are allowed to enroll in a course.
 
-        Note that result *includes* students who have already enrolled
-        in the course.
+        Result excludes students who have already enrolled in the
+        course.
 
         `course_id` identifies the course for which to compute the QuerySet.
         """
-        return CourseEnrollmentAllowed.objects.filter(course_id=course_id)
-
-    @classmethod
-    def num_may_enroll_in(cls, course_id):
-        """
-        Returns number of students who may enroll in a course.
-
-        Note that students who have already enrolled in the course
-        identified by `course_id` are ignored when computing this
-        number.
-        """
-        may_enroll = CourseEnrollmentAllowed.may_enroll_in(course_id)
         enrolled = CourseEnrollment.users_enrolled_in(course_id)
-        return sum(
-            1 for student in may_enroll if not
+        may_enroll = CourseEnrollmentAllowed.objects.filter(course_id=course_id)
+        return (
+            student for student in may_enroll if not
             enrolled.filter(email=student.email).exists()
         )
+
+    @classmethod
+    def num_may_enroll_and_unenrolled(cls, course_id):
+        """
+        Return number of students who may enroll in a course.
+
+        Students who have already enrolled in the course are ignored
+        when computing this number.
+
+        `course_id` identifies the course for which to compute this number.
+        """
+        return len(list(CourseEnrollmentAllowed.may_enroll_and_unenrolled(course_id)))
 
 
 @total_ordering

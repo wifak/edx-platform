@@ -224,12 +224,7 @@ def list_may_enroll(course_key, features):
     Note that result does not include students who may enroll and have
     already done so.
     """
-    enrolled = CourseEnrollment.users_enrolled_in(course_key)
-    may_enroll = CourseEnrollmentAllowed.may_enroll_in(course_key)
-    may_enroll_but_unenrolled = (
-        student for student in may_enroll if not
-        enrolled.filter(email=student.email).exists()
-    )
+    may_enroll_and_unenrolled = CourseEnrollmentAllowed.may_enroll_and_unenrolled(course_key)
 
     def extract_student(student, features):
         """
@@ -237,7 +232,7 @@ def list_may_enroll(course_key, features):
         """
         return dict((feature, getattr(student, feature)) for feature in features)
 
-    return [extract_student(student, features) for student in may_enroll_but_unenrolled]
+    return [extract_student(student, features) for student in may_enroll_and_unenrolled]
 
 
 def coupon_codes_features(features, coupons_list):

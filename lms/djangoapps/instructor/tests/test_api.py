@@ -195,6 +195,7 @@ class TestInstructorAPIDenyLevels(ModuleStoreTestCase, LoginEnrollmentTestCase):
             ('list_report_downloads', {}),
             ('calculate_grades_csv', {}),
             ('get_students_features', {}),
+            ('get_students_who_may_enroll', {}),
         ]
         # Endpoints that only Instructors can access
         self.instructor_level_endpoints = [

@@ -3,9 +3,9 @@ from django.conf.urls import patterns, include, url
 
 # There is a course creators admin table.
 from django.contrib import admin
-from ratelimitbackend.admin import RateLimitAdminSite
+from edx_admin.admin import RatelimitSudoAdminSite
 
-admin.site = RateLimitAdminSite()
+admin.site = RatelimitSudoAdminSite()
 admin.autodiscover()
 
 # pylint: disable=bad-continuation

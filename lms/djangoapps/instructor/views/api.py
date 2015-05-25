@@ -1133,6 +1133,7 @@ def get_coupon_codes(request, course_id):  # pylint: disable=unused-argument
 @ensure_csrf_cookie
 @cache_control(no_cache=True, no_store=True, must_revalidate=True)
 @require_level('staff')
+@sudo_required
 @require_finance_admin
 def get_enrollment_report(request, course_id):
     """
@@ -2008,6 +2009,7 @@ def list_report_downloads(_request, course_id):
 @ensure_csrf_cookie
 @cache_control(no_cache=True, no_store=True, must_revalidate=True)
 @require_level('staff')
+@sudo_required
 @require_finance_admin
 def list_financial_report_downloads(_request, course_id):
     """

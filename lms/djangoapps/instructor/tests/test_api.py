@@ -293,6 +293,7 @@ class TestInstructorAPIDenyLevels(ModuleStoreTestCase, LoginEnrollmentTestCase):
         """
         staff_member = StaffFactory(course_key=self.course.id)
         CourseEnrollment.enroll(staff_member, self.course.id)
+        CourseFinanceAdminRole(self.course.id).add_users(staff_member)
         self.client.login(username=staff_member.username, password='test')
 
         for endpoint, args in self.staff_level_endpoints:
@@ -345,6 +346,7 @@ class TestInstructorAPIDenyLevels(ModuleStoreTestCase, LoginEnrollmentTestCase):
         """
         inst = InstructorFactory(course_key=self.course.id)
         CourseEnrollment.enroll(inst, self.course.id)
+        CourseFinanceAdminRole(self.course.id).add_users(inst)
         self.client.login(username=inst.username, password='test')
 
         for endpoint, args in self.staff_level_endpoints:
@@ -2184,6 +2186,7 @@ class TestInstructorAPILevelsDataDump(ModuleStoreTestCase, LoginEnrollmentTestCa
         UserProfileFactory.create(user=self.students[0], meta='{"company": "asdasda"}')
 
         self.client.login(username=self.instructor.username, password='test')
+        self.grant_sudo_access(unicode(self.course.id), 'test')
         url = reverse('get_enrollment_report', kwargs={'course_id': self.course.id.to_deprecated_string()})
         response = self.client.get(url, {})
         self.assertIn('Your detailed enrollment report is being generated!', response.content)
@@ -2233,6 +2236,7 @@ class TestInstructorAPILevelsDataDump(ModuleStoreTestCase, LoginEnrollmentTestCa
 
         CourseFinanceAdminRole(self.course.id).add_users(self.instructor)
         self.client.login(username=self.instructor.username, password='test')
+        self.grant_sudo_access(unicode(self.course.id), 'test')
 
         url = reverse('get_enrollment_report', kwargs={'course_id': self.course.id.to_deprecated_string()})
         response = self.client.get(url, {})
@@ -2255,6 +2259,7 @@ class TestInstructorAPILevelsDataDump(ModuleStoreTestCase, LoginEnrollmentTestCa
 
         CourseFinanceAdminRole(self.course.id).add_users(self.instructor)
         self.client.login(username=self.instructor.username, password='test')
+        self.grant_sudo_access(unicode(self.course.id), 'test')
 
         url = reverse('get_enrollment_report', kwargs={'course_id': self.course.id.to_deprecated_string()})
         response = self.client.get(url, {})
@@ -2280,6 +2285,7 @@ class TestInstructorAPILevelsDataDump(ModuleStoreTestCase, LoginEnrollmentTestCa
 
         CourseFinanceAdminRole(self.course.id).add_users(self.instructor)
         self.client.login(username=self.instructor.username, password='test')
+        self.grant_sudo_access(unicode(self.course.id), 'test')
 
         url = reverse('get_enrollment_report', kwargs={'course_id': self.course.id.to_deprecated_string()})
         response = self.client.get(url, {})

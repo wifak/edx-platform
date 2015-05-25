@@ -1,8 +1,21 @@
 {% extends "main_django.html" %}
+{% load i18n %}
 
 {% block body %}
-<form class="sudo-form" method="post" style="margin: 0 auto; width: 200px;">{% csrf_token %}
-{{ form.as_p }}
-<input type="submit" value="Submit" />
-</form>
+<section style="margin: 0 auto; width: 500px; padding: 50px;">
+    <div class="inner-wrapper">
+        <header>
+          <h2>{% trans "Confirm Your Password To Get Sudo Access" %}</h2>
+        </header>
+        <hr />
+        <div style="margin: 0px auto; width: 218px;">
+            <form class="sudo-form" method="post">{% csrf_token %}
+            {{ form.as_p }}
+            <p>
+                <input type="submit" value="Submit" />
+            </p>
+            </form>
+        </div>
+    </div>
+</section>
 {% endblock %}

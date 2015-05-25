@@ -64,12 +64,10 @@ ${block_content}
       </div>
       <div data-location="${location | h}" data-location-name="${location.name | h}">
         [
-        <a href="#" class="staff-debug-reset">${_('Reset Student Attempts')}</a>
         % if has_instructor_access:
-        |
-        <a href="#" class="staff-debug-sdelete">${_('Delete Student State')}</a>
-        |
-        <a href="#" class="staff-debug-rescore">${_('Rescore Student Submission')}</a>
+            <a href="#" class="staff-debug-grade-adjustments">${_('Reset Student Attempts | Delete Student State | Rescore Student Submission')}</a>
+        % else:
+          <a href="#" class="staff-debug-grade-adjustments">${_('Reset Student Attempts')}</a>
         % endif
         ]
       </div>

@@ -1304,10 +1304,7 @@ class CourseEnrollmentAllowed(models.Model):
         `course_id` identifies the course for which to compute the QuerySet.
         """
         enrolled = CourseEnrollment.users_enrolled_in(course_id).values_list('email', flat=True)
-        may_enroll = CourseEnrollmentAllowed.objects.filter(course_id=course_id)
-        return (
-            student for student in may_enroll if student.email not in enrolled
-        )
+        return CourseEnrollmentAllowed.objects.filter(course_id=course_id).exclude(email__in=enrolled)
 
 
 @total_ordering

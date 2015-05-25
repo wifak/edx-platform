@@ -1306,7 +1306,7 @@ class CourseEnrollmentAllowed(models.Model):
         enrolled = CourseEnrollment.users_enrolled_in(course_id).values_list('email', flat=True)
         may_enroll = CourseEnrollmentAllowed.objects.filter(course_id=course_id)
         return (
-            student for student in may_enroll if not student.email in enrolled
+            student for student in may_enroll if student.email not in enrolled
         )
 
 

@@ -1303,11 +1303,10 @@ class CourseEnrollmentAllowed(models.Model):
 
         `course_id` identifies the course for which to compute the QuerySet.
         """
-        enrolled = CourseEnrollment.users_enrolled_in(course_id)
+        enrolled = CourseEnrollment.users_enrolled_in(course_id).values_list('email', flat=True)
         may_enroll = CourseEnrollmentAllowed.objects.filter(course_id=course_id)
         return (
-            student for student in may_enroll if not
-            enrolled.filter(email=student.email).exists()
+            student for student in may_enroll if not student.email in enrolled
         )
 
 

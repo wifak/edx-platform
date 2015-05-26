@@ -9,7 +9,7 @@ from django.conf.urls import patterns, url
 
 from .views import TeamsListView, TeamsDetailView, TeamMembershipListView, TeamMembershipDetailView
 
-TEAM_ID_PATTERN = r'(?P<team_id>[\w.+-]+)'
+TEAM_ID_PATTERN = r'(?P<team_id>[a-z\d_-]+)'
 USERNAME_PATTERN = r'(?P<username>[\w.+-]+)'
 
 urlpatterns = patterns(

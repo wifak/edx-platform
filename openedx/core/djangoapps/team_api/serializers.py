@@ -1,6 +1,26 @@
 from django.contrib.auth.models import User
 from rest_framework import serializers
 from .models import CourseTeam, CourseTeamMembership
+from ..user_api.serializers import UserSerializer
+
+
+class ExpandableField(serializers.Field):
+    def __init__(self, **kwargs):
+        if 'collapsed_serializer' not in kwargs or 'expanded_serializer' not in kwargs:
+            raise ValueError
+        self.collapsed = kwargs.pop('collapsed_serializer')
+        self.expanded = kwargs.pop('expanded_serializer')
+        self.expand = kwargs.pop('expand', False)
+        super(ExpandableField, self).__init__(**kwargs)
+
+    def field_to_native(self, obj, field_name):
+        if self.expand:
+            self.expanded.initialize(self, field_name)
+            return self.expanded.field_to_native(obj, field_name)
+        else:
+            self.collapsed.initialize(self, field_name)
+            return self.collapsed.field_to_native(obj, field_name)
+
 
 class CollapsedUserSerializer(serializers.HyperlinkedModelSerializer):
     url = serializers.HyperlinkedIdentityField(view_name='accounts_api', lookup_field='username')
@@ -20,7 +40,11 @@ class CollapsedCourseTeamSerializer(serializers.HyperlinkedModelSerializer):
 
 
 class UserMembershipSerializer(serializers.ModelSerializer):
-    user = CollapsedUserSerializer()
+    user = ExpandableField(
+        collapsed_serializer=CollapsedUserSerializer(),
+        expanded_serializer=UserSerializer(),
+        expand=True,
+    )
 
     class Meta:
         model = CourseTeamMembership
@@ -37,10 +61,10 @@ class MembershipSerializer(serializers.ModelSerializer):
 
 
 class CourseTeamSerializer(serializers.ModelSerializer):
-    id = serializers.CharField(source='team_id')
-    membership = UserMembershipSerializer(many=True)
+    id = serializers.CharField(source='team_id', read_only=True)
+    membership = UserMembershipSerializer(many=True, read_only=True)
 
     class Meta:
         model = CourseTeam
         fields = ("id", "name", "is_active", "course_id", "topic_id", "date_created", "description", "country", "language", "membership")
-        # read_only_fields = ("id", "email", "username")
+        read_only_fields = ("course_id", "date_created")

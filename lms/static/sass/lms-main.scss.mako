@@ -5,8 +5,7 @@
 @import 'bourbon/bourbon'; // lib - bourbon
 @import 'susy/susy';
 @import 'breakpoint/breakpoint';
-@import 'vendor/bi-app/bi-app-ltr'; // set the layout for left to right languages
-@import 'base/variables-ltr';
+@import 'vendor/bi-app/bi-app-rtl'; // set the layout for left to right languages
 
 // BASE  *default edX offerings*
 // ====================

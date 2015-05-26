@@ -457,7 +457,7 @@ $edx-footer-bg-color: rgb(252,252,252);
 
   &.rwd {
     @include box-sizing(border-box);
-    @include outer-container;
+    @include container;
 
     &.wrapper-footer footer {
       min-width: 0;
@@ -466,20 +466,20 @@ $edx-footer-bg-color: rgb(252,252,252);
     .footer-about,
     .footer-nav,
     .footer-follow {
-      @include span-columns(12);
+      @include span(12);
     }
 
-    @include media( $edx-bp-medium ) {
+    @include susy-breakpoint($edx-bp-medium, $susy) {
     }
 
-    @include media( $edx-bp-large ) {
+    @include susy-breakpoint($edx-bp-large, $susy) {
       .footer-about {
-        @include span-columns(6);
+        @include span(6);
       }
 
       .footer-nav,
       .footer-follow {
-        @include span-columns(3);
+        @include span(3);
       }
     }
   }

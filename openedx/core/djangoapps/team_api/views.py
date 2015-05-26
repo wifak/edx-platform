@@ -10,7 +10,11 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework import permissions
 
+from django.core.paginator import Paginator
+from django.db import transaction
 from django.db.models import Count
+
+from student.models import CourseEnrollment
 
 from openedx.core.lib.api.authentication import (
     SessionAuthenticationAllowInactiveUser,
@@ -342,14 +346,30 @@ class TeamMembershipDetailView(APIView):
 
 
 class TopicListView(APIView):
+
+    PAGE_SIZE = 100
+
     def get(self, request):
-        """/api/team/v0/topics/?course_id={course_id}"""
+        """
+        GET /api/team/v0/topics/?course_id={course_id}
+        """
         try:
-            course_id = CourseKey.from_string(request.DATA['course_id'])
+            course_id_string = request.QUERY_PARAMS.get('course_id', None)
+            if course_id_string is None:
+                return Response(status=status.HTTP_400_BAD_REQUEST)
+
+            course_id = CourseKey.from_string(course_id_string)
+            if CourseEnrollment.get_enrollment(request.user, course_id) is None:
+                return Response(status=status.HTTP_403_FORBIDDEN)
+
             course_module = modulestore().get_course(course_id)
             if course_module is None:  # course is None if not found
                 return Response(status=status.HTTP_404_NOT_FOUND)
-            return Response(course_module.teams_topics)  # May be None
+
+            paginator = Paginator(course_module.teams_topics, self.PAGE_SIZE)
+            page = paginator.page(1)
+            serializer = PaginationSerializer(instance=page)
+            return Response(serializer.data)  # May be None
         except InvalidKeyError:
             return Response(status=status.HTTP_404_NOT_FOUND)
 

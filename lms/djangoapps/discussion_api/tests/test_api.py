@@ -382,14 +382,14 @@ class GetThreadListTest(CommentsServiceMockMixin, UrlResetMixin, ModuleStoreTest
         self.author = UserFactory.create()
         self.cohort = CohortFactory.create(course_id=self.course.id)
 
-    def get_thread_list(self, threads, page=1, page_size=1, num_pages=1, course=None):
+    def get_thread_list(self, threads, page=1, page_size=1, num_pages=1, course=None, topic_id=None):
         """
         Register the appropriate comments service response, then call
         get_thread_list and return the result.
         """
         course = course or self.course
-        self.register_get_threads_response(threads, page, num_pages)
-        ret = get_thread_list(self.request, course.id, page, page_size)
+        self.register_get_threads_response(threads, page, num_pages, topic_id)
+        ret = get_thread_list(self.request, course.id, page, page_size, topic_id)
         return ret
 
     def test_nonexistent_course(self):
@@ -415,6 +415,10 @@ class GetThreadListTest(CommentsServiceMockMixin, UrlResetMixin, ModuleStoreTest
                 "previous": None,
             }
         )
+
+    def test_get_threads_by_topic_id(self):
+        self.get_thread_list([], topic_id="test_topic")
+        self.assertEqual(urlparse(httpretty.last_request().path).path, "/api/v1/test_topic/threads")
 
     def test_basic_query_params(self):
         self.get_thread_list([], page=6, page_size=14)

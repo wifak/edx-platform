@@ -27,6 +27,7 @@ class ThreadListGetForm(_PaginationForm):
     A form to validate query parameters in the thread list retrieval endpoint
     """
     course_id = CharField()
+    topic_id = CharField(required=False)
 
     def clean_course_id(self):
         """Validate course_id"""

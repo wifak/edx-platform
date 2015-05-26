@@ -90,6 +90,8 @@ class ThreadViewSet(_ViewMixin, DeveloperErrorViewMixin, ViewSet):
 
         * page_size: The number of items per page (default is 10, max is 100)
 
+        * topic_id: The topic, if given, to retrieve the threads for
+
     **POST Parameters**:
 
         * course_id (required): The course to create the thread in
@@ -157,7 +159,8 @@ class ThreadViewSet(_ViewMixin, DeveloperErrorViewMixin, ViewSet):
                 request,
                 form.cleaned_data["course_id"],
                 form.cleaned_data["page"],
-                form.cleaned_data["page_size"]
+                form.cleaned_data["page_size"],
+                form.cleaned_data["topic_id"],
             )
         )
 

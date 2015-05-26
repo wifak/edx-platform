@@ -70,6 +70,7 @@ class ThreadListGetFormTest(FormTestMixin, PaginationTestMixin, TestCase):
             "course_id": "Foo/Bar/Baz",
             "page": "2",
             "page_size": "13",
+            "topic_id": "example topic_id",
         }
 
     def test_basic(self):
@@ -80,6 +81,7 @@ class ThreadListGetFormTest(FormTestMixin, PaginationTestMixin, TestCase):
                 "course_id": CourseLocator.from_string("Foo/Bar/Baz"),
                 "page": 2,
                 "page_size": 13,
+                "topic_id": "example topic_id",
             }
         )
 

@@ -55,7 +55,7 @@ class CourseTeam(models.Model):
                     break
                 suffix += 1
 
-        course_team = cls.objects.create(
+        course_team = cls(
             team_id=team_id,
             name=name,
             course_id=course_id,

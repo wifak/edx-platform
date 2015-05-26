@@ -22,7 +22,7 @@ from openedx.core.lib.api.authentication import (
     OAuth2AuthenticationAllowInactiveUser,
 )
 from openedx.core.lib.api.parsers import MergePatchParser
-from openedx.core.lib.api.permissions import IsUserInUrlOrStaff, IsStaffOrReadOnly
+from openedx.core.lib.api.permissions import IsUserInUrlOrStaff, IsStaffOrReadOnly, IsActiveOrReadOnly
 from openedx.core.lib.api.serializers import PaginationSerializer
 #from ..errors import UserNotFound, UserNotAuthorized
 
@@ -80,7 +80,7 @@ class TeamsListView(GenericAPIView):
 
     # SessionAuthenticationAllowInactiveUser must come first to return a 403 for unauthenticated users
     authentication_classes = (SessionAuthenticationAllowInactiveUser, OAuth2AuthenticationAllowInactiveUser)
-    permission_classes = (permissions.IsAuthenticated,)
+    permission_classes = (permissions.IsAuthenticated, IsActiveOrReadOnly)
 
     paginate_by = 10
     paginate_by_param = 'page_size'
@@ -136,27 +136,49 @@ class TeamsListView(GenericAPIView):
         POST /api/team/v0/teams/
         """
 
-        if not request.user.is_active:
-            return Response(status=status.HTTP_403_FORBIDDEN)
+        field_errors = {}
+        course_key = None
 
         try:
-            course_key = CourseKey.from_string(request.DATA['course_id'])
-            # get_course(course_key)
+            course_key = CourseKey.from_string(request.DATA.get('course_id'))
+            get_course(course_key)
         except InvalidKeyError:
-            pass
-            #return Response({'detail': "course_id is not valid"}, status=status.HTTP_400_BAD_REQUEST)
+            field_errors['course_id'] = {
+                'developer_message': "course_id is not valid.",
+            }
+        except ValueError:
+            return Response(status=status.HTTP_404_NOT_FOUND)
 
-        # team = CourseTeam.create(
-        #     name=request.DATA['name'],
-        #     course_id=course_key,
-        #     description=request.DATA['description'],
-        #     topic_id=request.DATA.get('topic_id'),
-        #     country=request.DATA.get('country'),
-        #     language=request.DATA.get('language'),
-        # )
-        #
-        # return Response(CourseTeamSerializer(team).data)
-        return Response("Hello world!")
+        for key in request.DATA:
+            if key not in ['name', 'course_id', 'description', 'topic_id', 'country', 'language']:
+                field_errors[key] = {
+                    'developer_message': "This field is not present on this resource",
+                }
+
+        team = CourseTeam.create(
+            name=request.DATA.get('name', ""),
+            course_id=course_key,
+            description=request.DATA.get('description', ""),
+            topic_id=request.DATA.get('topic_id'),
+            country=request.DATA.get('country'),
+            language=request.DATA.get('language'),
+        )
+
+        try:
+            team.full_clean()
+            team.save()
+        except ValidationError as e:
+            for key, error in e.message_dict.iteritems():
+                field_errors[key] = {
+                    'developer_message': error[0],
+                }
+
+        if field_errors:
+            return Response({
+                'field_errors': field_errors,
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        return Response(CourseTeamSerializer(team).data)
 
 
 class TeamsDetailView(RetrievePatchAPIView):
@@ -170,28 +192,28 @@ class TeamsDetailView(RetrievePatchAPIView):
     def get_queryset(self):
         return CourseTeam.objects.all()
 
-
-class TeamMembershipListView(APIView):
-
-    authentication_classes = (OAuth2AuthenticationAllowInactiveUser, SessionAuthenticationAllowInactiveUser)
-    #permission_classes = (permissions.IsAuthenticated,)
-
-    def get(self, request):
-        """
-        GET /api/team/v0/team_membership
-        """
-        serializer = MembershipSerializer(CourseTeamMembership.objects.all(), many=True)
-        return Response(serializer.data)
-
-class TeamMembershipDetailView(APIView):
-
-    def get(self, request, team_id, username):
-        """
-        GET /api/team/v0/team_membership/{team_id},{username}
-        """
-
-        try:
-            membership = CourseTeamMembership.objects.get(team__team_id=team_id, user__username=username)
-            return Response(MembershipSerializer(membership).data)
-        except CourseTeamMembership.DoesNotExist:
-            return Response(status=status.HTTP_404_NOT_FOUND)
+#
+# class TeamMembershipListView(APIView):
+#
+#     authentication_classes = (OAuth2AuthenticationAllowInactiveUser, SessionAuthenticationAllowInactiveUser)
+#     #permission_classes = (permissions.IsAuthenticated,)
+#
+#     def get(self, request):
+#         """
+#         GET /api/team/v0/team_membership
+#         """
+#         serializer = MembershipSerializer(CourseTeamMembership.objects.all(), many=True)
+#         return Response(serializer.data)
+#
+# class TeamMembershipDetailView(APIView):
+#
+#     def get(self, request, team_id, username):
+#         """
+#         GET /api/team/v0/team_membership/{team_id},{username}
+#         """
+#
+#         try:
+#             membership = CourseTeamMembership.objects.get(team__team_id=team_id, user__username=username)
+#             return Response(MembershipSerializer(membership).data)
+#         except CourseTeamMembership.DoesNotExist:
+#             return Response(status=status.HTTP_404_NOT_FOUND)

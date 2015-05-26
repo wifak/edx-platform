@@ -82,3 +82,11 @@ class IsStaffOrReadOnly(permissions.BasePermission):
     """
     def has_permission(self, request, view):
         return request.user.is_staff or request.method in permissions.SAFE_METHODS
+
+
+class IsActiveOrReadOnly(permissions.BasePermission):
+    """
+    Permission that checks to see if the user is active, permitting only read-only access if they are not.
+    """
+    def has_permission(self, request, view):
+        return request.user.is_active or request.method in permissions.SAFE_METHODS

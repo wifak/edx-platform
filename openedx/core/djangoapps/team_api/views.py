@@ -115,7 +115,8 @@ class TeamsListView(GenericAPIView):
         if 'order_by' in request.QUERY_PARAMS:
             order_by_input = request.QUERY_PARAMS['order_by']
             if order_by_input == 'name':
-                order_by_field = 'name'
+                queryset = queryset.extra(select={'lower_name': "lower(name)"})
+                order_by_field = 'lower_name'
             elif order_by_input == 'open_slots':
                 queryset = queryset.annotate(team_size=Count('users'))
                 order_by_field = 'team_size'

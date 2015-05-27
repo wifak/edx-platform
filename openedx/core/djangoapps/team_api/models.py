@@ -67,6 +67,12 @@ class CourseTeam(models.Model):
 
         return course_team
 
+    def add_user(self, user):
+        CourseTeamMembership.objects.get_or_create(
+            user=user,
+            team=self
+        )
+
 
 class CourseTeamMembership(models.Model):
     """

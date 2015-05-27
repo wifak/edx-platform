@@ -373,7 +373,6 @@ class TopicListView(APIView):
             course_module = modulestore().get_course(course_id)
             if course_module is None:  # course is None if not found
                 return Response(status=status.HTTP_404_NOT_FOUND)
-
             topics = filter(lambda t: t['is_active'], course_module.teams_topics)
 
             if 'text_search' in request.QUERY_PARAMS:
@@ -388,7 +387,7 @@ class TopicListView(APIView):
                 return Response({'detail': "unsupported order_by value"}, status=status.HTTP_400_BAD_REQUEST)
 
             if 'page_size' in request.QUERY_PARAMS:
-                self.page_size = min(self.max_page_size, request.QUERY_PARAMS['page_size'])
+                self.page_size = min(self.max_page_size, int(request.QUERY_PARAMS['page_size']))
 
             paginator = Paginator(topics, self.page_size)
             page = paginator.page(request.QUERY_PARAMS.get('page', 1))

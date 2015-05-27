@@ -336,6 +336,12 @@ class CourseBlocksAndNavigation(ListAPIView):
 
           Example: graded=True or graded=true
 
+        * responsive_UI: (boolean) Indicates whether to return whether the block is tagged to have responsive UI
+          support.
+          Default is True.
+
+          Example: responsive_UI=True or responsive_UI=true
+
         * children: (boolean) Indicates whether or not to return children information about the blocks.
           Default is True.
 
@@ -418,6 +424,7 @@ class CourseBlocksAndNavigation(ListAPIView):
         block_data_requested = json_field_requested('block_data', dict, "{}")
         block_count_requested = json_field_requested('block_count', list, "[]")
         graded_requested = bool_field_requested('graded')
+        responsive_UI_requested = bool_field_requested('responsive_UI')
         children_requested = bool_field_requested('children')
         navigation_depth_requested = int(request.GET.get('navigation_depth', '3'))
 
@@ -524,6 +531,12 @@ class CourseBlocksAndNavigation(ListAPIView):
                         for child in children
                     )
                 )
+
+            # responsive UI
+            # If responsive UI information is requested, include whether this block is tagged with having
+            # responsive UI support.
+            if responsive_UI_requested:
+                block_value["responsive_UI"] = 'responsive_UI' in block._class_tags
 
             # block count
             # For all the block types that are requested to be counted, include the count of

@@ -10,6 +10,7 @@ import dogstats_wrapper as dog_stats_api
 from .capa_base import CapaMixin, CapaFields, ComplexEncoder
 from capa import responsetypes
 from .progress import Progress
+from xblock.core import XBlock
 from xmodule.x_module import XModule, module_attr, DEPRECATION_VSCOMPAT_EVENT
 from xmodule.raw_module import RawDescriptor
 from xmodule.exceptions import NotFoundError, ProcessingError
@@ -108,6 +109,7 @@ class CapaModule(CapaMixin, XModule):
         return json.dumps(result, cls=ComplexEncoder)
 
 
+@XBlock.tag("responsive_UI")
 class CapaDescriptor(CapaFields, RawDescriptor):
     """
     Module implementing problems in the LON-CAPA format,

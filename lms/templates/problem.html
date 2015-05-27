@@ -13,7 +13,7 @@
     </div>
   <div class="action">
     <input type="hidden" name="problem_id" value="${ problem['name'] }" />
-    % if demand_hint_possible:  {# tricky: emit this empty if it might be used, so later can put text here and aria will notice #}
+    % if demand_hint_possible:
     <div class="problem-hint" aria-live="polite">${demand_hint}</div>
     % endif
     % if check_button:

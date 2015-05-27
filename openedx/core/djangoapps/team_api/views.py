@@ -408,12 +408,12 @@ class TopicDetailView(APIView):
         """
         try:
             course_id = CourseKey.from_string(course_id)
-            if CourseEnrollment.get_enrollment(request.user, course_id) is None:
-                return Response({'detail': "user must be enrolled"}, status=status.HTTP_403_FORBIDDEN)
-
             course_module = modulestore().get_course(course_id)
             if course_module is None:
                 return Response(status=status.HTTP_404_NOT_FOUND)
+
+            if CourseEnrollment.get_enrollment(request.user, course_id) is None:
+                return Response({'detail': "user must be enrolled"}, status=status.HTTP_403_FORBIDDEN)
 
             topics = filter(lambda t: t['id'] == topic_id, course_module.teams_topics)
 

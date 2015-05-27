@@ -4,6 +4,7 @@ from django.core.urlresolvers import reverse
 from rest_framework.test import APITestCase, APIClient
 
 from student.tests.factories import UserFactory
+from student.models import CourseEnrollment
 from xmodule.modulestore.tests.factories import CourseFactory
 from .factories import CourseTeamFactory
 from xmodule.modulestore.tests.django_utils import ModuleStoreTestCase
@@ -16,13 +17,31 @@ class TestTeamAPI(APITestCase, ModuleStoreTestCase):
 
     test_password = 'password'
 
+    topics_count = 10
+
     def setUp(self):
         super(TestTeamAPI, self).setUp()
 
-        self.test_course_1 = CourseFactory.create(org='TestX', course='TS101', display_name='Test Course')
+        teams_configuration = {'topics': [{
+            'id': 'topic_{}'.format(i),
+            'team_count': i,
+            'is_active': True,
+            'name': 'Topic {}'.format(i),
+            'description': 'Description for topic {}.'.format(i)
+        } for i in range(self.topics_count)] + [{
+            'id': 'inactive',
+            'team_count': 0,
+            'is_active': False,
+            'name': 'Inactive Topic',
+            'description': 'Inactive.'
+        }]}
+
+        self.test_course_1 = CourseFactory.create(org='TestX', course='TS101', display_name='Test Course', teams_configuration=teams_configuration)
         self.test_course_2 = CourseFactory.create(org='MIT', course='6.002x', display_name='Circuits')
 
         self.student_user = UserFactory.create(password=self.test_password)
+        self.student_user_enrolled = UserFactory.create(password=self.test_password)
+        self.student_user_not_active = UserFactory.create(password=self.test_password, is_active=False)
         self.staff_user = UserFactory.create(password=self.test_password, is_staff=True)
 
         self.test_team_1 = CourseTeamFactory.create(name='solar team', course_id=self.test_course_1.id, topic_id='renewable')
@@ -48,6 +67,10 @@ class TestTeamAPI(APITestCase, ModuleStoreTestCase):
     def get_teams_list_json(self, user=None, data=None):
         response = self.get_teams_list(200, user=user, data=data)
         return json.loads(response.content)
+
+        CourseEnrollment.get_or_create_enrollment(
+            self.student_user_enrolled, self.test_course_1.location.course_key
+        )
 
     def test_list_teams_anonymous(self):
         response = self.client.get(reverse('teams_list'))
@@ -267,3 +290,59 @@ class TestTeamAPI(APITestCase, ModuleStoreTestCase):
 
     def test_update_team_does_not_exist(self):
         self.patch_team_detail('foobar', 404, user=self.staff_user)
+
+    def test_list_topics_anonymous(self):
+        response = self.client.get(reverse('topics_list') + '?course_id=' + str(self.test_course_1.id))
+        self.assertEqual(403, response.status_code)
+
+    def test_list_topics_unenrolled(self):
+        self.client.login(username=self.student_user, password=self.test_password)
+        response = self.client.get(reverse('topics_list') + '?course_id=' + str(self.test_course_1.id))
+        self.assertEqual(403, response.status_code)
+
+    def test_list_topics_invalid_course_id(self):
+        self.client.login(username=self.student_user_enrolled, password=self.test_password)
+        response = self.client.get(reverse('topics_list') + '?course_id=BOGUS_COURSE')
+        self.assertEqual(404, response.status_code)
+
+    def test_list_topics_without_course_id(self):
+        self.client.login(username=self.student_user_enrolled, password=self.test_password)
+        response = self.client.get(reverse('topics_list'))
+        self.assertEqual(400, response.status_code)
+
+    def test_list_topics_filter_active(self):
+        self.client.login(username=self.student_user_enrolled, password=self.test_password)
+        response = self.client.get(reverse('topics_list') + '?course_id=' + str(self.test_course_1.id))
+        self.assertEqual(200, response.status_code)
+        self.assertTrue(all([topic['is_active'] for topic in response.data['results']]))
+
+    def test_list_topics_order_by_name(self):
+        self.client.login(username=self.student_user_enrolled, password=self.test_password)
+        response = self.client.get(reverse('topics_list') + '?course_id=' + str(self.test_course_1.id))
+        self.assertEqual(200, response.status_code)
+        topics = response.data['results']
+        self.assertEqual(topics, sorted(topics, key=lambda t: t['name']))
+
+    def test_list_topics_order_by_team_count(self):
+        self.client.login(username=self.student_user_enrolled, password=self.test_password)
+        response = self.client.get(reverse('topics_list') + '?course_id=' + str(self.test_course_1.id))
+        self.assertEqual(200, response.status_code)
+        topics = response.data['results']
+        self.assertEqual(topics, sorted(topics, key=lambda t: t['team_count']))
+
+    def test_list_topics_invalid_ordering(self):
+        self.client.login(username=self.student_user_enrolled, password=self.test_password)
+        params = '?course_id={}&order_by=BOGUS'.format(str(self.test_course_1.id))
+        response = self.client.get(reverse('topics_list') + params)
+        self.assertEqual(400, response.status_code)
+
+    def test_list_topics_pagination(self):
+        page_size = 2
+        self.client.login(username=self.student_user_enrolled, password=self.test_password)
+        params = '?course_id={}&page_size={}'.format(str(self.test_course_1.id), str(page_size))
+        response = self.client.get(reverse('topics_list') + params)
+        self.assertEqual(200, response.status_code)
+        self.assertEqual(page_size, len(response.data['results']))
+        self.assertIn('next', response.data)
+        self.assertIn('previous', response.data)
+        self.assertNotEqual(response.data['next'], 'null')

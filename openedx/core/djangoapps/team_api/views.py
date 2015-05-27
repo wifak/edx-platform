@@ -378,13 +378,14 @@ class TopicListView(APIView):
             if 'text_search' in request.QUERY_PARAMS:
                 return Response({'detail': "text_search is not yet supported"}, status=status.HTTP_400_BAD_REQUEST)
 
-            ordering = request.QUERY_PARAMS.get('order_by')
+            ordering = request.QUERY_PARAMS.get('order_by', 'name')
             if ordering == 'name':
                 topics = sorted(topics, key=lambda t: t['name'])
             elif ordering == 'team_count':
                 topics = sorted(topics, cmp=lambda t1, t2: t1['team_count'] > t2['team_count'])
-            elif ordering is not None:
-                return Response({'detail': "unsupported order_by value"}, status=status.HTTP_400_BAD_REQUEST)
+            else:
+                return Response({'detail': "unsupported order_by value {}".format(ordering)},
+                                 status=status.HTTP_400_BAD_REQUEST)
 
             if 'page_size' in request.QUERY_PARAMS:
                 self.page_size = min(self.max_page_size, int(request.QUERY_PARAMS['page_size']))

@@ -346,3 +346,44 @@ class TestTeamAPI(APITestCase, ModuleStoreTestCase):
         self.assertIn('next', response.data)
         self.assertIn('previous', response.data)
         self.assertNotEqual(response.data['next'], 'null')
+
+    def test_topic_detail_anonymous(self):
+        response = self.client.get(
+            reverse('topics_detail', kwargs={'topic_id': 'topic_0', 'course_id': str(self.test_course_1.id)})
+        )
+        self.assertEqual(403, response.status_code)
+
+    def test_topic_detail_unenrolled(self):
+        self.client.login(username=self.student_user, password=self.test_password)
+        response = self.client.get(
+            reverse('topics_detail', kwargs={'topic_id': 'topic_0', 'course_id': str(self.test_course_1.id)})
+        )
+        self.assertEqual(403, response.status_code)
+
+    def test_topic_detail_invalid_course_id(self):
+        self.client.login(username=self.student_user_enrolled, password=self.test_password)
+        response = self.client.get(
+            reverse('topics_detail', kwargs={'topic_id': 'topic_0', 'course_id': 'A/BOGUS/COURSE'})
+        )
+        self.assertEqual(404, response.status_code)
+
+    def test_topic_detail_invalid_topic_id(self):
+        self.client.login(username=self.student_user_enrolled, password=self.test_password)
+        response = self.client.get(
+            reverse('topics_detail', kwargs={'topic_id': 'bogus_topic', 'course_id': str(self.test_course_1.id)})
+        )
+        self.assertEqual(404, response.status_code)
+
+    def test_topic_detail_inactive(self):
+        self.client.login(username=self.student_user_enrolled, password=self.test_password)
+        response = self.client.get(
+            reverse('topics_detail', kwargs={'topic_id': 'inactive', 'course_id': str(self.test_course_1.id)})
+        )
+        self.assertEqual(404, response.status_code)
+
+    def test_topic_detail_success(self):
+        self.client.login(username=self.student_user_enrolled, password=self.test_password)
+        response = self.client.get(
+            reverse('topics_detail', kwargs={'topic_id': 'topic_0', 'course_id': str(self.test_course_1.id)})
+        )
+        self.assertEqual(200, response.status_code)

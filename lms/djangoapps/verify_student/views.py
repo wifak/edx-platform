@@ -42,6 +42,10 @@ from microsite_configuration import microsite
 from openedx.core.djangoapps.user_api.accounts import NAME_MIN_LENGTH
 from openedx.core.djangoapps.user_api.accounts.api import get_account_settings, update_account_settings
 from openedx.core.djangoapps.user_api.errors import UserNotFound, AccountValidationError
+
+from openedx.core.djangoapps.credit.api import get_credit_requirement, set_credit_requirement_status
+from commerce import ecommerce_api_client
+from course_modes.models import CourseMode
 from student.models import CourseEnrollment
 from shoppingcart.models import Order, CertificateItem
 from shoppingcart.processors import (
@@ -1002,6 +1006,22 @@ def results_callback(request):
         log.debug("Approving verification for %s", receipt_id)
         attempt.approve()
         status = "approved"
+        checkpoints = VerificationCheckpoint.objects.filter(photo_verification=attempt).all()
+        if checkpoints:
+            course_key = checkpoints[0].course_id
+            credit_requirement = get_credit_requirement(
+                course_key, "reverification", checkpoints[0].checkpoint_name
+            )
+            if credit_requirement is not None:
+                try:
+                    set_credit_requirement_status(
+                        attempt.user.username, credit_requirement, "satisfied"
+                    )
+                except Exception:  # pylint: disable=broad-except
+                    # Catch exception if unable to add credit requirement
+                    # status for user
+                    log.warn("Unable to add Credit requirement status for %s", attempt.user.username)
+
     elif result == "FAIL":
         log.debug("Denying verification for %s", receipt_id)
         attempt.deny(json.dumps(reason), error_code=error_code)

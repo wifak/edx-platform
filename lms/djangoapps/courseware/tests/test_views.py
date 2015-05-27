@@ -603,6 +603,7 @@ class BaseDueDateTests(ModuleStoreTestCase):
         # in course_module's init method, the date_display_format will be set accordingly to
         # remove the timezone.
         course = self.set_up_course(due_date_display_format=None, show_timezone=False)
+        CourseEnrollmentFactory(user=self.user, course_id=course.id)
         text = self.get_text(course)
         self.assertIn(self.time_without_tz, text)
         self.assertNotIn(self.time_with_tz, text)
@@ -611,18 +612,21 @@ class BaseDueDateTests(ModuleStoreTestCase):
 
     def test_defaults(self):
         course = self.set_up_course()
+        CourseEnrollmentFactory(user=self.user, course_id=course.id)
         text = self.get_text(course)
         self.assertIn(self.time_with_tz, text)
 
     def test_format_none(self):
         # Same for setting the due date to None
         course = self.set_up_course(due_date_display_format=None)
+        CourseEnrollmentFactory(user=self.user, course_id=course.id)
         text = self.get_text(course)
         self.assertIn(self.time_with_tz, text)
 
     def test_format_plain_text(self):
         # plain text due date
         course = self.set_up_course(due_date_display_format="foobar")
+        CourseEnrollmentFactory(user=self.user, course_id=course.id)
         text = self.get_text(course)
         self.assertNotIn(self.time_with_tz, text)
         self.assertIn("due foobar", text)
@@ -630,6 +634,7 @@ class BaseDueDateTests(ModuleStoreTestCase):
     def test_format_date(self):
         # due date with no time
         course = self.set_up_course(due_date_display_format=u"%b %d %y")
+        CourseEnrollmentFactory(user=self.user, course_id=course.id)
         text = self.get_text(course)
         self.assertNotIn(self.time_with_tz, text)
         self.assertIn("due Sep 18 13", text)
@@ -637,6 +642,7 @@ class BaseDueDateTests(ModuleStoreTestCase):
     def test_format_hidden(self):
         # hide due date completely
         course = self.set_up_course(due_date_display_format=u"")
+        CourseEnrollmentFactory(user=self.user, course_id=course.id)
         text = self.get_text(course)
         self.assertNotIn("due ", text)
 
@@ -644,6 +650,7 @@ class BaseDueDateTests(ModuleStoreTestCase):
         # improperly formatted due_date_display_format falls through to default
         # (value of show_timezone does not matter-- setting to False to make that clear).
         course = self.set_up_course(due_date_display_format=u"%%%", show_timezone=False)
+        CourseEnrollmentFactory(user=self.user, course_id=course.id)
         text = self.get_text(course)
         self.assertNotIn("%%%", text)
         self.assertIn(self.time_with_tz, text)
@@ -753,6 +760,7 @@ class ProgressPageTests(ModuleStoreTestCase):
             grade_cutoffs={u'çü†øƒƒ': 0.75, 'Pass': 0.5},
         )
         self.course = modulestore().get_course(course.id)  # pylint: disable=no-member
+        CourseEnrollmentFactory(user=self.user, course_id=self.course.id)
 
         self.chapter = ItemFactory.create(category='chapter', parent_location=self.course.location)  # pylint: disable=no-member
         self.section = ItemFactory.create(category='sequential', parent_location=self.chapter.location)
@@ -1088,3 +1096,118 @@ class TestIndexView(ModuleStoreTestCase):
         # Trigger the assertions embedded in the ViewCheckerBlocks
         response = views.index(request, unicode(course.id), chapter=chapter.url_name, section=section.url_name)
         self.assertEquals(response.content.count("ViewCheckerPassed"), 3)
+
+
+class RenderXBlockMixin(ModuleStoreTestCase):
+    """
+    Mixin for testing the courseware.render_xblock method.
+    """
+    COURSEWARE_CHROME_HTML_ELEMENTS = [
+        '<header id="open_close_accordion"',
+        '<ol class="course-tabs"',
+        '<footer id="footer-openedx"',
+    ]
+
+    def setUp(self):
+        super(RenderXBlockMixin, self).setUp()
+        self.course = CourseFactory.create()
+        chapter = ItemFactory.create(parent=self.course, category='chapter')
+        self.html_block = ItemFactory.create(
+            parent=chapter,
+            category='html',
+            data="<p>Test HTML Content<p>"
+        )
+        self.user = UserFactory()
+
+    def get_response(self):
+        """
+        Overridable method to get the response from the endpoint that is being tested.
+        """
+        raise NotImplementedError
+
+    def login(self):
+        """
+        Logs in the test user.
+        """
+        self.client.login(username=self.user.username, password='test')
+
+    def verify_response(self, admin=False, enroll=False, login=False, expected_response_code=200):
+        """
+        Helper method that calls the endpoint, verifies the expected response code, and returns the response.
+        """
+        if admin:
+            self.user.is_staff = True
+            self.user.save()
+
+        if enroll:
+            CourseEnrollmentFactory(user=self.user, course_id=self.course.id)
+
+        if login:
+            self.login()
+
+        response = self.get_response()
+        if expected_response_code == 200:
+            self.assertContains(response, self.html_block.data, status_code=expected_response_code)
+            for chome_element in self.COURSEWARE_CHROME_HTML_ELEMENTS:
+                self.assertNotContains(response, chome_element)
+        else:
+            self.assertNotContains(response, self.html_block.data, status_code=expected_response_code)
+        return response
+
+    def test_courseware_html(self):
+        """
+        We include this test here to make sure the success tests for excluding
+        the courseware chrome elements continue to be valid tests, that is
+        whether they test the non-existence of the correct chrome elements.
+        If this test fails, then COURSEWARE_CHROME_HTML_ELEMENTS probably needs
+        to be updated if the HTML template has changed.
+        """
+        CourseEnrollmentFactory(user=self.user, course_id=self.course.id)
+        self.login()
+        url = reverse('courseware', kwargs={"course_id": unicode(self.course.id)})
+        response = self.client.get(url)
+        for chome_element in self.COURSEWARE_CHROME_HTML_ELEMENTS:
+            self.assertContains(response, chome_element)
+
+    def test_success_enrolled_student(self):
+        self.verify_response(enroll=True, login=True)
+
+    def test_success_enrolled_staff(self):
+        self.verify_response(admin=True, enroll=True, login=True)
+
+    def test_success_unenrolled_staff(self):
+        self.verify_response(admin=True, enroll=False, login=True)
+
+    def test_fail_unauthenticated(self):
+        self.verify_response(enroll=True, login=False, expected_response_code=302)
+
+    def test_fail_unenrolled_student(self):
+        self.verify_response(enroll=False, login=True, expected_response_code=302)
+
+    @patch.dict('django.conf.settings.FEATURES', {'DISABLE_START_DATES': False})
+    def test_fail_block_unreleased(self):
+        self.html_block.start = datetime.max
+        modulestore().update_item(self.html_block, self.user.id)
+        self.verify_response(enroll=True, login=True, expected_response_code=404)
+
+    def test_fail_block_nonvisible(self):
+        self.html_block.visible_to_staff_only = True
+        modulestore().update_item(self.html_block, self.user.id)
+        self.verify_response(enroll=True, login=True, expected_response_code=404)
+
+
+class TestRenderXBlock(RenderXBlockMixin):
+    """
+    Tests for the courseware.render_xblock view.
+    """
+    @patch.dict('django.conf.settings.FEATURES', {'ENABLE_MOBILE_XBLOCKS': True})
+    def setUp(self):
+        super(TestRenderXBlock, self).setUp()
+
+    def get_response(self):
+        """
+        Overridable method to get the response from the endpoint that is being tested.
+        """
+        url = reverse('render_xblock', kwargs={"usage_key_string": unicode(self.html_block.location)})
+        return self.client.get(url)
+

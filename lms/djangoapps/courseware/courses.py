@@ -97,26 +97,19 @@ def get_course_with_access(user, action, course_key, depth=0, check_if_enrolled=
     course = get_course_by_id(course_key, depth=depth)
 
     if not has_access(user, action, course, course_key):
-        if check_if_enrolled and not CourseEnrollment.is_enrolled(user, course_key):
-            # If user is not enrolled, raise UserNotEnrolled exception that will
-            # be caught by middleware
-            raise UserNotEnrolled(course_key)
-
         # Deliberately return a non-specific error message to avoid
         # leaking info about access control settings
         raise Http404("Course not found.")
 
+    if check_if_enrolled and not (
+        has_access(user, 'staff', course) or
+        (user.id and CourseEnrollment.is_enrolled(user, course_key))
+    ):
+        # If user is not enrolled, raise UserNotEnrolled exception that will
+        # be caught by middleware
+        raise UserNotEnrolled(course_key)
+
     return course
-
-
-def get_opt_course_with_access(user, action, course_key):
-    """
-    Same as get_course_with_access, except that if course_key is None,
-    return None without performing any access checks.
-    """
-    if course_key is None:
-        return None
-    return get_course_with_access(user, action, course_key)
 
 
 def course_image_url(course):

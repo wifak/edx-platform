@@ -16,6 +16,8 @@ from django.db.models import Count
 
 from student.models import CourseEnrollment
 
+import sys
+
 from openedx.core.lib.api.authentication import (
     SessionAuthenticationAllowInactiveUser,
     OAuth2AuthenticationAllowInactiveUser,
@@ -347,7 +349,12 @@ class TeamMembershipDetailView(APIView):
 
 class TopicListView(APIView):
 
-    PAGE_SIZE = 100
+    authentication_classes = (SessionAuthenticationAllowInactiveUser,)
+    permission_classes = (permissions.IsAuthenticated,)
+
+    page_size = 10
+    # TODO determine the correct max page size
+    max_page_size = sys.maxint
 
     def get(self, request):
         """
@@ -359,15 +366,32 @@ class TopicListView(APIView):
                 return Response(status=status.HTTP_400_BAD_REQUEST)
 
             course_id = CourseKey.from_string(course_id_string)
+
             if CourseEnrollment.get_enrollment(request.user, course_id) is None:
-                return Response(status=status.HTTP_403_FORBIDDEN)
+                return Response({'detail': "user must be enrolled"}, status=status.HTTP_403_FORBIDDEN)
 
             course_module = modulestore().get_course(course_id)
             if course_module is None:  # course is None if not found
                 return Response(status=status.HTTP_404_NOT_FOUND)
 
-            paginator = Paginator(course_module.teams_topics, self.PAGE_SIZE)
-            page = paginator.page(1)
+            topics = filter(lambda t: t['is_active'], course_module.teams_topics)
+
+            if 'text_search' in request.QUERY_PARAMS:
+                return Response({'detail': "text_search is not yet supported"}, status=status.HTTP_400_BAD_REQUEST)
+
+            ordering = request.QUERY_PARAMS.get('order_by')
+            if ordering == 'name':
+                topics = sorted(topics, key=lambda t: t['name'])
+            elif ordering == 'team_count':
+                topics = sorted(topics, cmp=lambda t1, t2: t1['team_count'] > t2['team_count'])
+            elif ordering is not None:
+                return Response({'detail': "unsupported order_by value"}, status=status.HTTP_400_BAD_REQUEST)
+
+            if 'page_size' in request.QUERY_PARAMS:
+                self.page_size = min(self.max_page_size, request.QUERY_PARAMS['page_size'])
+
+            paginator = Paginator(topics, self.page_size)
+            page = paginator.page(request.QUERY_PARAMS.get('page', 1))
             serializer = PaginationSerializer(instance=page)
             return Response(serializer.data)  # May be None
         except InvalidKeyError:

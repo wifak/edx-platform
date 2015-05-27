@@ -1,12 +1,15 @@
 """
 Segregation of pymongo functions from the data modeling mechanisms for split modulestore.
 """
+import cPickle as pickle
 import re
+import zlib
 from mongodb_proxy import autoretry_read, MongoProxy
 import pymongo
 
 # Import this just to export it
 from pymongo.errors import DuplicateKeyError  # pylint: disable=unused-import
+from django.core.cache import cache
 
 from contracts import check, new_contract
 from xmodule.exceptions import HeartbeatFailure
@@ -120,9 +123,33 @@ class MongoConnection(object):
 
     def get_structure(self, key):
         """
-        Get the structure from the persistence mechanism whose id is the given key
+        Get the structure from the persistence mechanism whose id is the given key.
+
+        This method will use a cached version of the structure if it is availble.
         """
-        return structure_from_mongo(self.structures.find_one({'_id': key}))
+        structure_cache_key = "modulestore.split_mongo.mongo_connection.get_structure.{}".format(key)
+
+        def _fetch_from_cache():
+            """Pull the compressed, pickled struct data from cache and deserialize."""
+            compressed_pickled_data = cache.get(structure_cache_key)
+            if compressed_pickled_data is None:
+                return None
+            return pickle.loads(zlib.decompress(compressed_pickled_data))
+
+        def _write_to_cache(structure):
+            """Given a structure, will pickle, compress, and write to cache."""
+            pickled_data = pickle.dumps(structure, pickle.HIGHEST_PROTOCOL)
+            # 1 = Fastest (slightly larger results)
+            compressed_pickled_data = zlib.compress(pickled_data, 1)
+            # Stuctures are immutable, so we set a timeout of "never"
+            cache.set(structure_cache_key, compressed_pickled_data, None)
+
+        structure = _fetch_from_cache()
+        if not structure:
+            structure = structure_from_mongo(self.structures.find_one({'_id': key}))
+            _write_to_cache(structure)
+
+        return structure
 
     @autoretry_read()
     def find_structures_by_id(self, ids):

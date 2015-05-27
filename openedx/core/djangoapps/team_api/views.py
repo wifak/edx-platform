@@ -399,6 +399,27 @@ class TopicListView(APIView):
 
 
 class TopicDetailView(APIView):
+    authentication_classes = (SessionAuthenticationAllowInactiveUser,)
+    permission_classes = (permissions.IsAuthenticated,)
+
     def get(self, request, topic_id, course_id):
-        """/api/team/v0/topics/{topic_id},{course_id}/"""
-        pass
+        """
+        GET /api/team/v0/topics/{topic_id},{course_id}/
+        """
+        try:
+            course_id = CourseKey.from_string(course_id)
+            if CourseEnrollment.get_enrollment(request.user, course_id) is None:
+                return Response({'detail': "user must be enrolled"}, status=status.HTTP_403_FORBIDDEN)
+
+            course_module = modulestore().get_course(course_id)
+            if course_module is None:
+                return Response(status=status.HTTP_404_NOT_FOUND)
+
+            topics = filter(lambda t: t['id'] == topic_id, course_module.teams_topics)
+
+            if len(topics) == 0:
+                return Response(status=status.HTTP_404_NOT_FOUND)
+
+            return Response(topics[0])
+        except InvalidKeyError:
+            return Response(status=status.HTTP_404_NOT_FOUND)

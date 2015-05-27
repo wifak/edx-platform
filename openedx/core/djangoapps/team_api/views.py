@@ -420,6 +420,11 @@ class TopicDetailView(APIView):
             if len(topics) == 0:
                 return Response(status=status.HTTP_404_NOT_FOUND)
 
-            return Response(topics[0])
+            topic = topics[0]
+
+            if not topic['is_active']:
+                return Response(status=status.HTTP_404_NOT_FOUND)
+
+            return Response(topic)
         except InvalidKeyError:
             return Response(status=status.HTTP_404_NOT_FOUND)

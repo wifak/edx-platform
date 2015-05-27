@@ -376,7 +376,7 @@ class BatchEnrollment
 
     # attach click handler for enrollment buttons
     @$enrollment_button.click (event) =>
-      if @$is_course_white_label
+      if @$is_course_white_label == 'True'
         if not @$reason_field.val()
           @fail_with_error gettext "Reason field should not be left blank."
           return false
@@ -401,6 +401,7 @@ class BatchEnrollment
   # clear the input text field
   clear_input: ->
     @$identifier_input.val ''
+    @$reason_field.val ''
     # default for the checkboxes should be checked
     @$checkbox_emailstudents.attr('checked', true)
     @$checkbox_autoenroll.attr('checked', true)

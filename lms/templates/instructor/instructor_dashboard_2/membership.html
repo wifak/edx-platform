@@ -41,8 +41,9 @@
   % if section_data['is_white_label']:
   <p>
     <label for="reason-field-id">
-      ${_("Enter the reason why the students are Enroll or unEnroll manually.")}
-      ${_("The reason field cannot be left blank.")} </label>
+      ${_("Enter the reason why the students are to be manually enrolled or unenrolled.")}
+      ${_("This cannot be left blank and will be recorded and presented in Enrollment Reports.")}
+      ${_("Therefore, please given enough detail to account for this action.")} </label>
     <textarea rows="2" id="reason-field-id" name="reason-field" placeholder="${_('Reason')}" spellcheck="false"></textarea>
   </p>
   %endif

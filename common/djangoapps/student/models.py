@@ -59,23 +59,23 @@ log = logging.getLogger(__name__)
 AUDIT_LOG = logging.getLogger("audit")
 SessionStore = import_module(settings.SESSION_ENGINE).SessionStore  # pylint: disable=invalid-name
 
-UN_ENROLLED_TO_ALLOWED_TO_ENROLL = 'from unenrolled to allowed to enroll'
-ALLOWED_TO_ENROLL_TO_ENROLL = 'from allowed to enroll to enrolled'
-ENROLL_TO_ENROLL = 'from enrolled to enrolled'
-ENROLL_TO_UN_ENROLL = 'from enrolled to unenrolled'
-UN_ENROLL_TO_ENROLL = 'from unenrolled to enrolled'
-ALLOWED_TO_ENROLL_TO_UN_ENROLL = 'from allowed to enroll to enrolled'
-UN_ENROLL_TO_UN_ENROLL = 'from unenrolled to unenrolled'
-DEFAULT_TRANSITION_STATE = 'N/A'
+UNENROLLED_TO_ALLOWEDTOENROLL = _('from unenrolled to allowed to enroll')
+ALLOWEDTOENROLL_TO_ENROLL = _('from allowed to enroll to enrolled')
+ENROLL_TO_ENROLL = _('from enrolled to enrolled')
+ENROLL_TO_UNENROLL = _('from enrolled to unenrolled')
+UNENROLL_TO_ENROLL = _('from unenrolled to enrolled')
+ALLOWEDTOENROLL_TO_UNENROLL = _('from allowed to enroll to enrolled')
+UNENROLL_TO_UNENROLL = _('from unenrolled to unenrolled')
+DEFAULT_TRANSITION_STATE = _('N/A')
 
 TRANSITION_STATES = (
-    (UN_ENROLLED_TO_ALLOWED_TO_ENROLL, ALLOWED_TO_ENROLL_TO_ENROLL),
-    (ALLOWED_TO_ENROLL_TO_ENROLL, ALLOWED_TO_ENROLL_TO_ENROLL),
+    (UNENROLLED_TO_ALLOWEDTOENROLL, UNENROLLED_TO_ALLOWEDTOENROLL),
+    (ALLOWEDTOENROLL_TO_ENROLL, ALLOWEDTOENROLL_TO_ENROLL),
     (ENROLL_TO_ENROLL, ENROLL_TO_ENROLL),
-    (ENROLL_TO_UN_ENROLL, ENROLL_TO_UN_ENROLL),
-    (UN_ENROLL_TO_ENROLL, UN_ENROLL_TO_ENROLL),
-    (ALLOWED_TO_ENROLL_TO_UN_ENROLL, ALLOWED_TO_ENROLL_TO_UN_ENROLL),
-    (UN_ENROLL_TO_UN_ENROLL, UN_ENROLL_TO_UN_ENROLL),
+    (ENROLL_TO_UNENROLL, ENROLL_TO_UNENROLL),
+    (UNENROLL_TO_ENROLL, UNENROLL_TO_ENROLL),
+    (ALLOWEDTOENROLL_TO_UNENROLL, ALLOWEDTOENROLL_TO_UNENROLL),
+    (UNENROLL_TO_UNENROLL, UNENROLL_TO_UNENROLL),
     (DEFAULT_TRANSITION_STATE, DEFAULT_TRANSITION_STATE)
 )
 
@@ -1313,7 +1313,7 @@ class CourseEnrollment(models.Model):
 
 class ManualEnrollmentAudit(models.Model):
     """
-    Table for track which enrollments were performed through manual enrollment.
+    Table for tracking which enrollments were performed through manual enrollment.
     """
     enrollment = models.ForeignKey(CourseEnrollment, null=True)
     enrolled_by = models.ForeignKey(User, null=True)
@@ -1338,7 +1338,7 @@ class ManualEnrollmentAudit(models.Model):
     @classmethod
     def get_manual_enrollment_by_email(cls, email):
         """
-        return manual enrollment by email
+        if matches returns the most recent entry in the table filtered by email else returns None.
         """
         try:
             manual_enrollment = cls.objects.filter(enrolled_email=email).latest('time_stamp')
@@ -1349,8 +1349,7 @@ class ManualEnrollmentAudit(models.Model):
     @classmethod
     def get_manual_enrollment(cls, enrollment):
         """
-        return the manual enrollment object if student enrollment
-        matches else returns None.
+        if matches returns the most recent entry in the table filtered by enrollment else returns None,
         """
         try:
             manual_enrollment = cls.objects.filter(enrollment=enrollment).latest('time_stamp')

@@ -60,8 +60,8 @@ from shoppingcart.models import (
 from student.models import (
     CourseEnrollment, unique_id_for_user, anonymous_id_for_user,
     UserProfile, Registration, EntranceExamConfiguration,
-    ManualEnrollmentAudit, UN_ENROLLED_TO_ALLOWED_TO_ENROLL, ALLOWED_TO_ENROLL_TO_ENROLL,
-    ENROLL_TO_ENROLL, ENROLL_TO_UN_ENROLL, UN_ENROLL_TO_ENROLL, UN_ENROLL_TO_UN_ENROLL, ALLOWED_TO_ENROLL_TO_UN_ENROLL,
+    ManualEnrollmentAudit, UNENROLLED_TO_ALLOWEDTOENROLL, ALLOWEDTOENROLL_TO_ENROLL,
+    ENROLL_TO_ENROLL, ENROLL_TO_UNENROLL, UNENROLL_TO_ENROLL, UNENROLL_TO_UNENROLL, ALLOWEDTOENROLL_TO_UNENROLL,
     DEFAULT_TRANSITION_STATE)
 import instructor_task.api
 from instructor_task.api_helper import AlreadyRunningError
@@ -418,7 +418,7 @@ def register_and_enroll_students(request, course_id):  # pylint: disable=too-man
                         enrollment_obj = CourseEnrollment.enroll(user, course_id)
                         reason = 'Enrolling via csv upload'
                         ManualEnrollmentAudit.create_manual_enrollment_audit(
-                            request.user, email, UN_ENROLL_TO_ENROLL, reason, enrollment_obj
+                            request.user, email, UNENROLL_TO_ENROLL, reason, enrollment_obj
                         )
                         log.info(
                             u'user %s enrolled in the course %s',
@@ -436,7 +436,7 @@ def register_and_enroll_students(request, course_id):  # pylint: disable=too-man
                         enrollment_obj = create_and_enroll_user(email, username, name, country, password, course_id)
                         reason = 'Enrolling via csv upload'
                         ManualEnrollmentAudit.create_manual_enrollment_audit(
-                            request.user, email, UN_ENROLL_TO_ENROLL, reason, enrollment_obj
+                            request.user, email, UNENROLL_TO_ENROLL, reason, enrollment_obj
                         )
                     except IntegrityError:
                         row_errors.append({
@@ -609,12 +609,12 @@ def students_update_enrollment(request, course_id):
                             state_transition = ENROLL_TO_ENROLL
                         else:
                             if before_allowed:
-                                state_transition = ALLOWED_TO_ENROLL_TO_ENROLL
+                                state_transition = ALLOWEDTOENROLL_TO_ENROLL
                             else:
-                                state_transition = UN_ENROLL_TO_ENROLL
+                                state_transition = UNENROLL_TO_ENROLL
                 else:
                     if after_allowed:
-                        state_transition = UN_ENROLLED_TO_ALLOWED_TO_ENROLL
+                        state_transition = UNENROLLED_TO_ALLOWEDTOENROLL
 
             elif action == 'unenroll':
                 before, after = unenroll_email(
@@ -624,12 +624,12 @@ def students_update_enrollment(request, course_id):
                 before_allowed = before.to_dict()['allowed']
 
                 if before_enrollment:
-                    state_transition = ENROLL_TO_UN_ENROLL
+                    state_transition = ENROLL_TO_UNENROLL
                 else:
                     if before_allowed:
-                        state_transition = ALLOWED_TO_ENROLL_TO_UN_ENROLL
+                        state_transition = ALLOWEDTOENROLL_TO_UNENROLL
                     else:
-                        state_transition = UN_ENROLL_TO_UN_ENROLL
+                        state_transition = UNENROLL_TO_UNENROLL
 
             else:
                 return HttpResponseBadRequest(strip_tags(

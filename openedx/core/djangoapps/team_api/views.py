@@ -385,7 +385,7 @@ class TopicListView(APIView):
                 topics = sorted(topics, cmp=lambda t1, t2: t1['team_count'] > t2['team_count'])
             else:
                 return Response({'detail': "unsupported order_by value {}".format(ordering)},
-                                 status=status.HTTP_400_BAD_REQUEST)
+                                status=status.HTTP_400_BAD_REQUEST)
 
             if 'page_size' in request.QUERY_PARAMS:
                 self.page_size = min(self.max_page_size, int(request.QUERY_PARAMS['page_size']))

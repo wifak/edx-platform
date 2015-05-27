@@ -8,6 +8,7 @@ from .utils import slugify
 
 from xmodule_django.models import CourseKeyField
 
+
 class CourseTeam(models.Model):
     """
     This model represents team related info.

@@ -1289,15 +1289,13 @@ class CapaModuleTest(unittest.TestCase):
         context = module.system.render_template.call_args[0][1]
         self.assertEqual(context['demand_hint'], u'Hint (1 of 2): Demand 1')
         self.assertEqual(context['next_hint_index'], 1)
-        self.assertEqual(context['show_hint_button'], True)
-        self.assertEqual(context['show_demand_hint'], True)
+        self.assertEqual(context['demand_hint_possible'], True)
 
         module.get_problem_html(hint_index=1)
         context = module.system.render_template.call_args[0][1]
         self.assertEqual(context['demand_hint'], u'Hint (2 of 2): Demand 2')
         self.assertEqual(context['next_hint_index'], 0)
-        self.assertEqual(context['show_hint_button'], True)
-        self.assertEqual(context['show_demand_hint'], True)
+        self.assertEqual(context['demand_hint_possible'], True)
 
     def test_demand_hint_logging(self):
         module = CapaFactory.create(xml=self.demand_xml)

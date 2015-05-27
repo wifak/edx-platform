@@ -629,11 +629,11 @@ class CapaMixin(CapaFields):
 
         # Handle demand hints
         demand_hints = self.lcp.tree.xpath("//problem/demandhint/hint")
-        show_hint_button = len(demand_hints) > 0
-        demand_hint = None  # if set to something, will show up in UI
+        demand_hint_possible = len(demand_hints) > 0
+        demand_hint = ''
         if hint_index is None:
             hint_index = 0  # seed the client with 0 = the hint they will ask for
-        elif len(demand_hints) > 0:
+        elif demand_hint_possible:
             # Requested to show hint_index
             _ = self.runtime.service(self, "i18n").ugettext  # pylint: disable=redefined-outer-name
             hint_element = demand_hints[hint_index]
@@ -666,10 +666,9 @@ class CapaMixin(CapaFields):
             'answer_available': self.answer_available(),
             'attempts_used': self.attempts,
             'attempts_allowed': self.max_attempts,
-            'show_hint_button': show_hint_button,
+            'demand_hint_possible': demand_hint_possible,
             'next_hint_index': hint_index,
             'demand_hint': demand_hint,
-            'show_demand_hint': bool(demand_hint)
         }
 
         html = self.runtime.render_template('problem.html', context)

@@ -7,6 +7,7 @@ https://openedx.atlassian.net/wiki/display/TNL/Team+API
 from rest_framework.generics import GenericAPIView, RetrieveUpdateAPIView
 from rest_framework.serializers import ValidationError
 from rest_framework.response import Response
+from rest_framework.views import APIView
 from rest_framework import status
 from rest_framework import permissions
 

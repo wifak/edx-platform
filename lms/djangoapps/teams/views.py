@@ -321,7 +321,54 @@ class TeamsDetailView(RetrievePatchAPIView):
 
 
 class TopicListView(APIView):
-    """HTTP endpoint for retreiving a list of topics for a given course."""
+    """
+    **Use Cases**
+
+    Retrieve a list of topics associated with a single course.
+
+    **Example Requests**
+
+    GET /api/team/v0/topics/?course_id={course_id}
+
+    **Response Values for GET**
+
+    The following options can be specified as query parameters:
+
+    * course_id: Filters the result to topics belonging to the given course (required).
+
+    * order_by: Orders the results. Currently only 'name' is supported, and is also the default value.
+
+    * page_size: Number of results to return per page.
+
+    * page: Page number to retrieve.
+
+    If the course_id is not given or an unsupported value is passed for order_by, returns a 400 error.
+
+    If the user is not logged in or not enrolled in the course, returns a 403 error.
+
+    If the course does not exist, returns a 404 error.
+
+    Otherwise, a 200 response is returned containing the following fields:
+
+    * count: The total number of topics matching the request.
+
+    * next: The URL to the next page of results, or null if this is the last page.
+
+    * previous: The URL to the previous page of results, or null if this is the first page.
+
+    * num_pages: The total number of pages in the result.
+
+    * results: A list of the topics matching the request.
+
+        * id: The topic's unique identifier.
+
+        * name: The name of the topic.
+
+        * description: A description of the topic.
+
+        * team_count: The number of active teams that are discussing this topic.
+
+    """
 
     authentication_classes = (SessionAuthenticationAllowInactiveUser,)
     permission_classes = (permissions.IsAuthenticated,)
@@ -369,7 +416,40 @@ class TopicListView(APIView):
 
 
 class TopicDetailView(APIView):
-    """HTTP endpoint for retreiving details of a particular topic."""
+    """
+    **Use Cases**
+
+    Retrieve a single topic from a course.
+
+    **Example Requests**
+
+    GET /api/team/v0/topics/{topic_id},{course_id}
+
+    **Response Values for GET**
+
+    The following options can be specified as query parameters:
+
+    * topic_id: The ID of the topic to retrieve (required).
+
+    * course_id: The ID of the course to retrieve the topic from (required).
+
+    If the topic_id course_id are not given or an unsupported value is passed for order_by, returns a 400 error.
+
+    If the user is not logged in or not enrolled in the course, returns a 403 error.
+
+    If the course does not exist, returns a 404 error.
+
+    Otherwise, a 200 response is returned containing the following fields:
+
+    * id: The topic's unique identifier.
+
+    * name: The name of the topic.
+
+    * description: A description of the topic.
+
+    * team_count: The number of active teams that are discussing this topic.
+
+    """
 
     authentication_classes = (SessionAuthenticationAllowInactiveUser,)
     permission_classes = (permissions.IsAuthenticated,)

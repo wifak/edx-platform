@@ -352,9 +352,6 @@ class TopicListView(APIView):
 
         topics = [t for t in course_module.teams_topics if t['is_active']]
 
-        if 'text_search' in request.QUERY_PARAMS:
-            return Response({'detail': "text_search is not yet supported"}, status=status.HTTP_400_BAD_REQUEST)
-
         ordering = request.QUERY_PARAMS.get('order_by', 'name')
         if ordering == 'name':
             topics = sorted(topics, key=lambda t: t['name'])

@@ -14,7 +14,6 @@ from .factories import CourseTeamFactory
 from xmodule.modulestore.tests.django_utils import ModuleStoreTestCase
 
 
-@skipUnless(settings.ROOT_URLCONF == 'lms.urls', 'Team APIs are only supported in LMS')
 class TestTeamAPI(APITestCase, ModuleStoreTestCase):
     """
     Tests of the Team API

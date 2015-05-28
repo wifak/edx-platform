@@ -95,3 +95,11 @@ class CourseTeamSerializer(serializers.ModelSerializer):
             "membership",
         )
         read_only_fields = ("course_id", "date_created")
+
+
+class TopicSerializer(serializers.Serializer):
+    """Serializes a topic."""
+    description = serializers.CharField()
+    name = serializers.CharField()
+    id = serializers.CharField()
+    team_count = serializers.IntegerField()

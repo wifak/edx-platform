@@ -35,7 +35,7 @@ from opaque_keys.edx.keys import CourseKey
 from courseware.courses import get_course
 
 from .models import CourseTeam
-from .serializers import CourseTeamSerializer
+from .serializers import CourseTeamSerializer, TopicSerializer
 
 
 class TeamsListView(GenericAPIView):
@@ -320,7 +320,7 @@ class TeamsDetailView(RetrievePatchAPIView):
         return CourseTeam.objects.all()
 
 
-class TopicListView(APIView):
+class TopicListView(GenericAPIView):
     """
     **Use Cases**
 
@@ -373,9 +373,10 @@ class TopicListView(APIView):
     authentication_classes = (SessionAuthenticationAllowInactiveUser,)
     permission_classes = (permissions.IsAuthenticated,)
 
-    page_size = 10
-    # TODO determine the correct max page size
-    max_page_size = sys.maxint
+    paginate_by = 10
+    paginate_by_param = 'page_size'
+    pagination_serializer_class = PaginationSerializer
+    serializer_class = TopicSerializer
 
     def get(self, request):
         """
@@ -406,13 +407,9 @@ class TopicListView(APIView):
             return Response({'detail': "unsupported order_by value {}".format(ordering)},
                             status=status.HTTP_400_BAD_REQUEST)
 
-        if 'page_size' in request.QUERY_PARAMS:
-            self.page_size = min(self.max_page_size, int(request.QUERY_PARAMS['page_size']))
-
-        paginator = Paginator(topics, self.page_size)
-        page = paginator.page(request.QUERY_PARAMS.get('page', 1))
-        serializer = PaginationSerializer(instance=page)
-        return Response(serializer.data)  # May be None
+        page = self.paginate_queryset(topics)
+        serializer = self.get_pagination_serializer(page)
+        return Response(serializer.data)
 
 
 class TopicDetailView(APIView):
@@ -475,4 +472,5 @@ class TopicDetailView(APIView):
         if len(topics) == 0:
             return Response(status=status.HTTP_404_NOT_FOUND)
 
-        return Response(topics[0])
+        serializer = TopicSerializer(topics[0])
+        return Response(serializer.data)

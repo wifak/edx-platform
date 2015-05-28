@@ -348,6 +348,7 @@ class TeamMembershipDetailView(APIView):
 
 
 class TopicListView(APIView):
+    """HTTP endpoint for retreiving a list of topics for a given course."""
 
     authentication_classes = (SessionAuthenticationAllowInactiveUser,)
     permission_classes = (permissions.IsAuthenticated,)
@@ -373,7 +374,8 @@ class TopicListView(APIView):
             course_module = modulestore().get_course(course_id)
             if course_module is None:  # course is None if not found
                 return Response(status=status.HTTP_404_NOT_FOUND)
-            topics = filter(lambda t: t['is_active'], course_module.teams_topics)
+
+            topics = [t for t in course_module.teams_topics if t['is_active']]
 
             if 'text_search' in request.QUERY_PARAMS:
                 return Response({'detail': "text_search is not yet supported"}, status=status.HTTP_400_BAD_REQUEST)
@@ -399,6 +401,8 @@ class TopicListView(APIView):
 
 
 class TopicDetailView(APIView):
+    """HTTP endpoint for retreiving details of a particular topic."""
+
     authentication_classes = (SessionAuthenticationAllowInactiveUser,)
     permission_classes = (permissions.IsAuthenticated,)
 
@@ -415,7 +419,7 @@ class TopicDetailView(APIView):
             if CourseEnrollment.get_enrollment(request.user, course_id) is None:
                 return Response({'detail': "user must be enrolled"}, status=status.HTTP_403_FORBIDDEN)
 
-            topics = filter(lambda t: t['id'] == topic_id, course_module.teams_topics)
+            topics = [t for t in course_module.teams_topics if t['id'] == topic_id]
 
             if len(topics) == 0:
                 return Response(status=status.HTTP_404_NOT_FOUND)

@@ -20,17 +20,9 @@ class Migration(SchemaMigration):
         ))
         db.send_create_signal('student', ['ManualEnrollmentAudit'])
 
-
-        # Changing field 'UserProfile.bio'
-        db.alter_column('auth_userprofile', 'bio', self.gf('django.db.models.fields.CharField')(max_length=3000, null=True))
-
     def backwards(self, orm):
         # Deleting model 'ManualEnrollmentAudit'
         db.delete_table('student_manualenrollmentaudit')
-
-
-        # Changing field 'UserProfile.bio'
-        db.alter_column('auth_userprofile', 'bio', self.gf('django.db.models.fields.CharField')(null=True))
 
     models = {
         'auth.group': {

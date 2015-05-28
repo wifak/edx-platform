@@ -1,8 +1,10 @@
+"""Tests for the teams API at the HTTP request level."""
+# pylint: disable=maybe-no-member
 import json
 
 from django.conf import settings
 from django.core.urlresolvers import reverse
-from rest_framework.test import APITestCase, APIClient
+from rest_framework.test import APITestCase
 from unittest import skipUnless
 
 from student.tests.factories import UserFactory
@@ -25,25 +27,36 @@ class TestTeamAPI(APITestCase, ModuleStoreTestCase):
     def setUp(self):
         super(TestTeamAPI, self).setUp()
 
-        teams_configuration = {'topics': [{
-            'id': 'topic_{}'.format(i),
-            'team_count': i,
-            'is_active': True,
-            'name': 'Topic {}'.format(i),
-            'description': 'Description for topic {}.'.format(i)
-        } for i in range(self.topics_count)] + [{
-            'id': 'inactive',
-            'team_count': 0,
-            'is_active': False,
-            'name': 'Inactive Topic',
-            'description': 'Inactive.'
-        }]}
+        teams_configuration = {
+            'topics':
+            [
+                {
+                    'id': 'topic_{}'.format(i),
+                    'team_count': i,
+                    'is_active': True,
+                    'name': 'Topic {}'.format(i),
+                    'description': 'Description for topic {}.'.format(i)
+                } for i in range(self.topics_count)
+            ] + [
+                {
+                    'id': 'inactive',
+                    'team_count': 0,
+                    'is_active': False,
+                    'name': 'Inactive Topic',
+                    'description': 'Inactive.'
+                }
+            ]
+        }
 
-        self.test_course_1 = CourseFactory.create(org='TestX', course='TS101', display_name='Test Course', teams_configuration=teams_configuration)
+        self.test_course_1 = CourseFactory.create(
+            org='TestX',
+            course='TS101',
+            display_name='Test Course',
+            teams_configuration=teams_configuration
+        )
         self.test_course_2 = CourseFactory.create(org='MIT', course='6.002x', display_name='Circuits')
 
         self.student_user = UserFactory.create(password=self.test_password)
-        self.student_user_enrolled = UserFactory.create(password=self.test_password)
         self.student_user_not_active = UserFactory.create(password=self.test_password, is_active=False)
         self.staff_user = UserFactory.create(password=self.test_password, is_staff=True)
 
@@ -70,10 +83,6 @@ class TestTeamAPI(APITestCase, ModuleStoreTestCase):
     def get_teams_list_json(self, user=None, data=None):
         response = self.get_teams_list(200, user=user, data=data)
         return json.loads(response.content)
-
-        CourseEnrollment.get_or_create_enrollment(
-            self.student_user_enrolled, self.test_course_1.location.course_key
-        )
 
     def test_list_teams_anonymous(self):
         response = self.client.get(reverse('teams_list'))
@@ -294,6 +303,18 @@ class TestTeamAPI(APITestCase, ModuleStoreTestCase):
     def test_update_team_does_not_exist(self):
         self.patch_team_detail('foobar', 404, user=self.staff_user)
 
+
+class TestTopicsAPI(TestTeamAPI):
+    """Team API tests specific to topics."""
+
+    def setUp(self):
+        super(TestTopicsAPI, self).setUp()
+
+        self.student_user_enrolled = UserFactory.create(password=self.test_password)
+        CourseEnrollment.get_or_create_enrollment(
+            self.student_user_enrolled, self.test_course_1.location.course_key
+        )
+
     def test_list_topics_anonymous(self):
         response = self.client.get(reverse('topics_list') + '?course_id=' + str(self.test_course_1.id))
         self.assertEqual(403, response.status_code)
@@ -390,3 +411,5 @@ class TestTeamAPI(APITestCase, ModuleStoreTestCase):
             reverse('topics_detail', kwargs={'topic_id': 'topic_0', 'course_id': str(self.test_course_1.id)})
         )
         self.assertEqual(200, response.status_code)
+        for field in ('id', 'name', 'is_active', 'description', 'team_count'):
+            self.assertIn(field, response.data)

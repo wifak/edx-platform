@@ -352,12 +352,6 @@ class TestTeamAPI(APITestCase, ModuleStoreTestCase):
         response = self.client.get(reverse('topics_list'))
         self.assertEqual(400, response.status_code)
 
-    # def test_list_topics_filter_active(self):
-    #     self.client.login(username=self.student_user_enrolled, password=self.test_password)
-    #     response = self.client.get(reverse('topics_list'), data={'course_id': str(self.test_course_1.id)})
-    #     self.assertEqual(200, response.status_code)
-    #     self.assertTrue(all([topic['is_active'] for topic in response.data['results']]))
-
     def test_list_topics_order_by_name_by_default(self):
         self.client.login(username=self.student_user_enrolled, password=self.test_password)
         response = self.client.get(reverse('topics_list'), data={'course_id': str(self.test_course_1.id)})

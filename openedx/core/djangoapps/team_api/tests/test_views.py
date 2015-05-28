@@ -1,7 +1,9 @@
 import json
 
+from django.conf import settings
 from django.core.urlresolvers import reverse
 from rest_framework.test import APITestCase, APIClient
+from unittest import skipUnless
 
 from student.tests.factories import UserFactory
 from student.models import CourseEnrollment
@@ -10,6 +12,7 @@ from .factories import CourseTeamFactory
 from xmodule.modulestore.tests.django_utils import ModuleStoreTestCase
 
 
+@skipUnless(settings.ROOT_URLCONF == 'lms.urls', 'Team APIs are only supported in LMS')
 class TestTeamAPI(APITestCase, ModuleStoreTestCase):
     """
     Tests of the Team API

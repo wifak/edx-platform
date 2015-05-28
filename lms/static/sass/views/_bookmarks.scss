@@ -174,10 +174,22 @@ i.bookmarked {
   @include base-style($m-blue, $m-blue);
   @include icon-style("\f02e", $m-blue);
   @include hover-style($light-gray, $black, "\f097");
+
+  &:focus {
+    @include base-style($light-gray, $black);
+    @include icon-style("\f097", $black);
+    @include hover-style($m-blue, $m-blue, "\f02e");
+  }
 }
 
 .bookmark-button.un-bookmarked {
   @include base-style($light-gray, $black);
   @include icon-style("\f097", $black);
   @include hover-style($m-blue, $m-blue, "\f02e");
+
+  &:focus {
+    @include base-style($m-blue, $m-blue);
+    @include icon-style("\f02e", $m-blue);
+    @include hover-style($light-gray, $black, "\f097");
+  }
 }

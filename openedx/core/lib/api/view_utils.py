@@ -12,7 +12,6 @@ from rest_framework.response import Response
 from rest_framework.mixins import RetrieveModelMixin, UpdateModelMixin
 from rest_framework.generics import GenericAPIView
 
-
 from lms.djangoapps.courseware.courses import get_course_with_access
 from opaque_keys.edx.keys import CourseKey
 from xmodule.modulestore.django import modulestore
@@ -65,6 +64,7 @@ class DeveloperErrorViewMixin(object):
             return self.make_validation_error_response(exc)
         else:
             raise
+
 
 def view_course_access(depth=0, access_action='load', check_for_milestones=False):
     """
@@ -121,6 +121,7 @@ def view_auth_classes(is_user=False):
             func_or_class.permission_classes += (IsUserInUrl,)
         return func_or_class
     return _decorator
+
 
 class RetrievePatchAPIView(RetrieveModelMixin, UpdateModelMixin, GenericAPIView):
     """

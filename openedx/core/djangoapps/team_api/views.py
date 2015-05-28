@@ -23,8 +23,9 @@ from openedx.core.lib.api.authentication import (
     OAuth2AuthenticationAllowInactiveUser,
 )
 from openedx.core.lib.api.parsers import MergePatchParser
-from openedx.core.lib.api.permissions import IsUserInUrlOrStaff, IsStaffOrReadOnly, IsActiveOrReadOnly
+from openedx.core.lib.api.permissions import IsStaffOrReadOnly, IsActiveOrReadOnly
 from openedx.core.lib.api.view_utils import RetrievePatchAPIView
+from openedx.core.lib.api.serializers import PaginationSerializer
 # from ..errors import UserNotFound, UserNotAuthorized
 from xmodule.modulestore.django import modulestore
 

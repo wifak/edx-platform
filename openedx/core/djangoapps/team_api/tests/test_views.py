@@ -316,19 +316,19 @@ class TestTopicsAPI(TestTeamAPI):
         )
 
     def test_list_topics_anonymous(self):
-        response = self.client.get(reverse('topics_list') + '?course_id=' + str(self.test_course_1.id))
+        response = self.client.get(reverse('topics_list'), data={'course_id': str(self.test_course_1.id)})
         self.assertEqual(403, response.status_code)
 
     def test_list_topics_unenrolled(self):
         self.client.login(username=self.student_user, password=self.test_password)
-        response = self.client.get(reverse('topics_list') + '?course_id=' + str(self.test_course_1.id))
+        response = self.client.get(reverse('topics_list'), data={'course_id': str(self.test_course_1.id)})
         self.assertEqual(403, response.status_code)
 
     def test_list_topics_invalid_course_key(self):
         self.client.login(username=self.student_user_enrolled, password=self.test_password)
-        response = self.client.get(reverse('topics_list') + '?course_id=A+BOGUS+COURSE')
+        response = self.client.get(reverse('topics_list'), data={'course_id': 'A+BOGUS+COURSE'})
         self.assertEqual(404, response.status_code)
-        response = self.client.get(reverse('topics_list') + '?course_id=A/BOGUS/COURSE')
+        response = self.client.get(reverse('topics_list'), data={'course_id': 'A/BOGUS/COURSE'})
         self.assertEqual(404, response.status_code)
 
     def test_list_topics_without_course_id(self):
@@ -338,55 +338,57 @@ class TestTopicsAPI(TestTeamAPI):
 
     def test_list_topics_filter_active(self):
         self.client.login(username=self.student_user_enrolled, password=self.test_password)
-        response = self.client.get(reverse('topics_list') + '?course_id=' + str(self.test_course_1.id))
+        response = self.client.get(reverse('topics_list'), data={'course_id': str(self.test_course_1.id)})
         self.assertEqual(200, response.status_code)
         self.assertTrue(all([topic['is_active'] for topic in response.data['results']]))
 
     def test_list_topics_text_search(self):
         self.client.login(username=self.student_user_enrolled, password=self.test_password)
         params = '?course_id={}&text_search=""'.format(str(self.test_course_1.id))
-        response = self.client.get(reverse('topics_list') + params)
+        data = {'course_id': str(self.test_course_1.id), 'text_search': ''}
+        response = self.client.get(reverse('topics_list'), data=data)
         self.assertEqual(400, response.status_code)
         self.assertIn('detail', response.data)
 
     def test_list_topics_order_by_name_by_default(self):
         self.client.login(username=self.student_user_enrolled, password=self.test_password)
-        response = self.client.get(reverse('topics_list') + '?course_id=' + str(self.test_course_1.id))
+        response = self.client.get(reverse('topics_list'), data={'course_id': str(self.test_course_1.id)})
         self.assertEqual(200, response.status_code)
         topics = response.data['results']
         self.assertEqual(topics, sorted(topics, key=lambda t: t['name']))
 
     def test_list_topics_order_by_name(self):
         self.client.login(username=self.student_user_enrolled, password=self.test_password)
-        params = '?course_id={}&order_by=name'.format(str(self.test_course_1.id))
-        response = self.client.get(reverse('topics_list') + params)
+        data={'course_id': str(self.test_course_1.id), 'order_by': 'name'}
+        response = self.client.get(reverse('topics_list'), data=data)
         self.assertEqual(200, response.status_code)
         topics = response.data['results']
         self.assertEqual(topics, sorted(topics, key=lambda t: t['name']))
 
     def test_list_topics_order_by_team_count(self):
         self.client.login(username=self.student_user_enrolled, password=self.test_password)
-        params = '?course_id={}&order_by=team_count'.format(str(self.test_course_1.id))
-        response = self.client.get(reverse('topics_list') + params)
+        data = {'course_id': str(self.test_course_1.id), 'order_by': 'team_count'}
+        response = self.client.get(reverse('topics_list'), data=data)
         self.assertEqual(200, response.status_code)
         topics = response.data['results']
         self.assertEqual(topics, sorted(topics, key=lambda t: t['team_count']))
 
     def test_list_topics_invalid_ordering(self):
         self.client.login(username=self.student_user_enrolled, password=self.test_password)
-        params = '?course_id={}&order_by=BOGUS'.format(str(self.test_course_1.id))
-        response = self.client.get(reverse('topics_list') + params)
+        data = {'course_id': str(self.test_course_1.id), 'order_by': 'BOGUS'}
+        response = self.client.get(reverse('topics_list'), data=data)
         self.assertEqual(400, response.status_code)
 
     def test_list_topics_pagination(self):
         page_size = 2
         self.client.login(username=self.student_user_enrolled, password=self.test_password)
-        params = '?course_id={}&page_size={}'.format(str(self.test_course_1.id), str(page_size))
-        response = self.client.get(reverse('topics_list') + params)
+        data = {'course_id': str(self.test_course_1.id), 'page_size': str(page_size)}
+        response = self.client.get(reverse('topics_list'), data=data)
         self.assertEqual(200, response.status_code)
         self.assertEqual(page_size, len(response.data['results']))
         self.assertIn('next', response.data)
         self.assertIn('previous', response.data)
+        self.assertEqual(response.data['previous'], None)
         self.assertNotEqual(response.data['next'], 'null')
 
     def test_topic_detail_anonymous(self):

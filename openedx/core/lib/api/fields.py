@@ -1,5 +1,6 @@
 from rest_framework.serializers import Field
 
+
 class ExpandableField(Field):
     """
     Field that can dynamically use a more detailed serializer based on a user-provided "expand" parameter.

@@ -4,7 +4,7 @@ NOTE: this API is WIP and has not yet been approved. Do not use this API without
 For more information, see:
 https://openedx.atlassian.net/wiki/display/TNL/Team+API
 """
-from rest_framework.generics import GenericAPIView, RetrieveUpdateAPIView
+from rest_framework.generics import GenericAPIView
 from rest_framework.serializers import ValidationError
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -12,7 +12,6 @@ from rest_framework import status
 from rest_framework import permissions
 
 from django.core.paginator import Paginator
-from django.db import transaction
 from django.db.models import Count
 
 from student.models import CourseEnrollment
@@ -25,9 +24,8 @@ from openedx.core.lib.api.authentication import (
 )
 from openedx.core.lib.api.parsers import MergePatchParser
 from openedx.core.lib.api.permissions import IsUserInUrlOrStaff, IsStaffOrReadOnly, IsActiveOrReadOnly
-from openedx.core.lib.api.serializers import PaginationSerializer
 from openedx.core.lib.api.view_utils import RetrievePatchAPIView
-#from ..errors import UserNotFound, UserNotAuthorized
+# from ..errors import UserNotFound, UserNotAuthorized
 from xmodule.modulestore.django import modulestore
 
 from opaque_keys import InvalidKeyError

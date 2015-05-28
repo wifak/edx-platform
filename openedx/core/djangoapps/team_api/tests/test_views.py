@@ -120,6 +120,8 @@ class TestTeamAPI(APITestCase, ModuleStoreTestCase):
         teams = self.get_teams_list_json(data={'include_inactive': True})
         self.assertEqual(4, teams['count'])
 
+    # Text search is not yet implemented, so this should return HTTP
+    # 400 for now
     def test_list_teams_filter_text_search(self):
         self.get_teams_list(400, data={'text_search': 'foobar'})
 
@@ -333,6 +335,8 @@ class TestTeamAPI(APITestCase, ModuleStoreTestCase):
         self.assertEqual(200, response.status_code)
         self.assertTrue(all([topic['is_active'] for topic in response.data['results']]))
 
+    # Text search is not yet implemented, so this should return HTTP
+    # 400 for now
     def test_list_topics_text_search(self):
         self.client.login(username=self.student_user_enrolled, password=self.test_password)
         params = '?course_id={}&text_search=""'.format(str(self.test_course_1.id))

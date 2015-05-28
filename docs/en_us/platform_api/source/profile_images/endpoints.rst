@@ -2,8 +2,10 @@
 Profile Images API Endpoints
 ################################################
 
-You use the User API to view information about users and update
-your own account.
+You use the Profile Images API to upload or remove profile images.
+
+If you have staff access, you can remove profile images from any user
+account.
 
 The following tasks and endpoints are currently supported. 
 

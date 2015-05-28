@@ -102,4 +102,3 @@ class TopicSerializer(serializers.Serializer):
     description = serializers.CharField()
     name = serializers.CharField()
     id = serializers.CharField()
-    team_count = serializers.IntegerField()

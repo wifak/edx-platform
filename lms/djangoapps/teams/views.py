@@ -366,8 +366,6 @@ class TopicListView(GenericAPIView):
 
         * description: A description of the topic.
 
-        * team_count: The number of active teams that are discussing this topic.
-
     """
 
     authentication_classes = (SessionAuthenticationAllowInactiveUser,)
@@ -443,8 +441,6 @@ class TopicDetailView(APIView):
     * name: The name of the topic.
 
     * description: A description of the topic.
-
-    * team_count: The number of active teams that are discussing this topic.
 
     """
 

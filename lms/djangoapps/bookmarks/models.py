@@ -1,6 +1,7 @@
 """
 Models for Bookmarks.
 """
+import copy
 
 from django.contrib.auth.models import User
 from django.db import models
@@ -11,6 +12,32 @@ from model_utils.models import TimeStampedModel
 from xmodule.modulestore.django import modulestore
 from xmodule.modulestore.exceptions import ItemNotFoundError
 from xmodule_django.models import CourseKeyField, LocationKeyField
+
+
+def get_path_data(block):
+    """
+    Returns data for the path to the block in the course graph.
+
+    Note: Right now, in case of multiple paths to the block from the
+    root, this function returns a path arbitrarily but consistently.
+    In the future, we may want to extend it to check which of the paths,
+    the student has access to and return its data.
+
+    Arguments:
+        block (XBlock): The block whose path is required.
+
+    Returns:
+        list of dicts of the form {'usage_id': <usage_id>, 'display_name': <display_name>}.
+    """
+    parent = block.get_parent()
+    parents_data = []
+
+    while parent is not None and parent.location.block_type not in ['course']:
+        parents_data.append({'display_name': parent.display_name, 'usage_id': unicode(parent.location)})
+        parent = parent.get_parent()
+
+    parents_data.reverse()
+    return parents_data
 
 
 class Bookmark(TimeStampedModel):
@@ -38,18 +65,25 @@ class Bookmark(TimeStampedModel):
         Raises:
             ItemNotFoundError: If no block exists for the usage_key.
         """
+        data = copy.deepcopy(data)
+
         usage_key = data.pop('usage_key')
         usage_key = usage_key.replace(course_key=modulestore().fill_in_run(usage_key.course_key))
 
         block = modulestore().get_item(usage_key)
 
-        data['course_key'] = usage_key.course_key
-        data['path'] = cls.get_path(block)
-        data['xblock_cache'] = XBlockCache.create({
+        xblock_cache = XBlockCache.create({
             'usage_key': usage_key,
             'display_name': block.display_name,
-            'paths': [data['path']],
         })
+
+        data['course_key'] = usage_key.course_key
+        data['xblock_cache'] = xblock_cache
+
+        if xblock_cache.paths and len(xblock_cache.paths) == 1:
+            data['path'] = xblock_cache.paths[0]
+        else:
+            data['path'] = get_path_data(block)
 
         user = data.pop('user')
 
@@ -75,37 +109,20 @@ class Bookmark(TimeStampedModel):
             List of dicts.
         """
         if self.modified < self.xblock_cache.modified:
-            try:
-                block = modulestore().get_item(self.usage_key)
-            except ItemNotFoundError:
-                log.error(u'Block with usage_id: %s not found.', self.usage_key)
+
+            if self.xblock_cache.paths and len(self.xblock_cache.paths) == 1:
+                self.path = self.xblock_cache.paths[0]
             else:
-                self.path = Bookmark.get_path(block)
+                try:
+                    block = modulestore().get_item(self.usage_key)
+                except ItemNotFoundError:
+                    log.error(u'Block with usage_id: %s not found.', self.usage_key)
+                else:
+                    self.path = get_path_data(block)
 
             self.save()  # Always save so that self.modified is updated.
 
         return self.path
-
-    @staticmethod
-    def get_path(block):
-        """
-        Returns data for the path to the block in the course tree.
-
-        Arguments:
-            block (XBlock): The block whose path is required.
-
-        Returns:
-            list of dicts of the form {'usage_id': <usage_id>, 'display_name': <display_name>}.
-        """
-        parent = block.get_parent()
-        parents_data = []
-
-        while parent is not None and parent.location.block_type not in ['course']:
-            parents_data.append({'display_name': parent.display_name, 'usage_id': unicode(parent.location)})
-            parent = parent.get_parent()
-
-        parents_data.reverse()
-        return parents_data
 
 
 class XBlockCache(TimeStampedModel):
@@ -127,6 +144,8 @@ class XBlockCache(TimeStampedModel):
         Returns:
             An XBlockCache object.
         """
+        data = copy.deepcopy(data)
+
         usage_key = data.pop('usage_key')
         usage_key = usage_key.replace(course_key=modulestore().fill_in_run(usage_key.course_key))
 

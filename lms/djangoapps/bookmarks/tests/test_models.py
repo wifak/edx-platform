@@ -1,7 +1,12 @@
 """
 Tests for Bookmarks models.
 """
+import copy
+import datetime
 import ddt
+from freezegun import freeze_time
+import mock
+import pytz
 
 from opaque_keys.edx.locator import CourseLocator, BlockUsageLocator
 
@@ -12,6 +17,7 @@ from xmodule.modulestore.tests.factories import CourseFactory, ItemFactory
 from xmodule.modulestore.tests.django_utils import ModuleStoreTestCase
 
 
+@ddt.ddt
 class BookmarkModelTest(ModuleStoreTestCase):
     """
     Test the Bookmark model.
@@ -48,29 +54,102 @@ class BookmarkModelTest(ModuleStoreTestCase):
         """
         return {
             'user': self.user,
-            'course_key': self.course.id,
             'usage_key': block.location,
+            'course_key': self.course.id,
             'display_name': block.display_name,
         }
 
-    def assert_valid_bookmark(self, bookmark_object, bookmark_data):
+    def assert_valid_bookmark(self, bookmark, bookmark_data):
         """
         Check if the given data matches the specified bookmark.
         """
-        self.assertEqual(bookmark_object.user, self.user)
-        self.assertEqual(bookmark_object.course_key, bookmark_data['course_key'])
-        self.assertEqual(bookmark_object.usage_key, self.vertical.location)
-        self.assertEqual(bookmark_object.display_name, bookmark_data['display_name'])
-        self.assertEqual(bookmark_object.path, self.path)
-        self.assertIsNotNone(bookmark_object.created)
+        self.assertEqual(bookmark.user, bookmark_data['user'])
+        self.assertEqual(unicode(bookmark.usage_key), unicode(bookmark_data['usage_key']))
+        self.assertEqual(bookmark.course_key, bookmark_data['course_key'])
+        self.assertEqual(bookmark.display_name, bookmark_data['display_name'])
+        self.assertEqual(bookmark.path, self.path)
+        self.assertIsNotNone(bookmark.created)
+
+        self.assertEqual(bookmark.xblock_cache.course_key, bookmark_data['course_key'])
+        self.assertEqual(bookmark.xblock_cache.display_name, bookmark_data['display_name'])
 
     def test_create_bookmark_success(self):
         """
         Tests creation of bookmark.
         """
         bookmark_data = self.get_bookmark_data(self.vertical)
-        bookmark_object = Bookmark.create(bookmark_data)
-        self.assert_valid_bookmark(bookmark_object, bookmark_data)
+        bookmark = Bookmark.create(bookmark_data)
+        self.assert_valid_bookmark(bookmark, bookmark_data)
+
+        bookmark_data_different_values = self.get_bookmark_data(self.vertical)
+        bookmark_data_different_values['display_name'] = 'Introduction Video'
+        bookmark2 = Bookmark.create(bookmark_data_different_values)
+        # The bookmark object already created should have been returned without modifications.
+        self.assertEqual(bookmark, bookmark2)
+        self.assertEqual(bookmark.xblock_cache, bookmark2.xblock_cache)
+        self.assert_valid_bookmark(bookmark2, bookmark_data)
+
+        bookmark_data_different_user = self.get_bookmark_data(self.vertical)
+        bookmark_data_different_user['user'] = UserFactory.create()
+        bookmark3 = Bookmark.create(bookmark_data_different_user)
+        self.assertNotEqual(bookmark, bookmark3)
+        self.assert_valid_bookmark(bookmark3, bookmark_data_different_user)
+
+    @ddt.data(
+        (None, 2),
+        ([[{'usage_id': 'usage_id1'}]], 1),
+        ([[{'usage_id': 'usage_id1'}], [{'usage_id': 'usage_id2'}]], 2),
+    )
+    @ddt.unpack
+    @mock.patch('bookmarks.models.get_path_data')
+    def test_calls_to_get_path_data(self, paths, call_count, mock_get_path_data):
+
+        path = [
+            {'usage_id': unicode(self.chapter.location), 'display_name': self.chapter.display_name }
+        ]
+        mock_get_path_data.return_value = path
+
+        bookmark_data = self.get_bookmark_data(self.vertical)
+        bookmark = Bookmark.create(bookmark_data)
+        self.assertIsNotNone(bookmark.xblock_cache)
+        self.assertEqual(mock_get_path_data.call_count, 1)
+
+        bookmark.xblock_cache.paths = paths
+        bookmark.xblock_cache.save()
+
+        bookmark = Bookmark.create(bookmark_data)
+        self.assertEqual(mock_get_path_data.call_count, call_count)
+
+    @ddt.data(
+        (-30, [[{'usage_id': 'usage_id'}]], False, 1),
+        (30, None, False, 2),
+        (30, None, True, 1),
+        (30, [], False, 2),
+        (30, [[{'usage_id': 'usage_id'}]], False, 1),
+        (30, [[{'usage_id': 'usage_id'}], [{'usage_id': 'usage_id2'}]], False, 2),
+    )
+    @ddt.unpack
+    @mock.patch('bookmarks.models.get_path_data')
+    def test_updated_path(self, seconds_delta, paths, alter_usage_key, get_path_data_call_count, mock_get_path_data):
+
+        block_path = [{'usage_id': 'usage_id'}]
+        mock_get_path_data.return_value = block_path
+
+        bookmark_data = self.get_bookmark_data(self.vertical)
+        bookmark = Bookmark.create(bookmark_data)
+        self.assertIsNotNone(bookmark.xblock_cache)
+
+        modification_datetime = datetime.datetime.now(pytz.utc) + datetime.timedelta(seconds=seconds_delta)
+        with freeze_time(modification_datetime):
+            bookmark.xblock_cache.paths = paths
+            bookmark.xblock_cache.save()
+
+        if alter_usage_key:
+            bookmark.usage_key = bookmark.usage_key.replace(category='video')
+            bookmark.save()
+
+        self.assertEqual(bookmark.updated_path, block_path)
+        self.assertEqual(mock_get_path_data.call_count, get_path_data_call_count)
 
 
 @ddt.ddt
@@ -129,7 +208,7 @@ class XBlockCacheModelTest(ModuleStoreTestCase):
     )
     def test_create(self, data):
         """
-        Test the the XBlockCache.create constructs and updates objects correctly.
+        Test XBlockCache.create() constructs and updates objects correctly.
         """
         for create_data, additional_data_to_expect in data:
             xblock_cache = XBlockCache.create(create_data)

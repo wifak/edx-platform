@@ -51,7 +51,11 @@ class TestTeamAPI(APITestCase, ModuleStoreTestCase):
         self.student_user_not_active = UserFactory.create(password=self.test_password, is_active=False)
         self.staff_user = UserFactory.create(password=self.test_password, is_staff=True)
 
-        self.test_team_1 = CourseTeamFactory.create(name='solar team', course_id=self.test_course_1.id, topic_id='renewable')
+        self.test_team_1 = CourseTeamFactory.create(
+            name='solar team',
+            course_id=self.test_course_1.id,
+            topic_id='renewable'
+        )
         self.test_team_2 = CourseTeamFactory.create(name='Wind Team', course_id=self.test_course_2.id)
         self.test_team_3 = CourseTeamFactory.create(name='Nuclear Team', course_id=self.test_course_1.id)
         self.test_team_4 = CourseTeamFactory.create(name='coal team', course_id=self.test_course_2.id, is_active=False)
@@ -63,12 +67,18 @@ class TestTeamAPI(APITestCase, ModuleStoreTestCase):
         )
 
     def setup_inactive_user(self):
+        """
+        Creates a user, logs them in, then makes them inactive. Used for testing inactive user permissions.
+        """
         test_user = UserFactory.create(password=self.test_password)
         self.client.login(username=test_user.username, password=self.test_password)
         test_user.is_active = False
         test_user.save()
 
     def get_teams_list(self, expected_status, user=None, data=None):
+        """
+        Gets the list of teams as the given user with data as query params. Verifies expected_status.
+        """
         user = user if user else self.student_user
         self.client.login(username=user.username, password=self.test_password)
         response = self.client.get(reverse('teams_list'), data=data)
@@ -76,6 +86,9 @@ class TestTeamAPI(APITestCase, ModuleStoreTestCase):
         return response
 
     def get_teams_list_json(self, user=None, data=None):
+        """
+        Gets the list of teams as the given user with data as query params, returning the result as a dict.
+        """
         response = self.get_teams_list(200, user=user, data=data)
         return json.loads(response.content)
 
@@ -135,6 +148,9 @@ class TestTeamAPI(APITestCase, ModuleStoreTestCase):
         self.get_teams_list(404, data={'topic_id': 'foobar'})
 
     def build_team_data(self, name="Test team", course=None, description="Filler description", **kwargs):
+        """
+        Creates the payload for creating a team. kwargs can be used to specify additional fields.
+        """
         data = kwargs
         course = course if course else self.test_course_1
         data.update({
@@ -145,6 +161,9 @@ class TestTeamAPI(APITestCase, ModuleStoreTestCase):
         return data
 
     def post_create_team(self, expected_status, data, user=None):
+        """
+        Posts data to the team creation endpoint as user. Verifies expected_status.
+        """
         user = user if user else self.student_user
         self.client.login(username=user.username, password=self.test_password)
         response = self.client.post(reverse('teams_list'), data=data)
@@ -152,6 +171,9 @@ class TestTeamAPI(APITestCase, ModuleStoreTestCase):
         return response
 
     def post_create_team_json(self, expected_status, data, user=None):
+        """
+        Posts data to the team creation endpoint as user. Verifies expected_status and returns the result as a dict.
+        """
         response = self.post_create_team(expected_status, data, user=user)
         return json.loads(response.content)
 
@@ -208,7 +230,7 @@ class TestTeamAPI(APITestCase, ModuleStoreTestCase):
         self.post_create_team(400, self.build_team_data(description=""))
 
     def test_create_team_long_name(self):
-        self.post_create_team(400, self.build_team_data(name=''.join(['x' for i in range(1000)])))
+        self.post_create_team(400, self.build_team_data(name='x' * 1000))
 
     def test_create_team_extra_fields(self):
         self.post_create_team(400, self.build_team_data(foobar="foobar"))
@@ -238,6 +260,9 @@ class TestTeamAPI(APITestCase, ModuleStoreTestCase):
         })
 
     def get_team_detail(self, team_id, expected_status, user=None):
+        """
+        Gets detailed team information for team_id as the given user. Verifies expected_status.
+        """
         user = user if user else self.student_user
         self.client.login(username=user.username, password=self.test_password)
         response = self.client.get(reverse('teams_detail', args=[team_id]))
@@ -245,6 +270,9 @@ class TestTeamAPI(APITestCase, ModuleStoreTestCase):
         return response
 
     def get_team_detail_json(self, team_id, expected_status, user=None):
+        """
+        Gets detailed team information for team_id as the given user, returning the result as a dict.
+        """
         response = self.get_team_detail(team_id, expected_status, user=user)
         return json.loads(response.content)
 
@@ -265,6 +293,9 @@ class TestTeamAPI(APITestCase, ModuleStoreTestCase):
         self.get_team_detail('foobar', 404)
 
     def patch_team_detail(self, team_id, expected_status, user=None, data=None):
+        """
+        Patches the team with team_id using data as user. Verifies expected_status.
+        """
         user = user if user else self.student_user
         data = data if data else {}
         data = json.dumps(data)
@@ -336,7 +367,7 @@ class TestTeamAPI(APITestCase, ModuleStoreTestCase):
 
     def test_list_topics_order_by_name(self):
         self.client.login(username=self.student_user_enrolled, password=self.test_password)
-        data={'course_id': str(self.test_course_1.id), 'order_by': 'name'}
+        data = {'course_id': str(self.test_course_1.id), 'order_by': 'name'}
         response = self.client.get(reverse('topics_list'), data=data)
         self.assertEqual(200, response.status_code)
         topics = response.data['results']

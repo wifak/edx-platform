@@ -162,7 +162,7 @@ FEATURES = {
     },
 
     # Teams feature
-    'ENABLE_TEAMS': True,
+    'ENABLE_TEAMS': False,
 }
 
 ENABLE_JASMINE = False

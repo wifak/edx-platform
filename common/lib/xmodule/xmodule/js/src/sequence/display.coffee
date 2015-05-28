@@ -116,6 +116,11 @@ class @Sequence
       sequence_links = @content_container.find('a.seqnav')
       sequence_links.click @goto
 
+      if @el.find('.active').find('.bookmark-icon').hasClass 'bookmarked'
+        @content_container.find('.bookmark-button').addClass("bookmarked").removeClass("un-bookmarked")
+      else
+        @content_container.find('.bookmark-button').addClass("un-bookmarked").removeClass("bookmarked")
+
       @sr_container.focus();
       # @$("a.active").blur()
 

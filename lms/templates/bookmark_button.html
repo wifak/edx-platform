@@ -2,14 +2,13 @@
 <%page args="is_bookmarked, item_id, bookmark_api_url, username" />
 
 <div class="bookmark-button-wrapper">
-    <div id="loading-message" aria-live="polite" aria-relevant="all"></div>
-    <div id="error-message" aria-live="polite"></div>
+  <div id="loading-message" aria-live="polite" aria-relevant="all"></div>
+  <div id="error-message" aria-live="polite"></div>
 
-    <button class="btn bookmark-button ${"bookmarked" if is_bookmarked else "un-bookmarked"}"
-            data-id="${item_id}"
-            data-url="${bookmark_api_url}"
-            data-username="${username}"
-            >
-            ${_("Bookmark")}
+  <button class="btn bookmark-button ${"bookmarked" if is_bookmarked else "un-bookmarked"}"
+    data-id="${item_id}"
+    data-url="${bookmark_api_url}"
+    data-username="${username}">
+     ${_("Bookmark")}
     </button>
 </div>

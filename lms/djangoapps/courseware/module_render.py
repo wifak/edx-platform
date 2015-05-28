@@ -64,7 +64,7 @@ from openedx.core.lib.xblock_utils import (
     replace_static_urls,
     add_staff_markup,
     wrap_xblock,
-    request_token,
+    request_token
 )
 from xmodule.lti_module import LTIModule
 from xmodule.x_module import XModuleDescriptor

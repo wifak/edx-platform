@@ -26,9 +26,9 @@
 
             bookmark: function(event) {
                 event.preventDefault();
+
                 var $buttonElement = $(event.currentTarget);
                 var usageId = $buttonElement.data("id");
-
                 this.inProgressView.showMessage('', this.inProgressIcon);
                 $buttonElement.attr("disabled", true).addClass('is-disabled');
 
@@ -74,7 +74,7 @@
                     error: function() {
                         this.errorMessageView.showMessage(that.errorMessage, that.errorIcon);
                     },
-                    complete: function (jqXHR, textStatus, errorThrown) {
+                    complete: function () {
                         $this.attr("disabled", false).removeClass('is-disabled');
                         that.inProgressView.hideMessage();
                     }

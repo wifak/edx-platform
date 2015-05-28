@@ -24,14 +24,4 @@ urlpatterns = patterns(
         TeamsDetailView.as_view(),
         name="teams_detail"
     ),
-    # url(
-    #     r'^v0/team_membership$',
-    #     TeamMembershipListView.as_view(),
-    #     name="team_membership_list"
-    # ),
-    # url(
-    #     r'^v0/team_membership/' + TEAM_ID_PATTERN + ',' + USERNAME_PATTERN + '$',
-    #     TeamMembershipDetailView.as_view(),
-    #     name="team_membership_detail"
-    # )
 )

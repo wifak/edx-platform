@@ -4,10 +4,14 @@ Utilities related to API views
 import functools
 from django.core.exceptions import NON_FIELD_ERRORS, ValidationError
 from django.http import Http404
+from django.utils.translation import ugettext as _
 
 from rest_framework import status, response
 from rest_framework.exceptions import APIException
 from rest_framework.response import Response
+from rest_framework.mixins import RetrieveModelMixin, UpdateModelMixin
+from rest_framework.generics import GenericAPIView
+
 
 from lms.djangoapps.courseware.courses import get_course_with_access
 from opaque_keys.edx.keys import CourseKey
@@ -61,7 +65,6 @@ class DeveloperErrorViewMixin(object):
             return self.make_validation_error_response(exc)
         else:
             raise
-
 
 def view_course_access(depth=0, access_action='load', check_for_milestones=False):
     """
@@ -118,3 +121,52 @@ def view_auth_classes(is_user=False):
             func_or_class.permission_classes += (IsUserInUrl,)
         return func_or_class
     return _decorator
+
+class RetrievePatchAPIView(RetrieveModelMixin, UpdateModelMixin, GenericAPIView):
+    """
+    Concrete view for retrieving and updating a model instance. Like DRF's RetriveUpdateAPIView, but without PUT.
+    """
+    def get(self, request, *args, **kwargs):
+        """
+        Retrieves the specified resource using the RetrieveModelMixin.
+        """
+        return self.retrieve(request, *args, **kwargs)
+
+    def patch(self, request, *args, **kwargs):
+        """
+        Checks for validation errors, then updates the model using the UpdateModelMixin.
+        """
+        field_errors = self._validate_patch(request.DATA)
+        if field_errors:
+            return Response({'field_errors': field_errors}, status=status.HTTP_400_BAD_REQUEST)
+        return self.partial_update(request, *args, **kwargs)
+
+    def _validate_patch(self, patch):
+        """
+        Validates a JSON merge patch. Captures DRF serializer errors and converts them to edX's standard format.
+        """
+        field_errors = {}
+        serializer = self.get_serializer(self.get_object_or_none(), data=patch, partial=True)
+        fields = self.get_serializer().get_fields()
+
+        for key in patch:
+            if key not in fields:
+                field_errors[key] = {
+                    'developer_message': "This field is not present on this resource",
+                }
+            elif fields[key].read_only:
+                field_errors[key] = {
+                    'developer_message': "This field is not editable",
+                }
+
+        if not serializer.is_valid():
+            errors = serializer.errors
+            for key, error in errors.iteritems():
+                field_errors[key] = {
+                    'developer_message': u"Value '{field_value}' is not valid for field '{field_name}': {error}".format(
+                        field_value=patch[key], field_name=key, error=error
+                    ),
+                    'user_message': _(u"This value is invalid."),
+                }
+
+        return field_errors

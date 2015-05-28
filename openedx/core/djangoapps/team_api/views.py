@@ -4,18 +4,13 @@ NOTE: this API is WIP and has not yet been approved. Do not use this API without
 For more information, see:
 https://openedx.atlassian.net/wiki/display/TNL/Team+API
 """
-from rest_framework.views import APIView
 from rest_framework.generics import GenericAPIView, RetrieveUpdateAPIView
-from rest_framework.mixins import RetrieveModelMixin, UpdateModelMixin
 from rest_framework.serializers import ValidationError
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework import permissions
-from rest_framework.parsers import JSONParser
 
-from django.db import transaction
 from django.db.models import Count
-from django.utils.translation import ugettext as _
 
 from openedx.core.lib.api.authentication import (
     SessionAuthenticationAllowInactiveUser,
@@ -24,59 +19,115 @@ from openedx.core.lib.api.authentication import (
 from openedx.core.lib.api.parsers import MergePatchParser
 from openedx.core.lib.api.permissions import IsUserInUrlOrStaff, IsStaffOrReadOnly, IsActiveOrReadOnly
 from openedx.core.lib.api.serializers import PaginationSerializer
-#from ..errors import UserNotFound, UserNotAuthorized
+from openedx.core.lib.api.view_utils import RetrievePatchAPIView
 
 from opaque_keys import InvalidKeyError
 from opaque_keys.edx.keys import CourseKey
 
 from courseware.courses import get_course
 
-from .models import CourseTeam, CourseTeamMembership
-from .serializers import CourseTeamSerializer, MembershipSerializer
-
-
-class RetrievePatchAPIView(RetrieveModelMixin, UpdateModelMixin, GenericAPIView):
-    """
-    Concrete view for retrieving and updating a model instance. Like DRF's RetriveUpdateAPIView, but without PUT.
-    """
-    def get(self, request, *args, **kwargs):
-        return self.retrieve(request, *args, **kwargs)
-
-    def patch(self, request, *args, **kwargs):
-        field_errors = self._validate_patch(request.DATA)
-        if field_errors:
-            return Response({'field_errors': field_errors}, status=status.HTTP_400_BAD_REQUEST)
-        return self.partial_update(request, *args, **kwargs)
-
-    def _validate_patch(self, patch):
-        field_errors = {}
-        serializer = self.get_serializer(self.get_object_or_none(), data=patch, partial=True)
-        fields = self.get_serializer().get_fields()
-
-        for key in patch:
-            if key not in fields:
-                field_errors[key] = {
-                    'developer_message': "This field is not present on this resource",
-                }
-            elif fields[key].read_only:
-                field_errors[key] = {
-                    'developer_message': "This field is not editable",
-                }
-
-        if not serializer.is_valid():
-            errors = serializer.errors
-            for key, error in errors.iteritems():
-                field_errors[key] = {
-                    'developer_message': u"Value '{field_value}' is not valid for field '{field_name}': {error}".format(
-                        field_value=patch[key], field_name=key, error=error
-                    ),
-                    'user_message': _(u"This value is invalid."),
-                }
-
-        return field_errors
+from .models import CourseTeam
+from .serializers import CourseTeamSerializer
 
 
 class TeamsListView(GenericAPIView):
+    """
+        **Use Cases**
+
+            Get or create a course team.
+
+        **Example Requests**:
+
+            GET /api/team/v0/teams
+
+            POST /api/team/v0/teams
+
+        **Response Values for GET**
+
+            The following options can be specified as query parameters:
+
+            * course_id: Filters the result to teams belonging to the given course.
+
+            * topic_id: Filters the result to teams associated with the given topic.
+
+            * text_search: Currently not supported.
+
+            * order_by: Must be one of the following:
+
+                * name: Orders results by case insensitive team name (default).
+
+                * open_slots: Orders results by most open slots.
+
+                * last_activity: Currently not supported.
+
+            * page_size: Number of results to return per page.
+
+            * page: Page number to retrieve.
+
+            * include_inactive: If true, inactive teams will be returned. The default is to not include inactive teams.
+
+            If the user is logged in, the response contains:
+
+            * count: The total number of teams matching the request.
+
+            * next: The URL to the next page of results, or null if this is the last page.
+
+            * previous: The URL to the previous page of results, or null if this is the first page.
+
+            * num_pages: The total number of pages in the result.
+
+            * results: A list of the teams matching the request.
+
+                * id: The team's unique identifier.
+
+                * name: The name of the team.
+
+                * is_active: True if the team is currently active. If false, the team is considered "soft deleted" and
+                  will not be included by default in results.
+
+                * course_id: The identifier for the course this team belongs to.
+
+                * topic_id: Optionally specifies which topic the team is associated with.
+
+                * date_created: Date and time when the team was created.
+
+                * description: A description of the team.
+
+                * country: Optionally specifies which country the team is associated with.
+
+                * language: Optionally specifies which language the team is associated with.
+
+                * membership: A list of the users that are members of the team. See membership endpoint for more detail.
+
+            For all text fields, clients rendering the values should take care
+            to HTML escape them to avoid script injections, as the data is
+            stored exactly as specified. The intention is that plain text is
+            supported, not HTML.
+
+            If the user is not logged in, a 403 error is returned.
+
+            If the specified course_id is not valid or the user attempts to
+            use an unsupported query parameter, a 400 error is returned.
+
+            If the response does not exist, a 404 error is returned. For
+            example, the course_id may not reference a real course or the page
+            number may be beyond the last page.
+
+        **Response Values for POST**
+
+            Any logged in user who has verified their email address can create
+            a team. The format mirrors that of a GET for an individual team,
+            but does not include the id, is_active, date_created, or membership
+            fields. id is automatically computed based on name.
+
+            If the user is not logged in or has not verified their email, a
+            403 error is returned.
+
+            If the course_id is not valid or extra fields are included in the
+            request, a 400 error is returned.
+
+            If the specified course does not exist, a 404 error is returned.
+    """
 
     # SessionAuthenticationAllowInactiveUser must come first to return a 403 for unauthenticated users
     authentication_classes = (SessionAuthenticationAllowInactiveUser, OAuth2AuthenticationAllowInactiveUser)
@@ -88,6 +139,9 @@ class TeamsListView(GenericAPIView):
     serializer_class = CourseTeamSerializer
 
     def get_serializer_context(self):
+        """
+        Adds expand information from query parameters to the serializer context to support expandable fields.
+        """
         result = super(TeamsListView, self).get_serializer_context()
         result['expand'] = [x for x in self.request.QUERY_PARAMS.get('expand', '').split(',') if x]
         return result
@@ -96,7 +150,6 @@ class TeamsListView(GenericAPIView):
         """
         GET /api/team/v0/teams/
         """
-
         result_filter = {
             'is_active': True
         }
@@ -115,12 +168,12 @@ class TeamsListView(GenericAPIView):
             return Response({'detail': "text_search is not yet supported"}, status=status.HTTP_400_BAD_REQUEST)
 
         queryset = CourseTeam.objects.filter(**result_filter)
+        queryset = queryset.extra(select={'lower_name': "lower(name)"})
 
-        order_by_field = 'name'
+        order_by_field = 'lower_name'
         if 'order_by' in request.QUERY_PARAMS:
             order_by_input = request.QUERY_PARAMS['order_by']
             if order_by_input == 'name':
-                queryset = queryset.extra(select={'lower_name': "lower(name)"})
                 order_by_field = 'lower_name'
             elif order_by_input == 'open_slots':
                 queryset = queryset.annotate(team_size=Count('users'))
@@ -141,7 +194,6 @@ class TeamsListView(GenericAPIView):
         """
         POST /api/team/v0/teams/
         """
-
         field_errors = {}
         course_key = None
 
@@ -188,6 +240,64 @@ class TeamsListView(GenericAPIView):
 
 
 class TeamsDetailView(RetrievePatchAPIView):
+    """
+        **Use Cases**
+
+            Get or update a course team's information. Updates are supported
+            only through merge patch.
+
+        **Example Requests**:
+
+            GET /api/team/v0/teams/{team_id}}
+
+            PATCH /api/team/v0/teams/{team_id} "application/merge-patch+json"
+
+        **Response Values for GET**
+
+            If the user is logged in, the response contains the following fields:
+
+            * id: The team's unique identifier.
+
+            * name: The name of the team.
+
+            * is_active: True if the team is currently active. If false, the team is considered "soft deleted" and
+              will not be included by default in results.
+
+            * course_id: The identifier for the course this team belongs to.
+
+            * topic_id: Optionally specifies which topic the team is associated with.
+
+            * date_created: Date and time when the team was created.
+
+            * description: A description of the team.
+
+            * country: Optionally specifies which country the team is associated with.
+
+            * language: Optionally specifies which language the team is associated with.
+
+            * membership: A list of the users that are members of the team. See membership endpoint for more detail.
+
+            For all text fields, clients rendering the values should take care
+            to HTML escape them to avoid script injections, as the data is
+            stored exactly as specified. The intention is that plain text is
+            supported, not HTML.
+
+            If the user is not logged in, a 403 error is returned.
+
+            If the specified team does not exist, a 404 error is returned.
+
+        **Response Values for PATCH**
+
+            Only staff can patch teams. If the specified team does not exist, a
+            404 error is returned.
+
+            If "application/merge-patch+json" is not the specified content type,
+            a 415 error is returned.
+
+            If the update could not be completed due to validation errors, this
+            method returns a 400 error with all error messages in the
+            "field_errors" field of the returned JSON.
+    """
 
     authentication_classes = (SessionAuthenticationAllowInactiveUser, OAuth2AuthenticationAllowInactiveUser)
     permission_classes = (permissions.IsAuthenticated, IsStaffOrReadOnly)
@@ -196,30 +306,7 @@ class TeamsDetailView(RetrievePatchAPIView):
     parser_classes = (MergePatchParser,)
 
     def get_queryset(self):
+        """
+        Returns the queryset used to access the given team.
+        """
         return CourseTeam.objects.all()
-
-#
-# class TeamMembershipListView(APIView):
-#
-#     authentication_classes = (OAuth2AuthenticationAllowInactiveUser, SessionAuthenticationAllowInactiveUser)
-#     #permission_classes = (permissions.IsAuthenticated,)
-#
-#     def get(self, request):
-#         """
-#         GET /api/team/v0/team_membership
-#         """
-#         serializer = MembershipSerializer(CourseTeamMembership.objects.all(), many=True)
-#         return Response(serializer.data)
-#
-# class TeamMembershipDetailView(APIView):
-#
-#     def get(self, request, team_id, username):
-#         """
-#         GET /api/team/v0/team_membership/{team_id},{username}
-#         """
-#
-#         try:
-#             membership = CourseTeamMembership.objects.get(team__team_id=team_id, user__username=username)
-#             return Response(MembershipSerializer(membership).data)
-#         except CourseTeamMembership.DoesNotExist:
-#             return Response(status=status.HTTP_404_NOT_FOUND)

@@ -17,32 +17,6 @@ from xmodule_django.models import CourseKeyField, LocationKeyField
 log = logging.getLogger(__name__)
 
 
-def get_path_data(block):
-    """
-    Returns data for the path to the block in the course graph.
-
-    Note: Right now, in case of multiple paths to the block from the
-    root, this function returns a path arbitrarily but consistently.
-    In the future, we may want to extend it to check which of the paths,
-    the student has access to and return its data.
-
-    Arguments:
-        block (XBlock): The block whose path is required.
-
-    Returns:
-        list of dicts of the form {'usage_id': <usage_id>, 'display_name': <display_name>}.
-    """
-    parent = block.get_parent()
-    parents_data = []
-
-    while parent is not None and parent.location.block_type not in ['course']:
-        parents_data.append({'display_name': parent.display_name, 'usage_id': unicode(parent.location)})
-        parent = parent.get_parent()
-
-    parents_data.reverse()
-    return parents_data
-
-
 class Bookmark(TimeStampedModel):
     """
     Bookmarks model.
@@ -92,7 +66,7 @@ class Bookmark(TimeStampedModel):
         if xblock_cache.paths and len(xblock_cache.paths) == 1:
             data['path'] = xblock_cache.paths[0]
         else:
-            data['path'] = get_path_data(block)
+            data['path'] = Bookmark.get_path_data(block)
 
         user = data.pop('user')
 
@@ -127,11 +101,37 @@ class Bookmark(TimeStampedModel):
                 except ItemNotFoundError:
                     log.error(u'Block with usage_id: %s not found.', self.usage_key)
                 else:
-                    self.path = get_path_data(block)
+                    self.path = Bookmark.get_path_data(block)
 
             self.save()  # Always save so that self.modified is updated.
 
         return self.path
+
+    @staticmethod
+    def get_path_data(block):
+        """
+        Returns data for the path to the block in the course graph.
+
+        Note: Right now, in case of multiple paths to the block from the
+        root, this function returns a path arbitrarily but consistently.
+        In the future, we may want to extend it to check which of the paths,
+        the student has access to and return its data.
+
+        Arguments:
+            block (XBlock): The block whose path is required.
+
+        Returns:
+            list of dicts of the form {'usage_id': <usage_id>, 'display_name': <display_name>}.
+        """
+        parent = block.get_parent()
+        parents_data = []
+
+        while parent is not None and parent.location.block_type not in ['course']:
+            parents_data.append({'display_name': parent.display_name, 'usage_id': unicode(parent.location)})
+            parent = parent.get_parent()
+
+        parents_data.reverse()
+        return parents_data
 
 
 class XBlockCache(TimeStampedModel):

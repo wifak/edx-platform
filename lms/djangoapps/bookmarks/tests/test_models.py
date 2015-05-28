@@ -101,7 +101,7 @@ class BookmarkModelTest(ModuleStoreTestCase):
         ([[{'usage_id': 'usage_id1'}], [{'usage_id': 'usage_id2'}]], 2),
     )
     @ddt.unpack
-    @mock.patch('bookmarks.models.get_path_data')
+    @mock.patch('bookmarks.models.Bookmark.get_path_data')
     def test_calls_to_get_path_data(self, paths, call_count, mock_get_path_data):
 
         path = [
@@ -129,7 +129,7 @@ class BookmarkModelTest(ModuleStoreTestCase):
         (30, [[{'usage_id': 'usage_id'}], [{'usage_id': 'usage_id2'}]], False, 2),
     )
     @ddt.unpack
-    @mock.patch('bookmarks.models.get_path_data')
+    @mock.patch('bookmarks.models.Bookmark.get_path_data')
     def test_updated_path(self, seconds_delta, paths, alter_usage_key, get_path_data_call_count, mock_get_path_data):
 
         block_path = [{'usage_id': 'usage_id'}]

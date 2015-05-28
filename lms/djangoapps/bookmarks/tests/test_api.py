@@ -60,12 +60,20 @@ class BookmarksAPITests(ModuleStoreTestCase):
         self.vertical_2 = ItemFactory.create(
             parent_location=self.sequential_2.location, category='vertical', display_name='Subsection 2'
         )
+
         self.bookmark_2 = BookmarkFactory.create(
+            user=self.user,
+            course_key=self.course_2.id,
+            usage_key=self.sequential_2.location,
+            xblock_cache__display_name=self.sequential_2.display_name
+        )
+        self.bookmark_3 = BookmarkFactory.create(
             user=self.user,
             course_key=self.course_2.id,
             usage_key=self.vertical_2.location,
             xblock_cache__display_name=self.vertical_2.display_name
         )
+
         self.all_fields = DEFAULT_FIELDS + OPTIONAL_FIELDS
 
     def assert_bookmark_response(self, response_data, bookmark, optional_fields=False):
@@ -89,11 +97,12 @@ class BookmarksAPITests(ModuleStoreTestCase):
         self.assert_bookmark_response(bookmark_data, self.bookmark)
 
         # With Optional fields.
-        bookmark_data = api.get_bookmark(
-            user=self.user,
-            usage_key=self.vertical.location,
-            fields=self.all_fields
-        )
+        with self.assertNumQueries(1):
+            bookmark_data = api.get_bookmark(
+                user=self.user,
+                usage_key=self.vertical.location,
+                fields=self.all_fields
+            )
         self.assert_bookmark_response(bookmark_data, self.bookmark, optional_fields=True)
 
     def test_get_bookmark_raises_error(self):
@@ -108,25 +117,36 @@ class BookmarksAPITests(ModuleStoreTestCase):
         Verifies that get_bookmarks returns data as expected.
         """
         # Without course key.
-        bookmarks_data = api.get_bookmarks(user=self.user)
-        self.assertEqual(len(bookmarks_data), 2)
+        with self.assertNumQueries(1):
+            bookmarks_data = api.get_bookmarks(user=self.user)
+            self.assertEqual(len(bookmarks_data), 3)
         # Assert them in ordered manner.
-        self.assert_bookmark_response(bookmarks_data[0], self.bookmark_2)
-        self.assert_bookmark_response(bookmarks_data[1], self.bookmark)
+        self.assert_bookmark_response(bookmarks_data[0], self.bookmark_3)
+        self.assert_bookmark_response(bookmarks_data[1], self.bookmark_2)
+        self.assert_bookmark_response(bookmarks_data[2], self.bookmark)
+
+        # Without course key, with optional fields.
+        with self.assertNumQueries(1):
+            bookmarks_data = api.get_bookmarks(user=self.user, fields=self.all_fields)
+            self.assertEqual(len(bookmarks_data), 3)
+        self.assert_bookmark_response(bookmarks_data[0], self.bookmark_3)
 
         # With course key.
-        bookmarks_data = api.get_bookmarks(user=self.user, course_key=self.course.id)
-        self.assertEqual(len(bookmarks_data), 1)
+        with self.assertNumQueries(1):
+            bookmarks_data = api.get_bookmarks(user=self.user, course_key=self.course.id)
+            self.assertEqual(len(bookmarks_data), 1)
         self.assert_bookmark_response(bookmarks_data[0], self.bookmark)
 
-        # With optional fields.
-        bookmarks_data = api.get_bookmarks(user=self.user, course_key=self.course.id, fields=self.all_fields)
-        self.assertEqual(len(bookmarks_data), 1)
+        # With course key, with optional fields.
+        with self.assertNumQueries(1):
+            bookmarks_data = api.get_bookmarks(user=self.user, course_key=self.course.id, fields=self.all_fields)
+            self.assertEqual(len(bookmarks_data), 1)
         self.assert_bookmark_response(bookmarks_data[0], self.bookmark, optional_fields=True)
 
         # Without Serialized.
-        bookmarks = api.get_bookmarks(user=self.user, course_key=self.course.id, serialized=False)
-        self.assertEqual(len(bookmarks), 1)
+        with self.assertNumQueries(1):
+            bookmarks = api.get_bookmarks(user=self.user, course_key=self.course.id, serialized=False)
+            self.assertEqual(len(bookmarks), 1)
         self.assertTrue(bookmarks.model is Bookmark)  # pylint: disable=no-member
         self.assertEqual(bookmarks[0], self.bookmark)
 
@@ -164,13 +184,14 @@ class BookmarksAPITests(ModuleStoreTestCase):
         """
         Verifies that delete_bookmark removes bookmark as expected.
         """
-        self.assertEqual(len(api.get_bookmarks(user=self.user)), 2)
+        self.assertEqual(len(api.get_bookmarks(user=self.user)), 3)
 
         api.delete_bookmark(user=self.user, usage_key=self.vertical.location)
 
         bookmarks_data = api.get_bookmarks(user=self.user)
-        self.assertEqual(len(bookmarks_data), 1)
+        self.assertEqual(len(bookmarks_data), 2)
         self.assertNotEqual(unicode(self.vertical.location), bookmarks_data[0]['usage_id'])
+        self.assertNotEqual(unicode(self.vertical.location), bookmarks_data[1]['usage_id'])
 
     def test_delete_bookmark_raises_error(self):
         """

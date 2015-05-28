@@ -25,7 +25,9 @@ def get_bookmark(user, usage_key, fields=None):
     bookmarks_queryset = Bookmark.objects
 
     if len(set(fields or []) & set(OPTIONAL_FIELDS)) > 0:
-        bookmarks_queryset = bookmarks_queryset.select_related('xblock_cache')
+        bookmarks_queryset = bookmarks_queryset.select_related('user', 'xblock_cache')
+    else:
+        bookmarks_queryset = bookmarks_queryset.select_related('user')
 
     bookmark = bookmarks_queryset.get(user=user, usage_key=usage_key)
     return BookmarkSerializer(bookmark, context={'fields': fields}).data
@@ -52,7 +54,9 @@ def get_bookmarks(user, course_key=None, fields=None, serialized=True):
         bookmarks_queryset = bookmarks_queryset.filter(course_key=course_key)
 
     if len(set(fields or []) & set(OPTIONAL_FIELDS)) > 0:
-        bookmarks_queryset = bookmarks_queryset.select_related('xblock_cache')
+        bookmarks_queryset = bookmarks_queryset.select_related('user', 'xblock_cache')
+    else:
+        bookmarks_queryset = bookmarks_queryset.select_related('user')
 
     bookmarks_queryset = bookmarks_queryset.order_by('-created')
 

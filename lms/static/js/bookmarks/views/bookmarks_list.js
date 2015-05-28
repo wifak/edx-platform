@@ -48,7 +48,7 @@
 
                 this.collection.fetch({
                     reset: true,
-                    data: {course_id: this.courseId, fields: 'display_name,path'}
+                    data: {course_id: this.courseId, page_size: 500, fields: 'display_name,path'}
                 }).done(function () {
                     view.hideLoadingMessage();
                     view.render();

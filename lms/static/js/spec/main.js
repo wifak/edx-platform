@@ -97,7 +97,7 @@
 
             'js/bookmarks/collections/bookmarks': 'js/bookmarks/collections/bookmarks',
             'js/bookmarks/models/bookmark': 'js/bookmarks/models/bookmark',
-            'js/bookmarks/views/bookmarks_button': 'js/bookmarks/views/bookmarks_button',
+            'js/bookmarks/views/bookmarks_list_button': 'js/bookmarks/views/bookmarks_list_button',
             'js/bookmarks/views/bookmarks_list': 'js/bookmarks/views/bookmarks_list',
             'js/views/message': 'js/views/message',
 

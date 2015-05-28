@@ -44,7 +44,21 @@ class BookmarksTestMixin(EventsTestMixin, UniqueCourseTest):
                 XBlockFixtureDesc('sequential', self.COURSE_TREE_INFO[1][1]).add_children(
                     XBlockFixtureDesc('problem', self.COURSE_TREE_INFO[1][2])
                 )
-            )
+            ),
+            # Add empty chapters to test the page_size limit for bookmarks api
+            XBlockFixtureDesc('chapter', 'chapter3'),
+            XBlockFixtureDesc('chapter', 'chapter4'),
+            XBlockFixtureDesc('chapter', 'chapter5'),
+            XBlockFixtureDesc('chapter', 'chapter6'),
+            XBlockFixtureDesc('chapter', 'chapter7'),
+            XBlockFixtureDesc('chapter', 'chapter8'),
+            XBlockFixtureDesc('chapter', 'chapter9'),
+            XBlockFixtureDesc('chapter', 'chapter10'),
+            XBlockFixtureDesc('chapter', 'chapter11'),
+            XBlockFixtureDesc('chapter', 'chapter12'),
+            XBlockFixtureDesc('chapter', 'chapter13'),
+            XBlockFixtureDesc('chapter', 'chapter14'),
+            XBlockFixtureDesc('chapter', 'chapter15')
         ).install()
 
 
@@ -205,3 +219,23 @@ class BookmarksTest(BookmarksTestMixin):
 
         self.bookmarks.click_bookmark(0)
         self.assertTrue(is_404_page(self.browser))
+
+    def test_page_size_limit(self):
+        """
+        Scenario: We can get more bookmarks if page size is greater than default page size.
+        Note:
+            * Current Bookmarks API page_size value is 10.
+            * page_size value in bookmarks client side is set to 500.
+
+        Given that I am a registered user
+        And I visit my courseware page
+        And I have bookmarked all the chapters available
+        Then I click on Bookmarks button
+        And I should see a bookmarked list
+        And bookmark list contains 15 bookmarked items
+        """
+        self._bookmarks_blocks(self.course_fixture.get_nested_xblocks(category="chapter"))
+
+        self.bookmarks.click_bookmarks_button()
+        self.assertTrue(self.bookmarks.results_present())
+        self.assertEqual(self.bookmarks.count(), 15)

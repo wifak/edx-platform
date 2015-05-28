@@ -68,7 +68,4 @@ class LmsSearchResultProcessor(SearchResultProcessor):
             self.get_item(self.get_usage_key()),
             self.get_course_key()
         )
-        if not user_has_access:
-            import pdb
-            pdb.set_trace()
         return not user_has_access

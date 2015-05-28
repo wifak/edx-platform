@@ -34,8 +34,6 @@ class LmsSearchFilterGenerator(SearchFilterGenerator):
         """ base implementation which filters via start_date """
 
         def get_group_for_user_partition(user_partition, course_key, user):
-            # if user_partition.scheme not in INCLUDE_SCHEMES:
-            #     return None
 
             if user_partition.scheme in SCHEME_SUPPORTS_ASSIGNMENT:
                 return user_partition.scheme.get_group_for_user(

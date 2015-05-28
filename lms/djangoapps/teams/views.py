@@ -460,23 +460,24 @@ class TopicDetailView(APIView):
         """
         try:
             course_id = CourseKey.from_string(course_id)
-            course_module = modulestore().get_course(course_id)
-            if course_module is None:
-                return Response(status=status.HTTP_404_NOT_FOUND)
-
-            if CourseEnrollment.get_enrollment(request.user, course_id) is None:
-                return Response({'detail': "user must be enrolled"}, status=status.HTTP_403_FORBIDDEN)
-
-            topics = [t for t in course_module.teams_topics if t['id'] == topic_id]
-
-            if len(topics) == 0:
-                return Response(status=status.HTTP_404_NOT_FOUND)
-
-            topic = topics[0]
-
-            if not topic['is_active']:
-                return Response(status=status.HTTP_404_NOT_FOUND)
-
-            return Response(topic)
         except InvalidKeyError:
             return Response(status=status.HTTP_404_NOT_FOUND)
+
+        course_module = modulestore().get_course(course_id)
+        if course_module is None:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+
+        if CourseEnrollment.get_enrollment(request.user, course_id) is None:
+            return Response({'detail': "user must be enrolled"}, status=status.HTTP_403_FORBIDDEN)
+
+        topics = [t for t in course_module.teams_topics if t['id'] == topic_id]
+
+        if len(topics) == 0:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+
+        topic = topics[0]
+
+        if not topic['is_active']:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+
+        return Response(topic)

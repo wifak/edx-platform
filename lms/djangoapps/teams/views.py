@@ -397,7 +397,7 @@ class TopicListView(APIView):
         if CourseEnrollment.get_enrollment(request.user, course_id) is None:
             return Response({'detail': "user must be enrolled"}, status=status.HTTP_403_FORBIDDEN)
 
-        topics = [t for t in course_module.teams_topics if t['is_active']]
+        topics = course_module.teams_topics
 
         ordering = request.QUERY_PARAMS.get('order_by', 'name')
         if ordering == 'name':
@@ -475,9 +475,4 @@ class TopicDetailView(APIView):
         if len(topics) == 0:
             return Response(status=status.HTTP_404_NOT_FOUND)
 
-        topic = topics[0]
-
-        if not topic['is_active']:
-            return Response(status=status.HTTP_404_NOT_FOUND)
-
-        return Response(topic)
+        return Response(topics[0])

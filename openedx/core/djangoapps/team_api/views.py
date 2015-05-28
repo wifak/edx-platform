@@ -26,7 +26,7 @@ from openedx.core.lib.api.parsers import MergePatchParser
 from openedx.core.lib.api.permissions import IsStaffOrReadOnly, IsActiveOrReadOnly
 from openedx.core.lib.api.view_utils import RetrievePatchAPIView
 from openedx.core.lib.api.serializers import PaginationSerializer
-# from ..errors import UserNotFound, UserNotAuthorized
+
 from xmodule.modulestore.django import modulestore
 
 from opaque_keys import InvalidKeyError
@@ -318,33 +318,6 @@ class TeamsDetailView(RetrievePatchAPIView):
         Returns the queryset used to access the given team.
         """
         return CourseTeam.objects.all()
-
-
-class TeamMembershipListView(APIView):
-
-    authentication_classes = (OAuth2AuthenticationAllowInactiveUser, SessionAuthenticationAllowInactiveUser)
-    #permission_classes = (permissions.IsAuthenticated,)
-
-    def get(self, request):
-        """
-        GET /api/team/v0/team_membership
-        """
-        serializer = MembershipSerializer(CourseTeamMembership.objects.all(), many=True)
-        return Response(serializer.data)
-
-
-class TeamMembershipDetailView(APIView):
-
-    def get(self, request, team_id, username):
-        """
-        GET /api/team/v0/team_membership/{team_id},{username}
-        """
-
-        try:
-            membership = CourseTeamMembership.objects.get(team__team_id=team_id, user__username=username)
-            return Response(MembershipSerializer(membership).data)
-        except CourseTeamMembership.DoesNotExist:
-            return Response(status=status.HTTP_404_NOT_FOUND)
 
 
 class TopicListView(APIView):

@@ -11,8 +11,8 @@ class Migration(SchemaMigration):
         # Adding model 'CourseTeam'
         db.create_table('teams_courseteam', (
             ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
-            ('team_id', self.gf('django.db.models.fields.CharField')(max_length=100, db_index=True)),
-            ('name', self.gf('django.db.models.fields.CharField')(max_length=100)),
+            ('team_id', self.gf('django.db.models.fields.CharField')(unique=True, max_length=255)),
+            ('name', self.gf('django.db.models.fields.CharField')(max_length=255)),
             ('is_active', self.gf('django.db.models.fields.BooleanField')(default=True)),
             ('course_id', self.gf('xmodule_django.models.CourseKeyField')(max_length=255, db_index=True)),
             ('topic_id', self.gf('django.db.models.fields.CharField')(db_index=True, max_length=100, blank=True)),
@@ -22,9 +22,6 @@ class Migration(SchemaMigration):
             ('language', self.gf('django.db.models.fields.CharField')(max_length=20, blank=True)),
         ))
         db.send_create_signal('teams', ['CourseTeam'])
-
-        # Adding unique constraint on 'CourseTeam', fields ['team_id', 'course_id']
-        db.create_unique('teams_courseteam', ['team_id', 'course_id'])
 
         # Adding model 'CourseTeamMembership'
         db.create_table('teams_courseteammembership', (
@@ -42,9 +39,6 @@ class Migration(SchemaMigration):
     def backwards(self, orm):
         # Removing unique constraint on 'CourseTeamMembership', fields ['user', 'team']
         db.delete_unique('teams_courseteammembership', ['user_id', 'team_id'])
-
-        # Removing unique constraint on 'CourseTeam', fields ['team_id', 'course_id']
-        db.delete_unique('teams_courseteam', ['team_id', 'course_id'])
 
         # Deleting model 'CourseTeam'
         db.delete_table('teams_courseteam')
@@ -91,7 +85,7 @@ class Migration(SchemaMigration):
             'name': ('django.db.models.fields.CharField', [], {'max_length': '100'})
         },
         'teams.courseteam': {
-            'Meta': {'unique_together': "(('team_id', 'course_id'),)", 'object_name': 'CourseTeam'},
+            'Meta': {'object_name': 'CourseTeam'},
             'country': ('django.db.models.fields.CharField', [], {'max_length': '50', 'blank': 'True'}),
             'course_id': ('xmodule_django.models.CourseKeyField', [], {'max_length': '255', 'db_index': 'True'}),
             'date_created': ('django.db.models.fields.DateTimeField', [], {'auto_now_add': 'True', 'blank': 'True'}),
@@ -99,8 +93,8 @@ class Migration(SchemaMigration):
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'is_active': ('django.db.models.fields.BooleanField', [], {'default': 'True'}),
             'language': ('django.db.models.fields.CharField', [], {'max_length': '20', 'blank': 'True'}),
-            'name': ('django.db.models.fields.CharField', [], {'max_length': '100'}),
-            'team_id': ('django.db.models.fields.CharField', [], {'max_length': '100', 'db_index': 'True'}),
+            'name': ('django.db.models.fields.CharField', [], {'max_length': '255'}),
+            'team_id': ('django.db.models.fields.CharField', [], {'unique': 'True', 'max_length': '255'}),
             'topic_id': ('django.db.models.fields.CharField', [], {'db_index': 'True', 'max_length': '100', 'blank': 'True'}),
             'users': ('django.db.models.fields.related.ManyToManyField', [], {'db_index': 'True', 'related_name': "'teams'", 'symmetrical': 'False', 'through': "orm['teams.CourseTeamMembership']", 'to': "orm['auth.User']"})
         },

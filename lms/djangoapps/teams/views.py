@@ -1,9 +1,4 @@
-"""
-NOTE: this API is WIP and has not yet been approved. Do not use this API without talking to Christina or Andy.
-
-For more information, see:
-https://openedx.atlassian.net/wiki/display/TNL/Team+API
-"""
+"""HTTP endpoints for the Teams API."""
 from rest_framework.generics import GenericAPIView
 from rest_framework.serializers import ValidationError
 from rest_framework.response import Response

@@ -10,11 +10,10 @@ class ExpandableField(serializers.Field):
             raise ValueError
         self.collapsed = kwargs.pop('collapsed_serializer')
         self.expanded = kwargs.pop('expanded_serializer')
-        self.expand = kwargs.pop('expand', False)
         super(ExpandableField, self).__init__(**kwargs)
 
     def field_to_native(self, obj, field_name):
-        if self.expand:
+        if 'expand' in self.context and field_name in self.context['expand']:
             self.expanded.initialize(self, field_name)
             return self.expanded.field_to_native(obj, field_name)
         else:
@@ -43,7 +42,6 @@ class UserMembershipSerializer(serializers.ModelSerializer):
     user = ExpandableField(
         collapsed_serializer=CollapsedUserSerializer(),
         expanded_serializer=UserSerializer(),
-        expand=True,
     )
 
     class Meta:

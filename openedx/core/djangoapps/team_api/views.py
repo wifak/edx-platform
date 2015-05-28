@@ -87,6 +87,11 @@ class TeamsListView(GenericAPIView):
     pagination_serializer_class = PaginationSerializer
     serializer_class = CourseTeamSerializer
 
+    def get_serializer_context(self):
+        result = super(TeamsListView, self).get_serializer_context()
+        result['expand'] = [x for x in self.request.QUERY_PARAMS.get('expand', '').split(',') if x]
+        return result
+
     def get(self, request):
         """
         GET /api/team/v0/teams/
@@ -104,7 +109,7 @@ class TeamsListView(GenericAPIView):
                 return Response({'detail': "course_id is not valid"}, status=status.HTTP_400_BAD_REQUEST)
         if 'topic_id' in request.QUERY_PARAMS:
             result_filter.update({'topic_id': request.QUERY_PARAMS['topic_id']})
-        if 'include_inactive' in request.QUERY_PARAMS and request.QUERY_PARAMS['include_inactive'] == 'true':
+        if 'include_inactive' in request.QUERY_PARAMS and request.QUERY_PARAMS['include_inactive'].lower() == 'true':
             del result_filter['is_active']
         if 'text_search' in request.QUERY_PARAMS:
             return Response({'detail': "text_search is not yet supported"}, status=status.HTTP_400_BAD_REQUEST)

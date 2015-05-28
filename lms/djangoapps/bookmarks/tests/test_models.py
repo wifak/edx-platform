@@ -121,16 +121,15 @@ class BookmarkModelTest(ModuleStoreTestCase):
         self.assertEqual(mock_get_path_data.call_count, call_count)
 
     @ddt.data(
-        (-30, [[{'usage_id': 'usage_id'}]], False, 1),
-        (30, None, False, 2),
-        (30, None, True, 1),
-        (30, [], False, 2),
-        (30, [[{'usage_id': 'usage_id'}]], False, 1),
-        (30, [[{'usage_id': 'usage_id'}], [{'usage_id': 'usage_id2'}]], False, 2),
+        (-30, [[{'usage_id': 'usage_id'}]], 1),
+        (30, None, 2),
+        (30, [], 2),
+        (30, [[{'usage_id': 'usage_id'}]], 1),
+        (30, [[{'usage_id': 'usage_id'}], [{'usage_id': 'usage_id2'}]], 2),
     )
     @ddt.unpack
     @mock.patch('bookmarks.models.Bookmark.get_path_data')
-    def test_updated_path(self, seconds_delta, paths, alter_usage_key, get_path_data_call_count, mock_get_path_data):
+    def test_updated_path(self, seconds_delta, paths, get_path_data_call_count, mock_get_path_data):
 
         block_path = [{'usage_id': 'usage_id'}]
         mock_get_path_data.return_value = block_path
@@ -143,10 +142,6 @@ class BookmarkModelTest(ModuleStoreTestCase):
         with freeze_time(modification_datetime):
             bookmark.xblock_cache.paths = paths
             bookmark.xblock_cache.save()
-
-        if alter_usage_key:
-            bookmark.usage_key = bookmark.usage_key.replace(category='video')
-            bookmark.save()
 
         self.assertEqual(bookmark.updated_path, block_path)
         self.assertEqual(mock_get_path_data.call_count, get_path_data_call_count)

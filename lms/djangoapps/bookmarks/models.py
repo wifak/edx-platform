@@ -11,7 +11,8 @@ from jsonfield.fields import JSONField
 from model_utils.models import TimeStampedModel
 
 from xmodule.modulestore.django import modulestore
-from xmodule.modulestore.exceptions import ItemNotFoundError
+from xmodule.modulestore.exceptions import ItemNotFoundError, NoPathToItem
+from xmodule.modulestore.search import path_to_location
 from xmodule_django.models import CourseKeyField, LocationKeyField
 
 log = logging.getLogger(__name__)
@@ -66,7 +67,7 @@ class Bookmark(TimeStampedModel):
         if xblock_cache.paths and len(xblock_cache.paths) == 1:
             data['path'] = xblock_cache.paths[0]
         else:
-            data['path'] = Bookmark.get_path_data(block)
+            data['path'] = Bookmark.get_path_data(usage_key)
 
         user = data.pop('user')
 
@@ -96,19 +97,14 @@ class Bookmark(TimeStampedModel):
             if self.xblock_cache.paths and len(self.xblock_cache.paths) == 1:
                 self.path = self.xblock_cache.paths[0]
             else:
-                try:
-                    block = modulestore().get_item(self.usage_key)
-                except ItemNotFoundError:
-                    log.error(u'Block with usage_id: %s not found.', self.usage_key)
-                else:
-                    self.path = Bookmark.get_path_data(block)
+                self.path = Bookmark.get_path_data(self.usage_key)
 
             self.save()  # Always save so that self.modified is updated.
 
         return self.path
 
     @staticmethod
-    def get_path_data(block):
+    def get_path_data(usage_key):
         """
         Returns data for the path to the block in the course graph.
 
@@ -123,15 +119,29 @@ class Bookmark(TimeStampedModel):
         Returns:
             list of dicts of the form {'usage_id': <usage_id>, 'display_name': <display_name>}.
         """
-        parent = block.get_parent()
-        parents_data = []
+        try:
+            path = path_to_location(modulestore(), usage_key, full_path=True)
+        except ItemNotFoundError:
+            log.error(u'Block with usage_key: %s not found.', usage_key)
+            return []
+        except NoPathToItem:
+            log.error(u'No path to block with usage_key: %s not found.', usage_key)
+            return []
 
-        while parent is not None and parent.location.block_type not in ['course']:
-            parents_data.append({'display_name': parent.display_name, 'usage_id': unicode(parent.location)})
-            parent = parent.get_parent()
+        path_data = []
+        for ancestor_usage_key in path:
+            if ancestor_usage_key != usage_key and ancestor_usage_key.block_type != 'course':
+                try:
+                    block = modulestore().get_item(ancestor_usage_key)
+                except ItemNotFoundError:
+                    return []
 
-        parents_data.reverse()
-        return parents_data
+                path_data.append({
+                    'display_name': block.display_name,
+                    'usage_id': unicode(block.location)
+                })
+
+        return path_data
 
 
 class XBlockCache(TimeStampedModel):

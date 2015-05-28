@@ -296,6 +296,7 @@ define([
 
     });
 
+
     describe('FilterBarView', function () {
         beforeEach(function () {
             loadFixtures('js/fixtures/discovery.html');
@@ -372,6 +373,7 @@ define([
 
     });
 
+
     describe('SearchFacetView', function () {
         beforeEach(function () {
             loadFixtures('js/fixtures/discovery.html');
@@ -444,6 +446,7 @@ define([
         });
 
     });
+
 
     describe('ResultListView', function () {
 
@@ -589,7 +592,6 @@ define([
         });
 
     });
-
 
 
 });

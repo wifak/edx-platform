@@ -32,7 +32,6 @@ class TestTeamAPI(APITestCase, ModuleStoreTestCase):
             [
                 {
                     'id': 'topic_{}'.format(i),
-                    'team_count': i,
                     'is_active': True,
                     'name': 'Topic {}'.format(i),
                     'description': 'Description for topic {}.'.format(i)
@@ -40,7 +39,6 @@ class TestTeamAPI(APITestCase, ModuleStoreTestCase):
             ] + [
                 {
                     'id': 'inactive',
-                    'team_count': 0,
                     'is_active': False,
                     'name': 'Inactive Topic',
                     'description': 'Inactive.'
@@ -365,14 +363,6 @@ class TestTopicsAPI(TestTeamAPI):
         topics = response.data['results']
         self.assertEqual(topics, sorted(topics, key=lambda t: t['name']))
 
-    def test_list_topics_order_by_team_count(self):
-        self.client.login(username=self.student_user_enrolled, password=self.test_password)
-        data = {'course_id': str(self.test_course_1.id), 'order_by': 'team_count'}
-        response = self.client.get(reverse('topics_list'), data=data)
-        self.assertEqual(200, response.status_code)
-        topics = response.data['results']
-        self.assertEqual(topics, sorted(topics, key=lambda t: t['team_count']))
-
     def test_list_topics_invalid_ordering(self):
         self.client.login(username=self.student_user_enrolled, password=self.test_password)
         data = {'course_id': str(self.test_course_1.id), 'order_by': 'BOGUS'}
@@ -435,5 +425,5 @@ class TestTopicsAPI(TestTeamAPI):
             reverse('topics_detail', kwargs={'topic_id': 'topic_0', 'course_id': str(self.test_course_1.id)})
         )
         self.assertEqual(200, response.status_code)
-        for field in ('id', 'name', 'is_active', 'description', 'team_count'):
+        for field in ('id', 'name', 'is_active', 'description'):
             self.assertIn(field, response.data)

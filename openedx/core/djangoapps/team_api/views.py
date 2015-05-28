@@ -356,8 +356,6 @@ class TopicListView(APIView):
             ordering = request.QUERY_PARAMS.get('order_by', 'name')
             if ordering == 'name':
                 topics = sorted(topics, key=lambda t: t['name'])
-            elif ordering == 'team_count':
-                topics = sorted(topics, cmp=lambda t1, t2: t1['team_count'] > t2['team_count'])
             else:
                 return Response({'detail': "unsupported order_by value {}".format(ordering)},
                                 status=status.HTTP_400_BAD_REQUEST)

@@ -2,6 +2,7 @@
 Models for Bookmarks.
 """
 import copy
+import logging
 
 from django.contrib.auth.models import User
 from django.db import models
@@ -12,6 +13,8 @@ from model_utils.models import TimeStampedModel
 from xmodule.modulestore.django import modulestore
 from xmodule.modulestore.exceptions import ItemNotFoundError
 from xmodule_django.models import CourseKeyField, LocationKeyField
+
+log = logging.getLogger(__name__)
 
 
 def get_path_data(block):
@@ -50,6 +53,12 @@ class Bookmark(TimeStampedModel):
     path = JSONField(help_text='Path in course tree to the block')
 
     xblock_cache = models.ForeignKey('bookmarks.XBlockCache', null=True)
+
+    class Meta:
+        """
+        Bookmark metadata.
+        """
+        unique_together = ('user', 'usage_key')
 
     @classmethod
     def create(cls, data):

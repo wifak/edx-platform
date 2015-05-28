@@ -55,6 +55,7 @@ class TestTeamAPI(APITestCase, ModuleStoreTestCase):
         self.test_course_2 = CourseFactory.create(org='MIT', course='6.002x', display_name='Circuits')
 
         self.student_user = UserFactory.create(password=self.test_password)
+        self.student_user_enrolled = UserFactory.create(password=self.test_password)
         self.student_user_not_active = UserFactory.create(password=self.test_password, is_active=False)
         self.staff_user = UserFactory.create(password=self.test_password, is_staff=True)
 
@@ -64,6 +65,10 @@ class TestTeamAPI(APITestCase, ModuleStoreTestCase):
         self.test_team_4 = CourseTeamFactory.create(name='coal team', course_id=self.test_course_2.id, is_active=False)
 
         self.test_team_1.add_user(self.student_user)
+
+        CourseEnrollment.get_or_create_enrollment(
+            self.student_user_enrolled, self.test_course_1.location.course_key
+        )
 
     def setup_inactive_user(self):
         test_user = UserFactory.create(password=self.test_password)
@@ -300,18 +305,6 @@ class TestTeamAPI(APITestCase, ModuleStoreTestCase):
 
     def test_update_team_does_not_exist(self):
         self.patch_team_detail('foobar', 404, user=self.staff_user)
-
-
-class TestTopicsAPI(TestTeamAPI):
-    """Team API tests specific to topics."""
-
-    def setUp(self):
-        super(TestTopicsAPI, self).setUp()
-
-        self.student_user_enrolled = UserFactory.create(password=self.test_password)
-        CourseEnrollment.get_or_create_enrollment(
-            self.student_user_enrolled, self.test_course_1.location.course_key
-        )
 
     def test_list_topics_anonymous(self):
         response = self.client.get(reverse('topics_list'), data={'course_id': str(self.test_course_1.id)})

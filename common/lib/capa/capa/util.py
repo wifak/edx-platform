@@ -2,6 +2,7 @@
 Utility functions for capa.
 """
 import bleach
+from decimal import Decimal
 
 from calc import evaluator
 from cmath import isinf

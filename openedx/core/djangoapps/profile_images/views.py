@@ -55,7 +55,7 @@ class ProfileImageUploadView(APIView):
         * If the requesting user has staff access, a 403 error is returned.
 
         * If the requesting user does not have staff access, a 404 error is
-          returned to avoid leaking the existence of the account.
+          returned.
 
         If no user matches the "username" parameter, a 404 error is returned.
 
@@ -139,8 +139,7 @@ class ProfileImageRemoveView(APIView):
     **Response for POST**
 
         Requesting users who do not have staff access and try to remove another
-        user's profile image receive a 404 error, to avoid leaking the existence
-        of the account.
+        user's profile image receive a 404 error.
 
         If no user matches the "username" parameter, a 404 error is returned.
 

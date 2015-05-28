@@ -12,8 +12,7 @@ User's with staff access can remove profile images from others' user accounts.
 Profile Images API Version 1.0
 *************************************
 
-The Profile Images API is currently at version 1.0. We plan on making
-significant enhancements to this API.
+The Profile Images API is currently at version 1.0.
 
 **********************************************
 Profile Images API Capabilities

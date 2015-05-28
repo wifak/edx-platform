@@ -1,3 +1,7 @@
+"""
+Fields useful for edX API implementations.
+"""
+
 from rest_framework.serializers import Field
 
 

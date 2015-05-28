@@ -1,3 +1,7 @@
+"""
+Utility functions for the Teams API.
+"""
+
 import unicodedata
 import re
 
@@ -14,5 +18,5 @@ def slugify(value):
     """
     value = force_unicode(value)
     value = unicodedata.normalize('NFKD', value).encode('ascii', 'ignore').decode('ascii')
-    value = re.sub('[^\w\s-]', '', value).strip().lower()
-    return mark_safe(re.sub('[-\s]+', '-', value))
+    value = re.sub(r'[^\w\s-]', '', value).strip().lower()
+    return mark_safe(re.sub(r'[-\s]+', '-', value))

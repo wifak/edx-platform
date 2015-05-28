@@ -233,8 +233,8 @@ class TeamsListView(GenericAPIView):
         try:
             team.full_clean()
             team.save()
-        except ValidationError as e:
-            for key, error in e.message_dict.iteritems():
+        except ValidationError as err:
+            for key, error in err.message_dict.iteritems():
                 field_errors[key] = {
                     'developer_message': error[0],
                 }

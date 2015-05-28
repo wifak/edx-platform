@@ -27,7 +27,7 @@ class CollapsedCourseTeamSerializer(serializers.HyperlinkedModelSerializer):
     """
     Serializes CourseTeams in a collapsed format, with just an id and url.
     """
-    id = serializers.CharField(source='team_id')
+    id = serializers.CharField(source='team_id')  # pylint: disable=invalid-name
     url = serializers.HyperlinkedIdentityField(view_name='teams_detail', lookup_field='team_id')
 
     class Meta(object):
@@ -74,7 +74,7 @@ class CourseTeamSerializer(serializers.ModelSerializer):
     """
     Serializes a CourseTeam with membership information.
     """
-    id = serializers.CharField(source='team_id', read_only=True)
+    id = serializers.CharField(source='team_id', read_only=True)  # pylint: disable=invalid-name
     membership = UserMembershipSerializer(many=True, read_only=True)
 
     class Meta(object):

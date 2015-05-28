@@ -65,14 +65,16 @@ def compare_with_tolerance(student_complex, instructor_complex, tolerance=defaul
         # `inf <= inf` which is a fail. Instead, compare directly.
         return student_complex == instructor_complex
 
-    if isinstance(instructor_complex, complex):
-        if instructor_complex.imag == 0:
-            instructor_complex = instructor_complex.real
 
-    if isinstance(student_complex, float) and isinstance(instructor_complex, float):
-        # use Decimal class to avoid rounding errors
-        student_decimal = Decimal(str(student_complex))
-        instructor_decimal = Decimal(str(instructor_complex))
+    # because student_complex and instructor_complex are not necessarily complex here, we enforce this type:
+    student_complex = complex(student_complex)
+    instructor_complex = complex(instructor_complex)
+
+    # if both the instructor and student input are real,
+    # compare them as Decimals to avoid rounding errors
+    if not instructor_complex.imag and not student_complex.imag:
+        student_decimal = Decimal(str(student_complex.real))
+        instructor_decimal = Decimal(str(instructor_complex.real))
         tolerance_decimal = Decimal(str(tolerance))
         return abs(student_decimal - instructor_decimal) <= tolerance_decimal
 

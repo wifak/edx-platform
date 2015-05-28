@@ -334,41 +334,41 @@ class TopicListView(APIView):
         """
         GET /api/team/v0/topics/?course_id={course_id}
         """
+        course_id_string = request.QUERY_PARAMS.get('course_id', None)
+        if course_id_string is None:
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+
         try:
-            course_id_string = request.QUERY_PARAMS.get('course_id', None)
-            if course_id_string is None:
-                return Response(status=status.HTTP_400_BAD_REQUEST)
-
             course_id = CourseKey.from_string(course_id_string)
-
-            course_module = modulestore().get_course(course_id)
-            if course_module is None:  # course is None if not found
-                return Response(status=status.HTTP_404_NOT_FOUND)
-
-            if CourseEnrollment.get_enrollment(request.user, course_id) is None:
-                return Response({'detail': "user must be enrolled"}, status=status.HTTP_403_FORBIDDEN)
-
-            topics = [t for t in course_module.teams_topics if t['is_active']]
-
-            if 'text_search' in request.QUERY_PARAMS:
-                return Response({'detail': "text_search is not yet supported"}, status=status.HTTP_400_BAD_REQUEST)
-
-            ordering = request.QUERY_PARAMS.get('order_by', 'name')
-            if ordering == 'name':
-                topics = sorted(topics, key=lambda t: t['name'])
-            else:
-                return Response({'detail': "unsupported order_by value {}".format(ordering)},
-                                status=status.HTTP_400_BAD_REQUEST)
-
-            if 'page_size' in request.QUERY_PARAMS:
-                self.page_size = min(self.max_page_size, int(request.QUERY_PARAMS['page_size']))
-
-            paginator = Paginator(topics, self.page_size)
-            page = paginator.page(request.QUERY_PARAMS.get('page', 1))
-            serializer = PaginationSerializer(instance=page)
-            return Response(serializer.data)  # May be None
         except InvalidKeyError:
             return Response(status=status.HTTP_404_NOT_FOUND)
+
+        course_module = modulestore().get_course(course_id)
+        if course_module is None:  # course is None if not found
+            return Response(status=status.HTTP_404_NOT_FOUND)
+
+        if CourseEnrollment.get_enrollment(request.user, course_id) is None:
+            return Response({'detail': "user must be enrolled"}, status=status.HTTP_403_FORBIDDEN)
+
+        topics = [t for t in course_module.teams_topics if t['is_active']]
+
+        if 'text_search' in request.QUERY_PARAMS:
+            return Response({'detail': "text_search is not yet supported"}, status=status.HTTP_400_BAD_REQUEST)
+
+        ordering = request.QUERY_PARAMS.get('order_by', 'name')
+        if ordering == 'name':
+            topics = sorted(topics, key=lambda t: t['name'])
+        else:
+            return Response({'detail': "unsupported order_by value {}".format(ordering)},
+                            status=status.HTTP_400_BAD_REQUEST)
+
+        if 'page_size' in request.QUERY_PARAMS:
+            self.page_size = min(self.max_page_size, int(request.QUERY_PARAMS['page_size']))
+
+        paginator = Paginator(topics, self.page_size)
+        page = paginator.page(request.QUERY_PARAMS.get('page', 1))
+        serializer = PaginationSerializer(instance=page)
+        return Response(serializer.data)  # May be None
 
 
 class TopicDetailView(APIView):

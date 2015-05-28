@@ -26,15 +26,16 @@ class LmsSearchFilterGenerator(SearchFilterGenerator):
     _user_enrollments = {}
 
     def _enrollments_for_user(self, user):
+        """ Return users course enrollments """
         if user not in self._user_enrollments:
             self._user_enrollments[user] = CourseEnrollment.enrollments_for_user(user)
         return self._user_enrollments[user]
 
     def filter_dictionary(self, **kwargs):
-        """ base implementation which filters via start_date """
+        """ LMS implementation, adds filtering by content groups, course id and user """
 
         def get_group_for_user_partition(user_partition, course_key, user):
-
+            """ Returns users group for user partition """
             if user_partition.scheme in SCHEME_SUPPORTS_ASSIGNMENT:
                 return user_partition.scheme.get_group_for_user(
                     course_key,
@@ -51,12 +52,13 @@ class LmsSearchFilterGenerator(SearchFilterGenerator):
 
         def get_content_groups(course, user):
             """ Collect content groups for user for this course """
-            partition_groups = [
-                get_group_for_user_partition(user_partition, course.id, user)
-                for user_partition in course.user_partitions
-                if user_partition.scheme in INCLUDE_SCHEMES
-            ]
-            content_groups = [unicode(partition_group.id) for partition_group in partition_groups if partition_group]
+            partition_groups = []
+            for user_partition in course.user_partitions:
+                if user_partition.scheme in INCLUDE_SCHEMES:
+                    group = get_group_for_user_partition(user_partition, course.id, user)
+                    if group:
+                        partition_groups.append(group)
+            content_groups = [unicode(partition_group.id) for partition_group in partition_groups]
             return content_groups if content_groups else None
 
         filter_dictionary = super(LmsSearchFilterGenerator, self).filter_dictionary(**kwargs)
@@ -72,15 +74,19 @@ class LmsSearchFilterGenerator(SearchFilterGenerator):
                 # Staff user looking at course as staff user
                 if get_user_role(user, course_key) == 'staff':
                     return filter_dictionary
-
-                filter_dictionary['content_groups'] = get_content_groups(modulestore().get_course(course_key), user)
+                # Need to check course exist (if course gets deleted enrollments don't get cleaned up)
+                course = modulestore().get_course(course_key)
+                if course:
+                    filter_dictionary['content_groups'] = get_content_groups(course, user)
             else:
                 user_enrollments = self._enrollments_for_user(user)
                 content_groups = []
                 for enrollment in user_enrollments:
-                    enrollment_content_groups = get_content_groups(modulestore().get_course(enrollment.course_id), user)
-                    if enrollment_content_groups:
-                        content_groups.extend(enrollment_content_groups)
+                    course = modulestore().get_course(enrollment.course_id)
+                    if course:
+                        enrollment_content_groups = get_content_groups(course, user)
+                        if enrollment_content_groups:
+                            content_groups.extend(enrollment_content_groups)
 
                 filter_dictionary['content_groups'] = content_groups if content_groups else None
 

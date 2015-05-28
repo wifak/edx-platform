@@ -2,13 +2,12 @@
 <%page args="is_bookmarked, item_id, bookmark_api_url, username" />
 
 <div class="bookmark-button-wrapper">
-  <div id="loading-message" aria-live="polite" aria-relevant="all"></div>
-  <div id="error-message" aria-live="polite"></div>
-
   <button class="btn bookmark-button ${"bookmarked" if is_bookmarked else "un-bookmarked"}"
+    aria-pressed="${"true" if is_bookmarked else "false"}"
     data-id="${item_id}"
     data-url="${bookmark_api_url}"
     data-username="${username}">
+     <span class="sr bookmark-sr">${_("Click to remove bookmark from this unit") if is_bookmarked else _("Click to bookmark this unit")}</span>
      ${_("Bookmark")}
     </button>
 </div>

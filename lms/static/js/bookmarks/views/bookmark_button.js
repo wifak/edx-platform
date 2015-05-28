@@ -5,23 +5,24 @@
 
         return Backbone.View.extend({
 
-            el: '#seq_content',
-
-            inProgressElement: '#loading-message',
-            errorMessageElement: '#error-message',
+            el: '.course-content',
 
             errorIcon: '<i class="fa fa-fw fa-exclamation-triangle message-error" aria-hidden="true"></i>',
-            inProgressIcon: '<i class="fa fa-fw fa-spinner fa-pulse message-in-progress" aria-hidden="true"></i>',
-
             errorMessage: gettext('An error has occurred. Please try again.'),
 
+            srAddBookmarkText: gettext('Click to bookmark this unit'),
+            srRemoveBookmarkText: gettext('Click to remove bookmark from this unit'),
+
             events: {
-                'click .bookmark-button': 'bookmark'
+                'click .bookmark-button': 'bookmark',
+                'sequence:changed .sequence': 'updateBookmarkState'
             },
 
             initialize: function () {
-                this.inProgressView = new MessageView({el: $(this.inProgressElement)});
-                this.errorMessageView = new MessageView({el: $(this.errorMessageElement)});
+                this.errorMessageView = new MessageView({
+                    el: $('.coursewide-message-banner'),
+                    templateId: '#message_banner-tpl'
+                });
             },
 
             bookmark: function(event) {
@@ -29,7 +30,6 @@
 
                 var $buttonElement = $(event.currentTarget);
                 var usageId = $buttonElement.data("id");
-                this.inProgressView.showMessage('', this.inProgressIcon);
                 $buttonElement.attr("disabled", true).addClass('is-disabled');
 
                 if ($buttonElement.hasClass('bookmarked')) {
@@ -39,9 +39,9 @@
                 }
             },
 
-            addBookmark: function($this, usageId) {
-                var postUrl = $this.data('url');
-                var that = this;
+            addBookmark: function($buttonElement, usageId) {
+                var postUrl = $buttonElement.data('url');
+                var view = this;
                 $.ajax({
                     data: {usage_id: usageId},
                     type: "POST",
@@ -49,36 +49,50 @@
                     dataType: 'json',
                     success: function () {
                         $('.seq-book.active').find('.bookmark-icon').removeClass('is-hidden').addClass('bookmarked');
-                        $this.removeClass('un-bookmarked').addClass('bookmarked');
+                        $buttonElement.removeClass('un-bookmarked').addClass('bookmarked');
+                        $buttonElement.attr('aria-pressed', 'true');
+                        $buttonElement.find('.bookmark-sr').text(view.srRemoveBookmarkText);
                     },
                     error: function() {
-                        this.errorMessageView.showMessage(that.errorMessage, that.errorIcon);
+                        view.errorMessageView.showMessage(view.errorMessage, view.errorIcon);
                     },
                     complete: function () {
-                        $this.attr("disabled", false).removeClass('is-disabled');
-                        that.inProgressView.hideMessage();
+                        $buttonElement.attr("disabled", false).removeClass('is-disabled');
                     }
                 });
             },
 
-            removeBookmark: function($this, usageId) {
-                var deleteUrl = $this.data('url') + $this.data('username') + ',' + usageId;
-                var that = this;
+            removeBookmark: function($buttonElement, usageId) {
+                var deleteUrl = $buttonElement.data('url') + $buttonElement.data('username') + ',' + usageId;
+                var view = this;
                 $.ajax({
                     type: "DELETE",
                     url: deleteUrl,
                     success: function () {
                         $('.seq-book.active').find('.bookmark-icon').removeClass('bookmarked').addClass('is-hidden');
-                        $this.removeClass('bookmarked').addClass('un-bookmarked');
+                        $buttonElement.removeClass('bookmarked').addClass('un-bookmarked');
+                        $buttonElement.attr('aria-pressed', 'false');
+                        $buttonElement.find('.bookmark-sr').text(view.srAddBookmarkText);
                     },
                     error: function() {
-                        this.errorMessageView.showMessage(that.errorMessage, that.errorIcon);
+                        view.errorMessageView.showMessage(view.errorMessage, view.errorIcon);
                     },
                     complete: function () {
-                        $this.attr("disabled", false).removeClass('is-disabled');
-                        that.inProgressView.hideMessage();
+                        $buttonElement.attr("disabled", false).removeClass('is-disabled');
                     }
                 });
+            },
+
+            updateBookmarkState: function(event) {
+                var $currentElement = $(event.currentTarget);
+                var $bookmarkButton = $currentElement.find('.bookmark-button');
+                if ($currentElement.find('.active').find('.bookmark-icon').hasClass('bookmarked')) {
+                    $bookmarkButton.addClass("bookmarked").removeClass("un-bookmarked");
+                    $bookmarkButton.find('.bookmark-sr').text(this.srRemoveBookmarkText);
+                } else {
+                    $bookmarkButton.find('.bookmark-sr').text(this.srAddBookmarkText);
+                    $bookmarkButton.addClass("un-bookmarked").removeClass("bookmarked");
+                }
             }
         });
     });

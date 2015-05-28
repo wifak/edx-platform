@@ -8,7 +8,6 @@ from xblock.core import XBlock
 from xblock.fields import Integer, Scope, Boolean
 from xblock.fragment import Fragment
 from pkg_resources import resource_string
-from xblock_django.user_service import ATTR_KEY_USERNAME
 
 from .exceptions import NotFoundError
 from .fields import Date
@@ -117,7 +116,7 @@ class SequenceModule(SequenceFields, XModule):
         context = {} if not context else context
 
         bookmarks_service = self.runtime.service(self, "bookmarks")
-        context["username"] = self.runtime.service(self, "user").get_current_user().opt_attrs[ATTR_KEY_USERNAME]
+        context["username"] = self.runtime.service(self, "user").get_current_user().opt_attrs['edx-platform.username']
 
         for child in self.get_display_items():
             is_bookmarked = bookmarks_service.is_bookmarked(usage_key=child.scope_ids.usage_id)

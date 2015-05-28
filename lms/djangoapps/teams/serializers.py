@@ -2,7 +2,7 @@ from django.contrib.auth.models import User
 from rest_framework import serializers
 from openedx.core.lib.api.fields import ExpandableField
 from .models import CourseTeam, CourseTeamMembership
-from ..user_api.serializers import UserSerializer
+from openedx.core.djangoapps.user_api.serializers import UserSerializer
 
 
 class CollapsedUserSerializer(serializers.HyperlinkedModelSerializer):

@@ -1761,7 +1761,7 @@ INSTALLED_APPS = (
     'openedx.core.djangoapps.user_api',
 
     # Team API
-    'openedx.core.djangoapps.team_api',
+    'teams',
 
     # Shopping cart
     'shoppingcart',

@@ -94,7 +94,7 @@ urlpatterns = (
     url(r'^api/profile_images/', include('openedx.core.djangoapps.profile_images.urls')),
 
     # Team API endpoints
-    url(r'^api/team/', include('openedx.core.djangoapps.team_api.urls')),
+    url(r'^api/team/', include('teams.urls')),
 )
 
 if settings.FEATURES["ENABLE_COMBINED_LOGIN_REGISTRATION"]:

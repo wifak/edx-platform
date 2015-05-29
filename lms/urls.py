@@ -92,10 +92,11 @@ urlpatterns = (
 
     # Profile Images API endpoints
     url(r'^api/profile_images/', include('openedx.core.djangoapps.profile_images.urls')),
-
-    # Team API endpoints
-    url(r'^api/team/', include('teams.urls')),
 )
+
+if settings.FEATURES["ENABLE_TEAMS"]:
+    # Team API endpoints
+    urlpatterns += (url(r'^api/team/', include('teams.urls')),)
 
 if settings.FEATURES["ENABLE_COMBINED_LOGIN_REGISTRATION"]:
     # Backwards compatibility with old URL structure, but serve the new views

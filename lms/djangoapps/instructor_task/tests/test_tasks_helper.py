@@ -27,7 +27,7 @@ from openedx.core.djangoapps.user_api.partition_schemes import RandomUserPartiti
 from shoppingcart.models import Order, PaidCourseRegistration, CourseRegistrationCode, Invoice, \
     CourseRegistrationCodeInvoiceItem, InvoiceTransaction
 from student.tests.factories import UserFactory
-from student.models import CourseEnrollment, ManualEnrollmentAudit, ALLOWEDTOENROLL_TO_ENROLL
+from student.models import CourseEnrollment, ManualEnrollmentAudit, ALLOWEDTOENROLL_TO_ENROLLED
 from verify_student.tests.factories import SoftwareSecurePhotoVerificationFactory
 from xmodule.modulestore.tests.factories import CourseFactory, ItemFactory
 from xmodule.partitions.partitions import Group, UserPartition
@@ -329,7 +329,7 @@ class TestInstructorDetailedEnrollmentReport(TestReportMixin, InstructorTaskCour
         student = UserFactory()
         enrollment = CourseEnrollment.enroll(student, self.course.id)
         ManualEnrollmentAudit.create_manual_enrollment_audit(
-            self.instructor, student.email, ALLOWEDTOENROLL_TO_ENROLL,
+            self.instructor, student.email, ALLOWEDTOENROLL_TO_ENROLLED,
             'manually enrolling unenrolled user', enrollment
         )
 
@@ -338,7 +338,7 @@ class TestInstructorDetailedEnrollmentReport(TestReportMixin, InstructorTaskCour
             result = upload_enrollment_report(None, None, self.course.id, task_input, 'generating_enrollment_report')
 
         enrollment_source = u'manually enrolled by user_id {user_id}, enrollment state transition: {transition}'.format(
-            user_id=self.instructor.id, transition=ALLOWEDTOENROLL_TO_ENROLL)  # pylint: disable=no-member
+            user_id=self.instructor.id, transition=ALLOWEDTOENROLL_TO_ENROLLED)  # pylint: disable=no-member
         self.assertDictContainsSubset({'attempted': 1, 'succeeded': 1, 'failed': 0}, result)
         self._verify_cell_data_in_csv(student.username, 'Enrollment Source', enrollment_source)
         self._verify_cell_data_in_csv(student.username, 'Payment Status', 'TBD')

@@ -55,7 +55,7 @@ from student.models import (
     PendingEmailChange, CourseEnrollment, unique_id_for_user,
     CourseEnrollmentAllowed, UserStanding, LoginFailures,
     create_comments_service_user, PasswordHistory, UserSignupSource,
-    DashboardConfiguration, LinkedInAddToProfileConfiguration, ManualEnrollmentAudit, ALLOWEDTOENROLL_TO_ENROLL)
+    DashboardConfiguration, LinkedInAddToProfileConfiguration, ManualEnrollmentAudit, ALLOWEDTOENROLL_TO_ENROLLED)
 from student.forms import AccountCreationForm, PasswordResetFormNoActive
 
 from verify_student.models import SoftwareSecurePhotoVerification, MidcourseReverificationWindow
@@ -1766,7 +1766,7 @@ def activate_account(request, key):
                         # then create a new ManualEnrollmentAudit table entry for the same email
                         # different transition state.
                         ManualEnrollmentAudit.create_manual_enrollment_audit(
-                            manual_enrollment_audit.enrolled_by, student[0].email, ALLOWEDTOENROLL_TO_ENROLL,
+                            manual_enrollment_audit.enrolled_by, student[0].email, ALLOWEDTOENROLL_TO_ENROLLED,
                             manual_enrollment_audit.reason, enrollment
                         )
 

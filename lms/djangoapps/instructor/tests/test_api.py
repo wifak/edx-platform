@@ -44,8 +44,8 @@ from shoppingcart.models import (
 from shoppingcart.pdf import PDFInvoice
 from student.models import (
     CourseEnrollment, CourseEnrollmentAllowed, NonExistentCourseError,
-    ManualEnrollmentAudit, UNENROLL_TO_ENROLL, ENROLL_TO_UNENROLL, ALLOWEDTOENROLL_TO_UNENROLL, ENROLL_TO_ENROLL,
-    UNENROLLED_TO_ALLOWEDTOENROLL, UNENROLL_TO_UNENROLL, ALLOWEDTOENROLL_TO_ENROLL
+    ManualEnrollmentAudit, UNENROLLED_TO_ENROLLED, ENROLLED_TO_UNENROLLED, ALLOWEDTOENROLL_TO_UNENROLLED, ENROLLED_TO_ENROLLED,
+    UNENROLLED_TO_ALLOWEDTOENROLL, UNENROLLED_TO_UNENROLLED, ALLOWEDTOENROLL_TO_ENROLLED
 )
 from student.tests.factories import UserFactory, CourseModeFactory, AdminFactory
 from student.roles import CourseBetaTesterRole, CourseSalesAdminRole, CourseFinanceAdminRole, CourseInstructorRole
@@ -360,7 +360,7 @@ class TestInstructorAPIBulkAccountCreationAndEnrollment(ModuleStoreTestCase, Log
 
         manual_enrollments = ManualEnrollmentAudit.objects.all()
         self.assertEqual(manual_enrollments.count(), 1)
-        self.assertEqual(manual_enrollments[0].state_transition, UNENROLL_TO_ENROLL)
+        self.assertEqual(manual_enrollments[0].state_transition, UNENROLLED_TO_ENROLLED)
 
         # test the log for email that's send to new created user.
         info_log.assert_called_with('email sent to new created user at %s', 'test_student@example.com')
@@ -381,7 +381,7 @@ class TestInstructorAPIBulkAccountCreationAndEnrollment(ModuleStoreTestCase, Log
 
         manual_enrollments = ManualEnrollmentAudit.objects.all()
         self.assertEqual(manual_enrollments.count(), 1)
-        self.assertEqual(manual_enrollments[0].state_transition, UNENROLL_TO_ENROLL)
+        self.assertEqual(manual_enrollments[0].state_transition, UNENROLLED_TO_ENROLLED)
 
         # test the log for email that's send to new created user.
         info_log.assert_called_with('email sent to new created user at %s', 'test_student@example.com')
@@ -404,7 +404,7 @@ class TestInstructorAPIBulkAccountCreationAndEnrollment(ModuleStoreTestCase, Log
 
         manual_enrollments = ManualEnrollmentAudit.objects.all()
         self.assertEqual(manual_enrollments.count(), 1)
-        self.assertEqual(manual_enrollments[0].state_transition, UNENROLL_TO_ENROLL)
+        self.assertEqual(manual_enrollments[0].state_transition, UNENROLLED_TO_ENROLLED)
 
         # test the log for email that's send to new created user.
         info_log.assert_called_with(
@@ -494,7 +494,7 @@ class TestInstructorAPIBulkAccountCreationAndEnrollment(ModuleStoreTestCase, Log
         )
         manual_enrollments = ManualEnrollmentAudit.objects.all()
         self.assertEqual(manual_enrollments.count(), 1)
-        self.assertTrue(manual_enrollments[0].state_transition, UNENROLL_TO_ENROLL)
+        self.assertTrue(manual_enrollments[0].state_transition, UNENROLLED_TO_ENROLLED)
 
     def test_user_with_already_existing_email_in_csv(self):
         """
@@ -517,7 +517,7 @@ class TestInstructorAPIBulkAccountCreationAndEnrollment(ModuleStoreTestCase, Log
 
         manual_enrollments = ManualEnrollmentAudit.objects.all()
         self.assertEqual(manual_enrollments.count(), 1)
-        self.assertTrue(manual_enrollments[0].state_transition, UNENROLL_TO_ENROLL)
+        self.assertTrue(manual_enrollments[0].state_transition, UNENROLLED_TO_ENROLLED)
 
     def test_user_with_already_existing_username_in_csv(self):
         """
@@ -753,7 +753,7 @@ class TestInstructorAPIEnrollment(ModuleStoreTestCase, LoginEnrollmentTestCase):
         }
         manual_enrollments = ManualEnrollmentAudit.objects.all()
         self.assertEqual(manual_enrollments.count(), 1)
-        self.assertEqual(manual_enrollments[0].state_transition, UNENROLL_TO_ENROLL)
+        self.assertEqual(manual_enrollments[0].state_transition, UNENROLLED_TO_ENROLLED)
         res_json = json.loads(response.content)
         self.assertEqual(res_json, expected)
 
@@ -793,7 +793,7 @@ class TestInstructorAPIEnrollment(ModuleStoreTestCase, LoginEnrollmentTestCase):
 
         manual_enrollments = ManualEnrollmentAudit.objects.all()
         self.assertEqual(manual_enrollments.count(), 1)
-        self.assertEqual(manual_enrollments[0].state_transition, UNENROLL_TO_ENROLL)
+        self.assertEqual(manual_enrollments[0].state_transition, UNENROLLED_TO_ENROLLED)
         res_json = json.loads(response.content)
         self.assertEqual(res_json, expected)
 
@@ -980,7 +980,7 @@ class TestInstructorAPIEnrollment(ModuleStoreTestCase, LoginEnrollmentTestCase):
 
         manual_enrollments = ManualEnrollmentAudit.objects.all()
         self.assertEqual(manual_enrollments.count(), 1)
-        self.assertEqual(manual_enrollments[0].state_transition, ENROLL_TO_UNENROLL)
+        self.assertEqual(manual_enrollments[0].state_transition, ENROLLED_TO_UNENROLLED)
         res_json = json.loads(response.content)
         self.assertEqual(res_json, expected)
 
@@ -1023,7 +1023,7 @@ class TestInstructorAPIEnrollment(ModuleStoreTestCase, LoginEnrollmentTestCase):
 
         manual_enrollments = ManualEnrollmentAudit.objects.all()
         self.assertEqual(manual_enrollments.count(), 1)
-        self.assertEqual(manual_enrollments[0].state_transition, ENROLL_TO_UNENROLL)
+        self.assertEqual(manual_enrollments[0].state_transition, ENROLLED_TO_UNENROLLED)
         res_json = json.loads(response.content)
         self.assertEqual(res_json, expected)
 
@@ -1076,7 +1076,7 @@ class TestInstructorAPIEnrollment(ModuleStoreTestCase, LoginEnrollmentTestCase):
 
         manual_enrollments = ManualEnrollmentAudit.objects.all()
         self.assertEqual(manual_enrollments.count(), 1)
-        self.assertEqual(manual_enrollments[0].state_transition, ALLOWEDTOENROLL_TO_UNENROLL)
+        self.assertEqual(manual_enrollments[0].state_transition, ALLOWEDTOENROLL_TO_UNENROLLED)
         res_json = json.loads(response.content)
         self.assertEqual(res_json, expected)
 
@@ -1197,7 +1197,7 @@ class TestInstructorAPIEnrollment(ModuleStoreTestCase, LoginEnrollmentTestCase):
         )
         manual_enrollments = ManualEnrollmentAudit.objects.all()
         self.assertEqual(manual_enrollments.count(), 1)
-        self.assertEqual(manual_enrollments[0].state_transition, ENROLL_TO_ENROLL)
+        self.assertEqual(manual_enrollments[0].state_transition, ENROLLED_TO_ENROLLED)
         self.assertEqual(course_enrollment.mode, u"verified")
 
     def create_paid_course(self):
@@ -1257,7 +1257,7 @@ class TestInstructorAPIEnrollment(ModuleStoreTestCase, LoginEnrollmentTestCase):
         response = self.client.post(url, params)
         manual_enrollments = ManualEnrollmentAudit.objects.all()
         self.assertEqual(manual_enrollments.count(), 2)
-        self.assertEqual(manual_enrollments[1].state_transition, ALLOWEDTOENROLL_TO_ENROLL)
+        self.assertEqual(manual_enrollments[1].state_transition, ALLOWEDTOENROLL_TO_ENROLLED)
         self.assertEqual(response.status_code, 200)
 
         # test the response data
@@ -1327,7 +1327,7 @@ class TestInstructorAPIEnrollment(ModuleStoreTestCase, LoginEnrollmentTestCase):
 
         manual_enrollments = ManualEnrollmentAudit.objects.all()
         self.assertEqual(manual_enrollments.count(), 1)
-        self.assertEqual(manual_enrollments[0].state_transition, UNENROLL_TO_UNENROLL)
+        self.assertEqual(manual_enrollments[0].state_transition, UNENROLLED_TO_UNENROLLED)
 
         res_json = json.loads(response.content)
         self.assertEqual(res_json, expected)

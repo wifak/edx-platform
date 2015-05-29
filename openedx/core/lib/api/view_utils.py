@@ -148,7 +148,7 @@ class RetrievePatchAPIView(RetrieveModelMixin, UpdateModelMixin, GenericAPIView)
         """
         field_errors = {}
         serializer = self.get_serializer(self.get_object_or_none(), data=patch, partial=True)
-        fields = self.get_serializer().get_fields()
+        fields = self.get_serializer().get_fields() # pylint: disable=maybe-no-member
 
         for key in patch:
             if key not in fields:
@@ -160,8 +160,8 @@ class RetrievePatchAPIView(RetrieveModelMixin, UpdateModelMixin, GenericAPIView)
                     'developer_message': "This field is not editable",
                 }
 
-        if not serializer.is_valid():
-            errors = serializer.errors
+        if not serializer.is_valid(): # pylint: disable=maybe-no-member
+            errors = serializer.errors # pylint: disable=maybe-no-member
             for key, error in errors.iteritems():
                 field_errors[key] = {
                     'developer_message': u"Value '{field_value}' is not valid for field '{field_name}': {error}".format(

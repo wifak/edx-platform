@@ -10,12 +10,9 @@ from rest_framework.authentication import (
 from rest_framework import status
 from rest_framework import permissions
 
-from django.core.paginator import Paginator
 from django.db.models import Count
 
 from student.models import CourseEnrollment
-
-import sys
 
 from openedx.core.lib.api.parsers import MergePatchParser
 from openedx.core.lib.api.permissions import IsStaffOrReadOnly, IsActiveOrReadOnly
@@ -191,7 +188,7 @@ class TeamsListView(GenericAPIView):
 
         page = self.paginate_queryset(queryset)
         serializer = self.get_pagination_serializer(page)
-        return Response(serializer.data)
+        return Response(serializer.data) # pylint: disable=maybe-no-member
 
     def post(self, request):
         """
@@ -402,7 +399,7 @@ class TopicListView(GenericAPIView):
 
         page = self.paginate_queryset(topics)
         serializer = self.get_pagination_serializer(page)
-        return Response(serializer.data)
+        return Response(serializer.data) # pylint: disable=maybe-no-member
 
 
 class TopicDetailView(APIView):

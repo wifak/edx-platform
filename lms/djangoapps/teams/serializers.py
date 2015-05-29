@@ -101,4 +101,4 @@ class TopicSerializer(serializers.Serializer):
     """Serializes a topic."""
     description = serializers.CharField()
     name = serializers.CharField()
-    id = serializers.CharField()
+    id = serializers.CharField() # pylint: disable=invalid-name

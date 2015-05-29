@@ -4,10 +4,8 @@ import json
 
 import ddt
 
-from django.conf import settings
 from django.core.urlresolvers import reverse
 from rest_framework.test import APITestCase
-from unittest import skipUnless
 
 from student.tests.factories import UserFactory
 from student.models import CourseEnrollment

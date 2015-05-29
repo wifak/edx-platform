@@ -114,6 +114,85 @@ def get_credit_requirements(course_key, namespace=None):
     ]
 
 
+def create_credit_request(course_key, provider_id, username, grade, profile_info):
+    """Request credit from a provider.
+
+    Initiate a request for credit from a credit provider.  Only users who are eligible
+    for credit (have satisfied all credit requirements) are allowed to make requests.
+
+    A database record will be created to track the request with a 32-character UUID.
+    The returned dictionary can be used by the user’s browser to send a POST request to the credit provider.
+
+    If a pending request already exists, this function should return a request description with the same UUID.
+    (Other parameters, such as the user’s full name may be different than the original request).
+
+    If a completed request (either accepted or rejected) already exists, this function will
+    raise an exception.  Users are not allowed to make additional requests once a request
+    has been completed.
+
+    Arguments:
+        course_key (CourseKey): The identifier for the course.
+        provider_id (str): The identifier of the credit provider.
+        username (str): The username of the user requesting credit.
+        grade (float): The user’s final grade in the course, which is a value in the range [0.0, 1.0] (inclusive).
+        profile_info (dict): Optional information about the user to send to the credit provider.
+
+    Returns: dict
+
+    Raises:
+        ProviderNotFound: No credit provider exists for the given provider_id.
+        ProviderNotConfiguredForCourse: The credit provider exists, but has not been enabled for the course.
+        UserIsNotEligible: The user has not satisfied eligibility requirements for credit.
+        RequestAlreadyCompleted: The user has already submitted a request and received a response
+            from the credit provider.
+
+    Example Usage:
+        >>> create_credit_request(course.id, "ron", "hogwarts")
+        {
+            "request_uuid": "557168d0f7664fe59097106c67c3f847",
+            "timestamp": "2015-05-04T20:57:57.987119+00:00",
+            "course_org": "HogwartsX",
+            "course_num": "Potions101",
+            "course_run": "1T2015",
+            "final_grade": 0.95,
+            "user_username": "ron",
+            "user_email": "ron@example.com",
+            "user_full_name": "Ron Weasley",
+            "user_mailing_address": "",
+            "user_country": "US",
+        }
+
+    """
+    pass
+
+
+def update_credit_status(request_uuid, status):
+    """Update the status of a credit request.
+
+    Approve or reject a request for a student to receive credit in a course
+    from a particular credit provider.
+
+    This function does NOT check that the status update is authorized.
+    The caller needs to handle authentication and authorization (checking the signature
+    of the message received from the credit provider)
+
+    The function is idempotent; if the request has already been updated to the status,
+    the function does nothing.
+
+    Arguments:
+        request_uuid (str): The unique identifier for the credit request.
+        status (str): Either "approved" or "rejected"
+
+    Returns: None
+
+    Raises:
+        RequestNotFound: The request does not exist.
+        InvalidStatus: The status is not either "approved" or "rejected".
+
+    """
+    pass
+
+
 def _get_requirements_to_disable(old_requirements, new_requirements):
     """ Returns the ids of CreditRequirement to be disabled that are deleted from the courseware
 

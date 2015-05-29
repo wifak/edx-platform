@@ -1,6 +1,5 @@
 """HTTP endpoints for the Teams API."""
 from rest_framework.generics import GenericAPIView
-from rest_framework.serializers import ValidationError
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.authentication import (
@@ -18,7 +17,7 @@ from student.models import CourseEnrollment
 
 from openedx.core.lib.api.parsers import MergePatchParser
 from openedx.core.lib.api.permissions import IsStaffOrReadOnly, IsActiveOrReadOnly
-from openedx.core.lib.api.view_utils import RetrievePatchAPIView
+from openedx.core.lib.api.view_utils import RetrievePatchAPIView, add_serializer_errors
 from openedx.core.lib.api.serializers import PaginationSerializer
 
 from xmodule.modulestore.django import modulestore
@@ -29,7 +28,7 @@ from opaque_keys.edx.keys import CourseKey
 from courseware.courses import get_course
 
 from .models import CourseTeam
-from .serializers import CourseTeamSerializer, TopicSerializer
+from .serializers import CourseTeamSerializer, CourseTeamCreationSerializer, TopicSerializer
 
 
 class TeamsListView(GenericAPIView):
@@ -217,30 +216,19 @@ class TeamsListView(GenericAPIView):
                     'user_message': _("This field is not present on this resource."),
                 }
 
-        team = CourseTeam.create(
-            name=request.DATA.get('name', ""),
-            course_id=course_key,
-            description=request.DATA.get('description', ""),
-            topic_id=request.DATA.get('topic_id'),
-            country=request.DATA.get('country'),
-            language=request.DATA.get('language'),
-        )
+        data = request.DATA
+        data['course_id'] = course_key
 
-        try:
-            team.full_clean()
-            team.save()
-        except ValidationError as err:
-            for key, error in err.message_dict.iteritems():
-                field_errors[key] = {
-                    'developer_message': error[0],
-                }
+        serializer = CourseTeamCreationSerializer(data=data)
+        add_serializer_errors(serializer, data, field_errors)
 
         if field_errors:
             return Response({
                 'field_errors': field_errors,
             }, status=status.HTTP_400_BAD_REQUEST)
-
-        return Response(CourseTeamSerializer(team).data)
+        else:
+            team = serializer.save()
+            return Response(CourseTeamSerializer(team).data)
 
 
 class TeamsDetailView(RetrievePatchAPIView):

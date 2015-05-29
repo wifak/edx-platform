@@ -123,6 +123,21 @@ def view_auth_classes(is_user=False):
     return _decorator
 
 
+def add_serializer_errors(serializer, data, field_errors):
+    """
+    Adds errors from serializer validation to field_errors. data is the original data to deserialize.
+    """
+    if not serializer.is_valid():  # pylint: disable=maybe-no-member
+        errors = serializer.errors  # pylint: disable=maybe-no-member
+        for key, error in errors.iteritems():
+            field_errors[key] = {
+                'developer_message': u"Value '{field_value}' is not valid for field '{field_name}': {error}".format(
+                    field_value=data[key] if key in data else '', field_name=key, error=error
+                ),
+                'user_message': _(u"This value is invalid."),
+            }
+
+
 class RetrievePatchAPIView(RetrieveModelMixin, UpdateModelMixin, GenericAPIView):
     """
     Concrete view for retrieving and updating a model instance. Like DRF's RetriveUpdateAPIView, but without PUT.
@@ -162,14 +177,6 @@ class RetrievePatchAPIView(RetrieveModelMixin, UpdateModelMixin, GenericAPIView)
                     'user_message': _("This field is not editable"),
                 }
 
-        if not serializer.is_valid():  # pylint: disable=maybe-no-member
-            errors = serializer.errors  # pylint: disable=maybe-no-member
-            for key, error in errors.iteritems():
-                field_errors[key] = {
-                    'developer_message': u"Value '{field_value}' is not valid for field '{field_name}': {error}".format(
-                        field_value=patch[key], field_name=key, error=error
-                    ),
-                    'user_message': _(u"This value is invalid."),
-                }
+        add_serializer_errors(serializer, patch, field_errors)
 
         return field_errors

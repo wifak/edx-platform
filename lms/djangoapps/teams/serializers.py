@@ -100,6 +100,39 @@ class CourseTeamSerializer(serializers.ModelSerializer):
         read_only_fields = ("course_id", "date_created")
 
 
+class CourseTeamCreationSerializer(serializers.ModelSerializer):
+    """
+    Deserializes a CourseTeam for creation.
+    """
+
+    class Meta(object):
+        """
+        Defines meta information for the ModelSerializer.
+        """
+        model = CourseTeam
+        fields = (
+            "name",
+            "course_id",
+            "description",
+            "topic_id",
+            "country",
+            "language",
+        )
+
+    def restore_object(self, attrs, instance=None):
+        """
+        Restores a CourseTeam instance from the given attrs.
+        """
+        return CourseTeam.create(
+            name=attrs.get("name", ''),
+            course_id=attrs.get("course_id"),
+            description=attrs.get("description", ''),
+            topic_id=attrs.get("topic_id", ''),
+            country=attrs.get("country", ''),
+            language=attrs.get("language", ''),
+        )
+
+
 class TopicSerializer(serializers.Serializer):
     """Serializes a topic."""
     description = serializers.CharField()

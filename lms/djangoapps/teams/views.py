@@ -369,7 +369,7 @@ class TopicListView(GenericAPIView):
         if course_module is None:  # course is None if not found
             return Response(status=status.HTTP_404_NOT_FOUND)
 
-        if not CourseEnrollment.is_enrolled(request.user, course_id):
+        if not (CourseEnrollment.is_enrolled(request.user, course_id) or request.user.is_staff):
             return Response({'detail': "user must be enrolled"}, status=status.HTTP_403_FORBIDDEN)
 
         topics = course_module.teams_topics
@@ -436,7 +436,7 @@ class TopicDetailView(APIView):
         if course_module is None:
             return Response(status=status.HTTP_404_NOT_FOUND)
 
-        if not CourseEnrollment.is_enrolled(request.user, course_id):
+        if not (CourseEnrollment.is_enrolled(request.user, course_id) or request.user.is_staff):
             return Response({'detail': "user must be enrolled"}, status=status.HTTP_403_FORBIDDEN)
 
         topics = [t for t in course_module.teams_topics if t['id'] == topic_id]

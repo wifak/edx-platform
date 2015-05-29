@@ -372,8 +372,10 @@ class TestTeamAPI(APITestCase, ModuleStoreTestCase):
         response = self.client.get(reverse('topics_list'))
         self.assertEqual(400, response.status_code)
 
-    def test_list_topics_order_by_name_by_default(self):
-        self.client.login(username=self.student_user_enrolled, password=self.test_password)
+    @ddt.data('student_user_enrolled', 'staff_user')
+    def test_list_topics_order_by_name_by_default(self, user_field):
+        user = getattr(self, user_field)
+        self.client.login(username=user.username, password=self.test_password)
         response = self.client.get(reverse('topics_list'), data={'course_id': str(self.test_course_1.id)})
         self.assertEqual(200, response.status_code)
         topics = response.data['results']
@@ -440,8 +442,10 @@ class TestTeamAPI(APITestCase, ModuleStoreTestCase):
         )
         self.assertEqual(404, response.status_code)
 
-    def test_topic_detail_success(self):
-        self.client.login(username=self.student_user_enrolled, password=self.test_password)
+    @ddt.data('student_user_enrolled', 'staff_user')
+    def test_topic_detail_success(self, user_field):
+        user = getattr(self, user_field)
+        self.client.login(username=user.username, password=self.test_password)
         response = self.client.get(
             reverse('topics_detail', kwargs={'topic_id': 'topic_0', 'course_id': str(self.test_course_1.id)})
         )

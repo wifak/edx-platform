@@ -144,7 +144,7 @@ FEATURES = {
     'ENTRANCE_EXAMS': False,
 
     # Toggle platform-wide course licensing
-    'LICENSING': False,
+    'LICENSING': True,
 
     # Enable the courseware search functionality
     'ENABLE_COURSEWARE_INDEX': False,
@@ -957,7 +957,7 @@ ELASTIC_FIELD_MAPPINGS = {
 
 XBLOCK_SETTINGS = {
     "VideoDescriptor": {
-        "licensing_enabled": FEATURES.get("LICENSING", False)
+        "licensing_enabled": FEATURES.get("LICENSING", True)
     }
 }
 

@@ -26,6 +26,11 @@ class UserIsNotEligible(Exception):
     pass
 
 
+class InvalidGrade(Exception):
+    """The grade is not in the range [0.0, 1.0]. """
+    pass
+
+
 class RequestAlreadyCompleted(Exception):
     """The user has already submitted a request and received a response from the credit provider. """
     pass

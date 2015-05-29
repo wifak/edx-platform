@@ -143,6 +143,7 @@ def create_credit_request(course_key, provider_id, user_info, grade):
     Raises:
         CreditProviderNotFound: No credit provider exists for the given provider_id.
         CreditProviderNotConfiguredForCourse: The credit provider exists, but has not been enabled for the course.
+        InvalidGrade: The grade parameter is not in the range [0.0, 1.0]
         UserIsNotEligible: The user has not satisfied eligibility requirements for credit.
         RequestAlreadyCompleted: The user has already submitted a request and received a response
             from the credit provider.
@@ -158,7 +159,7 @@ def create_credit_request(course_key, provider_id, user_info, grade):
         >>>
         >>> create_credit_request(course.id, "hogwarts", 0.95, user_info)
         {
-            "request_uuid": "557168d0f7664fe59097106c67c3f847",
+            "uuid": "557168d0f7664fe59097106c67c3f847",
             "timestamp": "2015-05-04T20:57:57.987119+00:00",
             "course_org": "HogwartsX",
             "course_num": "Potions101",
@@ -172,7 +173,7 @@ def create_credit_request(course_key, provider_id, user_info, grade):
         }
 
     """
-    pass
+    return {}
 
 
 def update_credit_request_status(request_uuid, status):

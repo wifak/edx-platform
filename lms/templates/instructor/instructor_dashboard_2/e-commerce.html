@@ -6,6 +6,7 @@
 <%include file="edit_coupon_modal.html" args="section_data=section_data" />
 <%include file="set_course_mode_price_modal.html" args="section_data=section_data" />
 <%include file="generate_registarion_codes_modal.html" args="section_data=section_data" />
+<%include file="validate_revalidate_registration_code_modal.html" args="section_data=section_data" />
 <div class="ecommerce-wrapper">
    <h3 class="error-msgs" id="error-msg"></h3>
    <div id = "accordion">
@@ -16,6 +17,9 @@
             <span class="code_tip">
                 <p>${_('Create one or more pre-paid course enrollment codes. Students can use these codes to enroll in the course.')}</p>
                 <a id="registration_code_generation_link" href="#reg_code_generation_modal" class="add blue-button">${_('Create Enrollment Codes')}</a>
+
+                <p>${_('Invalidate, Re-Validate or Redeem a particular Registration code.')}</p>
+                <a id="query_registration_code_link" href="#validate_revalidate_registration_code_modal" rel="leanModal" class="add blue-button">${_('Query Registration Code')}</a>
             </span>
             %endif
             <p>${_('Download a .csv file of all enrollment codes for this course')}</p>
@@ -464,6 +468,9 @@
      $('#course_price_link').click(function () {
        reset_input_fields();
      });
+     $('#query_registration_code_link').click(function () {
+       reset_input_fields();
+     });
      $('#add_coupon_link').click(function () {
        reset_input_fields();
      });
@@ -579,6 +586,8 @@
        $("#edit-coupon-modal").attr("aria-hidden", "true");
        $(".edit-right").focus();
        $("#set-course-mode-price-modal").attr("aria-hidden", "true");
+       $("#validate_revalidate_registration_code_modal").attr("aria-hidden", "true");
+
        $("#registration_code_generation_modal").attr("aria-hidden", "true");
        $("#add_coupon_button").removeAttr('disabled');
        $("#set_course_button").removeAttr('disabled');
@@ -602,10 +611,11 @@
      $("#edit-coupon-modal .close-modal").click(onModalClose);
      $('#registration_code_generation_modal .close-modal').click(onModalClose);
      $("#set-course-mode-price-modal .close-modal").click(reset_input_fields);
+     $("#validate_revalidate_registration_code_modal .close-modal").click(reset_input_fields);
 
 
      // Hitting the ESC key will exit the modal
-     $("#add-coupon-modal, #edit-coupon-modal, #set-course-mode-price-modal, #registration_code_generation_modal").on("keydown", function (e) {
+     $("#add-coupon-modal, #edit-coupon-modal, #set-course-mode-price-modal, #validate_revalidate_registration_code_modal, #registration_code_generation_modal").on("keydown", function (e) {
        var keyCode = e.keyCode || e.which;
        // 27 is the ESC key
        if (keyCode === 27) {
@@ -613,6 +623,8 @@
          $("#add-coupon-modal .close-modal").click();
          $("#set-course-mode-price-modal .close-modal").click();
          $("#edit-coupon-modal .close-modal").click();
+         $("#validate_revalidate_registration_code_modal .close-modal").click();
+
          $('#registration_code_generation_modal .close-modal').click();
        }
      });

@@ -11,6 +11,8 @@ from rest_framework import status
 from rest_framework import permissions
 
 from django.db.models import Count
+from django.utils.translation import ugettext as _
+
 
 from student.models import CourseEnrollment
 

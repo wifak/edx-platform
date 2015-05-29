@@ -15,7 +15,7 @@ from django.utils.translation import ugettext as _
 from student.models import CourseEnrollment
 
 from openedx.core.lib.api.parsers import MergePatchParser
-from openedx.core.lib.api.permissions import IsStaffOrReadOnly, IsActiveOrReadOnly
+from openedx.core.lib.api.permissions import IsStaffOrReadOnly
 from openedx.core.lib.api.view_utils import RetrievePatchAPIView, add_serializer_errors
 from openedx.core.lib.api.serializers import PaginationSerializer
 
@@ -120,8 +120,7 @@ class TeamsListView(GenericAPIView):
             but does not include the id, is_active, date_created, or membership
             fields. id is automatically computed based on name.
 
-            If the user is not logged in or has not verified their email, a
-            403 error is returned.
+            If the user is not logged in a 403 error is returned.
 
             If the course_id is not valid or extra fields are included in the
             request, a 400 error is returned.
@@ -131,7 +130,7 @@ class TeamsListView(GenericAPIView):
 
     # SessionAuthentication must come first to return a 403 for unauthenticated users
     authentication_classes = (SessionAuthentication, OAuth2Authentication)
-    permission_classes = (permissions.IsAuthenticated, IsActiveOrReadOnly)
+    permission_classes = (permissions.IsAuthenticated,)
 
     paginate_by = 10
     paginate_by_param = 'page_size'

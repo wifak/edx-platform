@@ -2,22 +2,17 @@
 
 
 class InvalidCreditRequirements(Exception):
-    """ The exception occurs when the requirement dictionary has invalid format. """
+    """The requirement dictionary provided has invalid format. """
     pass
 
 
 class InvalidCreditCourse(Exception):
-    """ The exception occurs when the the course is not marked as a Credit Course. """
+    """The course is not configured for credit. """
     pass
 
 
-class CreditProviderNotFound(Exception):
-    """No credit provider exists for the given provider_id. """
-    pass
-
-
-class CreditProviderNotConfiguredForCourse(Exception):
-    """The credit provider exists, but has not been enabled for the course. """
+class CreditProviderNotConfigured(Exception):
+    """The course has not been configured for credit from the specified provider. """
     pass
 
 

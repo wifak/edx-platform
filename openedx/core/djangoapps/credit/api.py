@@ -1,8 +1,25 @@
 """ Contains the APIs for course credit requirements """
+import uuid
+import datetime
+import pytz
 
-from .exceptions import InvalidCreditRequirements
-from .models import CreditCourse, CreditRequirement
-from openedx.core.djangoapps.credit.exceptions import InvalidCreditCourse
+from .exceptions import (
+    InvalidCreditRequirements,
+    InvalidCreditRequirements,
+    InvalidCreditCourse,
+    CreditProviderNotConfigured,
+    UserIsNotEligible,
+    InvalidGrade,
+    RequestAlreadyCompleted,
+    CreditRequestNotFound,
+    InvalidCreditStatus,
+)
+from .models import (
+    CreditCourse,
+    CreditProvider,
+    CreditRequirement,
+    CreditRequest,
+)
 
 
 def set_credit_requirements(course_key, requirements):
@@ -141,8 +158,7 @@ def create_credit_request(course_key, provider_id, user_info, grade):
     Returns: dict
 
     Raises:
-        CreditProviderNotFound: No credit provider exists for the given provider_id.
-        CreditProviderNotConfiguredForCourse: The credit provider exists, but has not been enabled for the course.
+        CreditProviderNotConfigured: The course has not been configured as credit for the specified provider.
         InvalidGrade: The grade parameter is not in the range [0.0, 1.0]
         UserIsNotEligible: The user has not satisfied eligibility requirements for credit.
         RequestAlreadyCompleted: The user has already submitted a request and received a response
@@ -173,7 +189,45 @@ def create_credit_request(course_key, provider_id, user_info, grade):
         }
 
     """
-    return {}
+    try:
+        credit_provider = CreditProvider.objects.get(provider_id=provider_id)
+        credit_course = CreditCourse.objects.get(
+            course_key=course_key,
+            enabled=True,
+            providers__provider_id=provider_id,
+        )
+    except (CreditCourse.DoesNotExist, CreditProvider.DoesNotExist):
+        raise CreditProviderNotConfigured
+
+    # TODO: credit request already initiated case
+    credit_request, created = CreditRequest.objects.get_or_create(
+        course=credit_course,
+        provider=credit_provider,
+        username=user_info['username'],
+    )
+
+    if created:
+        credit_request.uuid = uuid.uuid4().hex
+
+    # TODO: handle all the nonesense around optional fields, esp user info
+    parameters = {
+        "uuid": credit_request.uuid,
+        "timestamp": datetime.datetime.now(pytz.UTC).isoformat(),
+        "course_org": course_key.org,
+        "course_num": course_key.num,
+        "course_run": course_key.run,
+        "final_grade": grade,
+        "user_username": user_info['username'],
+        "user_email": user_info['email'],
+        "user_full_name": user_info['full_name'],
+        "user_mailing_address": user_info['mailing_address'],
+        "user_country": user_info['country'],
+    }
+
+    credit_request.parameters = parameters
+    credit_request.save()
+
+    return parameters
 
 
 def update_credit_request_status(request_uuid, status):

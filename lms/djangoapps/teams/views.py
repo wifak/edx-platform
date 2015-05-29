@@ -203,6 +203,7 @@ class TeamsListView(GenericAPIView):
         except InvalidKeyError:
             field_errors['course_id'] = {
                 'developer_message': "course_id is not valid.",
+                'user_message': _("course_id is not valid"),
             }
         except ValueError:
             return Response(status=status.HTTP_404_NOT_FOUND)
@@ -211,6 +212,7 @@ class TeamsListView(GenericAPIView):
             if key not in ['name', 'course_id', 'description', 'topic_id', 'country', 'language']:
                 field_errors[key] = {
                     'developer_message': "This field is not present on this resource",
+                    'user_message': _("This field is not present on this resource."),
                 }
 
         team = CourseTeam.create(

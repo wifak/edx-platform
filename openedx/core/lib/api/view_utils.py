@@ -154,10 +154,12 @@ class RetrievePatchAPIView(RetrieveModelMixin, UpdateModelMixin, GenericAPIView)
             if key not in fields:
                 field_errors[key] = {
                     'developer_message': "This field is not present on this resource",
+                    'user_message': _("This field is not present on this resource"),
                 }
             elif fields[key].read_only:
                 field_errors[key] = {
                     'developer_message': "This field is not editable",
+                    'user_message': _("This field is not editable"),
                 }
 
         if not serializer.is_valid():  # pylint: disable=maybe-no-member

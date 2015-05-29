@@ -65,14 +65,101 @@ class LmsSearchFilterGeneratorTestCase(ModuleStoreTestCase):
     def setUp(self):
         super(LmsSearchFilterGeneratorTestCase, self).setUp()
         self.build_courses()
-        self.user_partition = None
-        self.split_test_user_partition = None
-        self.first_cohort = None
-        self.second_cohort = None
         self.user = UserFactory.create(username="jack", email="jack@fake.edx.org", password='test')
 
         for course in self.courses:
             CourseEnrollment.enroll(self.user, course.location.course_key)
+
+    def test_course_id_not_provided(self):
+        """
+        Tests that we get the list of IDs of courses the user is enrolled in when the course ID is null or not provided
+        """
+        field_dictionary, filter_dictionary, _ = LmsSearchFilterGenerator.generate_field_filters(user=self.user)
+
+        self.assertTrue('start_date' in filter_dictionary)
+        self.assertIn(unicode(self.courses[0].id), field_dictionary['course'])
+        self.assertIn(unicode(self.courses[1].id), field_dictionary['course'])
+
+    def test_course_id_provided(self):
+        """
+        Tests that we get the course ID when the course ID is provided
+        """
+        field_dictionary, filter_dictionary, _ = LmsSearchFilterGenerator.generate_field_filters(
+            user=self.user,
+            course_id=unicode(self.courses[0].id)
+        )
+
+        self.assertTrue('start_date' in filter_dictionary)
+        self.assertEqual(unicode(self.courses[0].id), field_dictionary['course'])
+
+    def test_user_not_provided(self):
+        """
+        Tests that we get empty list of courses in case the user is not provided
+        """
+        field_dictionary, filter_dictionary, _ = LmsSearchFilterGenerator.generate_field_filters()
+
+        self.assertTrue('start_date' in filter_dictionary)
+        self.assertEqual(0, len(field_dictionary['course']))
+
+    def test_excludes_microsite(self):
+        """ By default there is the test microsite to exclude """
+        _, _, exclude_dictionary = LmsSearchFilterGenerator.generate_field_filters(user=self.user)
+        self.assertIn('org', exclude_dictionary)
+        exclude_orgs = exclude_dictionary['org']
+        self.assertEqual(1, len(exclude_orgs))
+        self.assertEqual('TestMicrositeX', exclude_orgs[0])
+
+    @patch('microsite_configuration.microsite.get_all_orgs', Mock(return_value=[]))
+    def test_excludes_no_microsite(self):
+        """ Test when no microsite is present - nothing to exclude """
+        _, _, exclude_dictionary = LmsSearchFilterGenerator.generate_field_filters(user=self.user)
+        self.assertNotIn('org', exclude_dictionary)
+
+    @patch('microsite_configuration.microsite.get_value', Mock(return_value='TestMicrositeX'))
+    def test_excludes_microsite_within(self):
+        field_dictionary, _, exclude_dictionary = LmsSearchFilterGenerator.generate_field_filters(user=self.user)
+        self.assertNotIn('org', exclude_dictionary)
+        self.assertIn('org', field_dictionary)
+        self.assertEqual('TestMicrositeX', field_dictionary['org'])
+
+    @patch(
+        'microsite_configuration.microsite.get_all_orgs',
+        Mock(return_value=["TestMicrosite1", "TestMicrosite2", "TestMicrosite3", "TestMicrosite4"])
+    )
+    def test_excludes_multi_microsites(self):
+        _, _, exclude_dictionary = LmsSearchFilterGenerator.generate_field_filters(user=self.user)
+        self.assertIn('org', exclude_dictionary)
+        exclude_orgs = exclude_dictionary['org']
+        self.assertEqual(4, len(exclude_orgs))
+        self.assertIn('TestMicrosite1', exclude_orgs)
+        self.assertIn('TestMicrosite2', exclude_orgs)
+        self.assertIn('TestMicrosite3', exclude_orgs)
+        self.assertIn('TestMicrosite4', exclude_orgs)
+
+    @patch(
+        'microsite_configuration.microsite.get_all_orgs',
+        Mock(return_value=["TestMicrosite1", "TestMicrosite2", "TestMicrosite3", "TestMicrosite4"])
+    )
+    @patch('microsite_configuration.microsite.get_value', Mock(return_value='TestMicrosite3'))
+    def test_excludes_multi_microsites_within(self):
+        field_dictionary, _, exclude_dictionary = LmsSearchFilterGenerator.generate_field_filters(user=self.user)
+        self.assertNotIn('org', exclude_dictionary)
+        self.assertIn('org', field_dictionary)
+        self.assertEqual('TestMicrosite3', field_dictionary['org'])
+
+
+class LmsSearchFilterGeneratorGroupsTestCase(LmsSearchFilterGeneratorTestCase):
+    """
+    Test case class to test search result processor
+    with content and user groups present within the course
+    """
+
+    def setUp(self):
+        super(LmsSearchFilterGeneratorGroupsTestCase, self).setUp()
+        self.user_partition = None
+        self.split_test_user_partition = None
+        self.first_cohort = None
+        self.second_cohort = None
 
     def add_seq_with_content_groups(self, groups=None):
         """
@@ -206,83 +293,6 @@ class LmsSearchFilterGeneratorTestCase(ModuleStoreTestCase):
         self.courses[1].save()
         modulestore().update_item(self.courses[1], self.user.id)
 
-    def test_course_id_not_provided(self):
-        """
-        Tests that we get the list of IDs of courses the user is enrolled in when the course ID is null or not provided
-        """
-        field_dictionary, filter_dictionary, _ = LmsSearchFilterGenerator.generate_field_filters(user=self.user)
-
-        self.assertTrue('start_date' in filter_dictionary)
-        self.assertIn(unicode(self.courses[0].id), field_dictionary['course'])
-        self.assertIn(unicode(self.courses[1].id), field_dictionary['course'])
-
-    def test_course_id_provided(self):
-        """
-        Tests that we get the course ID when the course ID is provided
-        """
-        field_dictionary, filter_dictionary, _ = LmsSearchFilterGenerator.generate_field_filters(
-            user=self.user,
-            course_id=unicode(self.courses[0].id)
-        )
-
-        self.assertTrue('start_date' in filter_dictionary)
-        self.assertEqual(unicode(self.courses[0].id), field_dictionary['course'])
-
-    def test_user_not_provided(self):
-        """
-        Tests that we get empty list of courses in case the user is not provided
-        """
-        field_dictionary, filter_dictionary, _ = LmsSearchFilterGenerator.generate_field_filters()
-
-        self.assertTrue('start_date' in filter_dictionary)
-        self.assertEqual(0, len(field_dictionary['course']))
-
-    def test_excludes_microsite(self):
-        """ By default there is the test microsite to exclude """
-        _, _, exclude_dictionary = LmsSearchFilterGenerator.generate_field_filters(user=self.user)
-        self.assertIn('org', exclude_dictionary)
-        exclude_orgs = exclude_dictionary['org']
-        self.assertEqual(1, len(exclude_orgs))
-        self.assertEqual('TestMicrositeX', exclude_orgs[0])
-
-    @patch('microsite_configuration.microsite.get_all_orgs', Mock(return_value=[]))
-    def test_excludes_no_microsite(self):
-        """ Test when no microsite is present - nothing to exclude """
-        _, _, exclude_dictionary = LmsSearchFilterGenerator.generate_field_filters(user=self.user)
-        self.assertNotIn('org', exclude_dictionary)
-
-    @patch('microsite_configuration.microsite.get_value', Mock(return_value='TestMicrositeX'))
-    def test_excludes_microsite_within(self):
-        field_dictionary, _, exclude_dictionary = LmsSearchFilterGenerator.generate_field_filters(user=self.user)
-        self.assertNotIn('org', exclude_dictionary)
-        self.assertIn('org', field_dictionary)
-        self.assertEqual('TestMicrositeX', field_dictionary['org'])
-
-    @patch(
-        'microsite_configuration.microsite.get_all_orgs',
-        Mock(return_value=["TestMicrosite1", "TestMicrosite2", "TestMicrosite3", "TestMicrosite4"])
-    )
-    def test_excludes_multi_microsites(self):
-        _, _, exclude_dictionary = LmsSearchFilterGenerator.generate_field_filters(user=self.user)
-        self.assertIn('org', exclude_dictionary)
-        exclude_orgs = exclude_dictionary['org']
-        self.assertEqual(4, len(exclude_orgs))
-        self.assertIn('TestMicrosite1', exclude_orgs)
-        self.assertIn('TestMicrosite2', exclude_orgs)
-        self.assertIn('TestMicrosite3', exclude_orgs)
-        self.assertIn('TestMicrosite4', exclude_orgs)
-
-    @patch(
-        'microsite_configuration.microsite.get_all_orgs',
-        Mock(return_value=["TestMicrosite1", "TestMicrosite2", "TestMicrosite3", "TestMicrosite4"])
-    )
-    @patch('microsite_configuration.microsite.get_value', Mock(return_value='TestMicrosite3'))
-    def test_excludes_multi_microsites_within(self):
-        field_dictionary, _, exclude_dictionary = LmsSearchFilterGenerator.generate_field_filters(user=self.user)
-        self.assertNotIn('org', exclude_dictionary)
-        self.assertIn('org', field_dictionary)
-        self.assertEqual('TestMicrosite3', field_dictionary['org'])
-
     def test_content_group_id_provided(self):
         """
         Tests that we get the content group ID when course is assigned to cohort
@@ -358,9 +368,9 @@ class LmsSearchFilterGeneratorTestCase(ModuleStoreTestCase):
         self.assertEqual(unicode(self.courses[0].id), field_dictionary['course'])
         self.assertEqual(None, filter_dictionary['content_groups'])
 
-    def test_split_test_with_content_groups_user_not_assigned(self):
+    def test_split_test_with_user_groups_user_not_assigned(self):
         """
-        Tests that we don't get content group ID when user is not assigned to a split test group
+        Tests that we don't get user group ID when user is not assigned to a split test group
         """
         self.add_split_test()
 
@@ -373,9 +383,9 @@ class LmsSearchFilterGeneratorTestCase(ModuleStoreTestCase):
         self.assertEqual(unicode(self.courses[1].id), field_dictionary['course'])
         self.assertEqual(None, filter_dictionary['content_groups'])
 
-    def test_split_test_with_content_groups_user_assigned(self):
+    def test_split_test_with_user_groups_user_assigned(self):
         """
-        Tests that we get content group ID when user is assigned to a split test group
+        Tests that we get user group ID when user is assigned to a split test group
         """
         self.add_split_test()
         self.add_user_to_splittest_group()

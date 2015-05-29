@@ -952,10 +952,20 @@ class GroupConfigurationSearchMongo(CourseTestCase, MixedWithOptionsTestCase):
     Tests indexing of content groups on course modules using mongo modulestore.
     """
     MODULESTORE = TEST_DATA_MONGO_MODULESTORE
+    INDEX_NAME = CoursewareSearchIndexer.INDEX_NAME
 
     def setUp(self):
         super(GroupConfigurationSearchMongo, self).setUp()
 
+        self._setup_course_with_content()
+        self._setup_split_test_module()
+        self._setup_content_groups()
+        self.reload_course()
+
+    def _setup_course_with_content(self):
+        """
+        Set up course with html content in it.
+        """
         self.chapter = ItemFactory.create(
             parent_location=self.course.location,
             category='chapter',
@@ -1038,6 +1048,10 @@ class GroupConfigurationSearchMongo(CourseTestCase, MixedWithOptionsTestCase):
         )
         self.html_unit3.parent = self.vertical2
 
+    def _setup_split_test_module(self):
+        """
+        Set up split test module.
+        """
         c0_url = self.course.id.make_usage_key("vertical", "condition_0_vertical")
         c1_url = self.course.id.make_usage_key("vertical", "condition_1_vertical")
         c2_url = self.course.id.make_usage_key("vertical", "condition_2_vertical")
@@ -1098,6 +1112,10 @@ class GroupConfigurationSearchMongo(CourseTestCase, MixedWithOptionsTestCase):
         )
         self.html_unit6.parent = self.condition_2_vertical
 
+    def _setup_content_groups(self):
+        """
+        Set up cohort and experiment content groups.
+        """
         cohort_groups_list = {
             u'id': 666,
             u'name': u'Test name',
@@ -1136,10 +1154,6 @@ class GroupConfigurationSearchMongo(CourseTestCase, MixedWithOptionsTestCase):
             HTTP_ACCEPT="application/json",
             HTTP_X_REQUESTED_WITH="XMLHttpRequest",
         )
-
-        self.reload_course()
-
-    INDEX_NAME = CoursewareSearchIndexer.INDEX_NAME
 
     def _group_conf_url(self, cid=-1):
         """
@@ -1273,12 +1287,37 @@ class GroupConfigurationSearchMongo(CourseTestCase, MixedWithOptionsTestCase):
             self.assertIn(self._html_experiment_group_result(self.html_unit4, [unicode(2)]), mock_index.mock_calls)
             self.assertIn(self._html_experiment_group_result(self.html_unit5, [unicode(3)]), mock_index.mock_calls)
             self.assertIn(self._html_experiment_group_result(self.html_unit6, [unicode(4)]), mock_index.mock_calls)
+            self.assertNotIn(self._html_experiment_group_result(self.html_unit6, [unicode(5)]), mock_index.mock_calls)
             self.assertIn(
                 self._vertical_experiment_group_result(self.condition_0_vertical, [unicode(2)]),
                 mock_index.mock_calls
             )
+            self.assertNotIn(
+                self._vertical_experiment_group_result(self.condition_1_vertical, [unicode(2)]),
+                mock_index.mock_calls
+            )
+            self.assertNotIn(
+                self._vertical_experiment_group_result(self.condition_2_vertical, [unicode(2)]),
+                mock_index.mock_calls
+            )
+            self.assertNotIn(
+                self._vertical_experiment_group_result(self.condition_0_vertical, [unicode(3)]),
+                mock_index.mock_calls
+            )
             self.assertIn(
                 self._vertical_experiment_group_result(self.condition_1_vertical, [unicode(3)]),
+                mock_index.mock_calls
+            )
+            self.assertNotIn(
+                self._vertical_experiment_group_result(self.condition_2_vertical, [unicode(3)]),
+                mock_index.mock_calls
+            )
+            self.assertNotIn(
+                self._vertical_experiment_group_result(self.condition_0_vertical, [unicode(4)]),
+                mock_index.mock_calls
+            )
+            self.assertNotIn(
+                self._vertical_experiment_group_result(self.condition_1_vertical, [unicode(4)]),
                 mock_index.mock_calls
             )
             self.assertIn(

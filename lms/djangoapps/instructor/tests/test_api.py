@@ -44,8 +44,9 @@ from shoppingcart.models import (
 from shoppingcart.pdf import PDFInvoice
 from student.models import (
     CourseEnrollment, CourseEnrollmentAllowed, NonExistentCourseError,
-    ManualEnrollmentAudit, UNENROLLED_TO_ENROLLED, ENROLLED_TO_UNENROLLED, ALLOWEDTOENROLL_TO_UNENROLLED, ENROLLED_TO_ENROLLED,
-    UNENROLLED_TO_ALLOWEDTOENROLL, UNENROLLED_TO_UNENROLLED, ALLOWEDTOENROLL_TO_ENROLLED
+    ManualEnrollmentAudit, UNENROLLED_TO_ENROLLED, ENROLLED_TO_UNENROLLED,
+    ALLOWEDTOENROLL_TO_UNENROLLED, ENROLLED_TO_ENROLLED, UNENROLLED_TO_ALLOWEDTOENROLL,
+    UNENROLLED_TO_UNENROLLED, ALLOWEDTOENROLL_TO_ENROLLED
 )
 from student.tests.factories import UserFactory, CourseModeFactory, AdminFactory
 from student.roles import CourseBetaTesterRole, CourseSalesAdminRole, CourseFinanceAdminRole, CourseInstructorRole

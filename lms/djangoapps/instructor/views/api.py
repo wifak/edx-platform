@@ -31,7 +31,10 @@ import urllib
 import decimal
 from student import auth
 from student.roles import GlobalStaff, CourseSalesAdminRole, CourseFinanceAdminRole
-from util.file import store_uploaded_file, course_and_time_based_filename_generator, FileValidationException, UniversalNewlineIterator
+from util.file import (
+    store_uploaded_file, course_and_time_based_filename_generator,
+    FileValidationException, UniversalNewlineIterator
+)
 from util.json_request import JsonResponse
 from instructor.views.instructor_task_helpers import extract_email_features, extract_task_features
 

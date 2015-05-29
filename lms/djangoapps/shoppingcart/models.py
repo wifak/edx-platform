@@ -1161,6 +1161,7 @@ class CourseRegistrationCode(models.Model):
     created_at = models.DateTimeField(default=datetime.now(pytz.utc))
     order = models.ForeignKey(Order, db_index=True, null=True, related_name="purchase_order")
     mode_slug = models.CharField(max_length=100, null=True)
+    is_valid = models.BooleanField(default=True)
 
     # For backwards compatibility, we maintain the FK to "invoice"
     # In the future, we will remove this in favor of the FK
@@ -1196,7 +1197,7 @@ class RegistrationCodeRedemption(models.Model):
         Checks the existence of the registration code
         in the RegistrationCodeRedemption
         """
-        return cls.objects.filter(registration_code=course_reg_code).exists()
+        return cls.objects.filter(registration_code__code=course_reg_code).exists()
 
     @classmethod
     def create_invoice_generated_registration_redemption(cls, course_reg_code, user):

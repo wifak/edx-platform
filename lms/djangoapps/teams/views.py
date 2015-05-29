@@ -188,7 +188,7 @@ class TeamsListView(GenericAPIView):
 
         page = self.paginate_queryset(queryset)
         serializer = self.get_pagination_serializer(page)
-        return Response(serializer.data) # pylint: disable=maybe-no-member
+        return Response(serializer.data)  # pylint: disable=maybe-no-member
 
     def post(self, request):
         """
@@ -399,7 +399,7 @@ class TopicListView(GenericAPIView):
 
         page = self.paginate_queryset(topics)
         serializer = self.get_pagination_serializer(page)
-        return Response(serializer.data) # pylint: disable=maybe-no-member
+        return Response(serializer.data)  # pylint: disable=maybe-no-member
 
 
 class TopicDetailView(APIView):

@@ -114,11 +114,13 @@ def get_credit_requirements(course_key, namespace=None):
     ]
 
 
-def create_credit_request(course_key, provider_id, username, grade, profile_info):
-    """Request credit from a provider.
+def create_credit_request(course_key, provider_id, user_info, grade):
+    """Initiate a request for credit from a credit provider.
 
-    Initiate a request for credit from a credit provider.  Only users who are eligible
-    for credit (have satisfied all credit requirements) are allowed to make requests.
+    This will return the parameters that the user's browser will need to POST
+    to the credit provider.  It does NOT calculate the signature
+
+    Only users who are eligible for credit (have satisfied all credit requirements) are allowed to make requests.
 
     A database record will be created to track the request with a 32-character UUID.
     The returned dictionary can be used by the user’s browser to send a POST request to the credit provider.
@@ -133,21 +135,28 @@ def create_credit_request(course_key, provider_id, username, grade, profile_info
     Arguments:
         course_key (CourseKey): The identifier for the course.
         provider_id (str): The identifier of the credit provider.
-        username (str): The username of the user requesting credit.
+        user_info (dict): Dictionary of user information.
         grade (float): The user’s final grade in the course, which is a value in the range [0.0, 1.0] (inclusive).
-        profile_info (dict): Optional information about the user to send to the credit provider.
 
     Returns: dict
 
     Raises:
-        ProviderNotFound: No credit provider exists for the given provider_id.
-        ProviderNotConfiguredForCourse: The credit provider exists, but has not been enabled for the course.
+        CreditProviderNotFound: No credit provider exists for the given provider_id.
+        CreditProviderNotConfiguredForCourse: The credit provider exists, but has not been enabled for the course.
         UserIsNotEligible: The user has not satisfied eligibility requirements for credit.
         RequestAlreadyCompleted: The user has already submitted a request and received a response
             from the credit provider.
 
     Example Usage:
-        >>> create_credit_request(course.id, "ron", "hogwarts")
+        >>> user_info = {
+        >>>     "username": "ron"
+        >>>     "email": "ron@example.com",
+        >>>     "full_name": "Ron Weasley",
+        >>>     "mailing_address": "",
+        >>>     "country": "US",
+        >>> }
+        >>>
+        >>> create_credit_request(course.id, "hogwarts", 0.95, user_info)
         {
             "request_uuid": "557168d0f7664fe59097106c67c3f847",
             "timestamp": "2015-05-04T20:57:57.987119+00:00",
@@ -166,7 +175,7 @@ def create_credit_request(course_key, provider_id, username, grade, profile_info
     pass
 
 
-def update_credit_status(request_uuid, status):
+def update_credit_request_status(request_uuid, status):
     """Update the status of a credit request.
 
     Approve or reject a request for a student to receive credit in a course
@@ -186,8 +195,8 @@ def update_credit_status(request_uuid, status):
     Returns: None
 
     Raises:
-        RequestNotFound: The request does not exist.
-        InvalidStatus: The status is not either "approved" or "rejected".
+        CreditRequestNotFound: The request does not exist.
+        InvalidCreditStatus: The status is not either "approved" or "rejected".
 
     """
     pass

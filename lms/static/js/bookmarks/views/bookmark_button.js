@@ -48,7 +48,7 @@
                     url: view.bookmarksUrl,
                     dataType: 'json',
                     success: function () {
-                        $('.nav-item.active').find('.bookmark-icon').removeClass('is-hidden').addClass('bookmarked');
+                        $buttonElement.trigger('bookmark:add');
                         $buttonElement.removeClass('un-bookmarked').addClass('bookmarked');
                         $buttonElement.attr('aria-pressed', 'true');
                         $buttonElement.find('.bookmark-sr').text(view.srRemoveBookmarkText);
@@ -66,7 +66,7 @@
                     type: "DELETE",
                     url: deleteUrl,
                     success: function () {
-                        $('.nav-item.active').find('.bookmark-icon').removeClass('bookmarked').addClass('is-hidden');
+                        $buttonElement.trigger('bookmark:remove');
                         $buttonElement.removeClass('bookmarked').addClass('un-bookmarked');
                         $buttonElement.attr('aria-pressed', 'false');
                         $buttonElement.find('.bookmark-sr').text(view.srAddBookmarkText);

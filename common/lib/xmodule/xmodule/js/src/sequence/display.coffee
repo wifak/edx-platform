@@ -18,6 +18,8 @@ class @Sequence
 
   bind: ->
     @$('#sequence-list a').click @goto
+    @el.on 'bookmark:add', @addBookmarkIcon
+    @el.on 'bookmark:remove', @removeBookmarkIcon
 
   initProgress: ->
     @progressTable = {}  # "#problem_#{id}" -> progress
@@ -184,3 +186,11 @@ class @Sequence
     element.removeClass("inactive")
     .removeClass("visited")
     .addClass("active")
+
+  addBookmarkIcon: (event) =>
+    event.preventDefault()
+    @el.find('nav-item.active').find('.bookmark-icon').removeClass('is-hidden').addClass('bookmarked');
+
+  removeBookmarkIcon: (event) =>
+    event.preventDefault()
+    @el.find('nav-item.active').find('.bookmark-icon').removeClass('bookmarked').addClass('is-hidden');

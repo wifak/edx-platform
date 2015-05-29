@@ -20,7 +20,7 @@ from collections import defaultdict, OrderedDict
 import dogstats_wrapper as dog_stats_api
 from urllib import urlencode
 
-from django.utils.translation import ugettext as _, ugettext_lazy
+from django.utils.translation import ugettext_lazy as _
 from django.conf import settings
 from django.utils import timezone
 from django.contrib.auth.models import User
@@ -1603,16 +1603,16 @@ class LinkedInAddToProfileConfiguration(ConfigurationModel):
     """
 
     MODE_TO_CERT_NAME = {
-        "honor": ugettext_lazy(u"{platform_name} Honor Code Certificate for {course_name}"),
-        "verified": ugettext_lazy(u"{platform_name} Verified Certificate for {course_name}"),
-        "professional": ugettext_lazy(u"{platform_name} Professional Certificate for {course_name}"),
-        "no-id-professional": ugettext_lazy(
+        "honor": _(u"{platform_name} Honor Code Certificate for {course_name}"),
+        "verified": _(u"{platform_name} Verified Certificate for {course_name}"),
+        "professional": _(u"{platform_name} Professional Certificate for {course_name}"),
+        "no-id-professional": _(
             u"{platform_name} Professional Certificate for {course_name}"
         ),
     }
 
     company_identifier = models.TextField(
-        help_text=ugettext_lazy(
+        help_text=_(
             u"The company identifier for the LinkedIn Add-to-Profile button "
             u"e.g 0_0dPSPyS070e0HsE9HNz_13_d11_"
         )
@@ -1625,7 +1625,7 @@ class LinkedInAddToProfileConfiguration(ConfigurationModel):
         max_length=10,
         default="",
         blank=True,
-        help_text=ugettext_lazy(
+        help_text=_(
             u"Short identifier for the LinkedIn partner used in the tracking code.  "
             u"(Example: 'edx')  "
             u"If no value is provided, tracking codes will not be sent to LinkedIn."
@@ -1766,5 +1766,5 @@ class LanguageProficiency(models.Model):
         max_length=16,
         blank=False,
         choices=settings.ALL_LANGUAGES,
-        help_text=ugettext_lazy("The ISO 639-1 language code for this language.")
+        help_text=_("The ISO 639-1 language code for this language.")
     )

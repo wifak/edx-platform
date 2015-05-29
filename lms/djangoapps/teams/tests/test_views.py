@@ -2,6 +2,8 @@
 # pylint: disable=maybe-no-member
 import json
 
+import ddt
+
 from django.conf import settings
 from django.core.urlresolvers import reverse
 from rest_framework.test import APITestCase
@@ -14,6 +16,7 @@ from .factories import CourseTeamFactory
 from xmodule.modulestore.tests.django_utils import ModuleStoreTestCase
 
 
+@ddt.ddt
 class TestTeamAPI(APITestCase, ModuleStoreTestCase):
     """
     Tests of the Team API
@@ -202,19 +205,18 @@ class TestTeamAPI(APITestCase, ModuleStoreTestCase):
             ['the-best-team', 'the-best-team-2', 'the-best-team-3', 'the-best-team-2-2']
         )
 
-    def test_create_team_invalid_course_id(self):
-        self.post_create_team(400, {
-            'name': 'Bad Course Id',
-            'course_id': 'foobar',
-            'description': "Filler Description",
-        })
-
-    def test_create_team_non_existent_course_id(self):
-        self.post_create_team(404, {
-            'name': "Non-existent course id",
-            'course_id': 'foobar/foobar/foobar',
-            'description': "Filler Description",
-        })
+    @ddt.data((400, {
+        'name': 'Bad Course Id',
+        'course_id': 'foobar',
+        'description': "Filler Description"
+    }), (404, {
+        'name': "Non-existent course id",
+        'course_id': 'foobar/foobar/foobar',
+        'description': "Filler Description"
+    }))
+    @ddt.unpack
+    def test_create_team_invalid_course_data(self, expected_status, data):
+        self.post_create_team(expected_status, data=data)
 
     def test_create_team_blank_name(self):
         self.post_create_team(400, self.build_team_data(name=""))
@@ -225,14 +227,9 @@ class TestTeamAPI(APITestCase, ModuleStoreTestCase):
             'description': "foobar"
         })
 
-    def test_create_team_blank_description(self):
-        self.post_create_team(400, self.build_team_data(description=""))
-
-    def test_create_team_long_name(self):
-        self.post_create_team(400, self.build_team_data(name='x' * 1000))
-
-    def test_create_team_extra_fields(self):
-        self.post_create_team(400, self.build_team_data(foobar="foobar"))
+    @ddt.data({'description': '', 'name': 'x' * 1000, 'foobar': 'foobar'})
+    def test_create_team_bad_fields(self, kwargs):
+        self.post_create_team(400, self.build_team_data(**kwargs))
 
     def test_create_team_full(self):
         team = self.post_create_team_json(200, self.build_team_data(
@@ -318,14 +315,10 @@ class TestTeamAPI(APITestCase, ModuleStoreTestCase):
         team = self.get_team_detail_json(self.test_team_1.team_id, 200, user=self.staff_user)
         self.assertEquals(team['name'], 'foo')
 
-    def test_update_team_extra_fields(self):
-        self.patch_team_detail(self.test_team_1.team_id, 400, user=self.staff_user, data={'foo': 'bar'})
-
-    def test_update_team_read_only_fields(self):
-        self.patch_team_detail(self.test_team_1.team_id, 400, user=self.staff_user, data={'team_id': 'foobar'})
-
-    def test_update_team_blank_description(self):
-        self.patch_team_detail(self.test_team_1.team_id, 400, user=self.staff_user, data={'description': ''})
+    @ddt.data(('foo', 'bar'), ('team_id', 'foobar'), ('description', ''))
+    @ddt.unpack
+    def test_update_team_bad_requests(self, key, value):
+        self.patch_team_detail(self.test_team_1.team_id, 400, user=self.staff_user, data={key: value})
 
     def test_update_team_does_not_exist(self):
         self.patch_team_detail('foobar', 404, user=self.staff_user)
@@ -339,11 +332,10 @@ class TestTeamAPI(APITestCase, ModuleStoreTestCase):
         response = self.client.get(reverse('topics_list'), data={'course_id': str(self.test_course_1.id)})
         self.assertEqual(403, response.status_code)
 
-    def test_list_topics_invalid_course_key(self):
+    @ddt.data('A+BOGUS+COURSE', 'A/BOGUS/COURSE')
+    def test_list_topics_invalid_course_key(self, course_id):
         self.client.login(username=self.student_user_enrolled, password=self.test_password)
-        response = self.client.get(reverse('topics_list'), data={'course_id': 'A+BOGUS+COURSE'})
-        self.assertEqual(404, response.status_code)
-        response = self.client.get(reverse('topics_list'), data={'course_id': 'A/BOGUS/COURSE'})
+        response = self.client.get(reverse('topics_list'), data={'course_id': course_id})
         self.assertEqual(404, response.status_code)
 
     def test_list_topics_without_course_id(self):
@@ -397,14 +389,11 @@ class TestTeamAPI(APITestCase, ModuleStoreTestCase):
         )
         self.assertEqual(403, response.status_code)
 
-    def test_topic_detail_invalid_course_id(self):
+    @ddt.data('A+BOGUS+COURSE', 'A/BOGUS/COURSE')
+    def test_topic_detail_invalid_course_id(self, course_id):
         self.client.login(username=self.student_user_enrolled, password=self.test_password)
         response = self.client.get(
-            reverse('topics_detail', kwargs={'topic_id': 'topic_0', 'course_id': 'A+BOGUS+COURSE'})
-        )
-        self.assertEqual(404, response.status_code)
-        response = self.client.get(
-            reverse('topics_detail', kwargs={'topic_id': 'topic_0', 'course_id': 'A/BOGUS/COURSE'})
+            reverse('topics_detail', kwargs={'topic_id': 'topic_0', 'course_id': course_id})
         )
         self.assertEqual(404, response.status_code)
 

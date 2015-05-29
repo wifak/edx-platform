@@ -37,6 +37,7 @@ class BaseVerticalBlockTest(XModuleXmlImportTest):
         self.vertical = course_seq.get_children()[0]
         self.vertical.xmodule_runtime = self.module_system
 
+        self.default_context = {"bookmarked": False, "username": "test_username"}
 
 class VerticalBlockTestCase(BaseVerticalBlockTest):
     """
@@ -46,7 +47,7 @@ class VerticalBlockTestCase(BaseVerticalBlockTest):
         """
         Test the rendering of the student view.
         """
-        html = self.module_system.render(self.vertical, STUDENT_VIEW, {}).content
+        html = self.module_system.render(self.vertical, STUDENT_VIEW, self.default_context).content
         self.assertIn(self.test_html_1, html)
         self.assertIn(self.test_html_2, html)
 

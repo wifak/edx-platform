@@ -23,6 +23,7 @@
                     el: $('.coursewide-message-banner'),
                     templateId: '#message_banner-tpl'
                 });
+                this.bookmarksUrl = this.$('.courseware-bookmarks-button').data('bookmarksApiUrl');
             },
 
             bookmark: function(event) {
@@ -40,12 +41,11 @@
             },
 
             addBookmark: function($buttonElement, usageId) {
-                var postUrl = $buttonElement.data('url');
                 var view = this;
                 $.ajax({
                     data: {usage_id: usageId},
                     type: "POST",
-                    url: postUrl,
+                    url: view.bookmarksUrl,
                     dataType: 'json',
                     success: function () {
                         $('.seq-book.active').find('.bookmark-icon').removeClass('is-hidden').addClass('bookmarked');
@@ -63,8 +63,8 @@
             },
 
             removeBookmark: function($buttonElement, usageId) {
-                var deleteUrl = $buttonElement.data('url') + $buttonElement.data('username') + ',' + usageId;
                 var view = this;
+                var deleteUrl = view.bookmarksUrl + $buttonElement.data('username') + ',' + usageId;
                 $.ajax({
                     type: "DELETE",
                     url: deleteUrl,

@@ -122,7 +122,6 @@ class SequenceModule(SequenceFields, XModule):
             is_bookmarked = bookmarks_service.is_bookmarked(usage_key=child.scope_ids.usage_id)
 
             context["bookmarked"] = is_bookmarked
-            context["bookmarks_api_url"] = bookmarks_service.API_URL
 
             progress = child.get_progress()
             rendered_child = child.render(STUDENT_VIEW, context)

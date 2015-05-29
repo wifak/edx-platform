@@ -57,10 +57,10 @@ class Globals(threading.local):
     regular_expressions = [re.compile(x) for x in exclude]
 
 # Instantiate Globals Class.
-_m = Globals()
+GLOBAL_DICT = Globals()
 
 
-class CallStackManager (Manager):
+class CallStackManager(Manager):
     """
     gets call stacks of model classes
     """
@@ -83,9 +83,10 @@ class CallStackManager (Manager):
             temp_call_stack.append(line.split(',')[0].strip() + "+" + line.split(',')[1].strip() + "+" +
                                    line.split(',')[2].strip())
 
+        print temp_call_stack
         # filtering w.r.t. regular_expressions
         temp_call_stack = [frame for frame in temp_call_stack if not(len(filter(lambda re: re.match(frame),
-                                                                                _m.regular_expressions)))]
+                                                                                GLOBAL_DICT.regular_expressions)))]
         # convert frame in tuple format
         temp_call_stack = map(lambda x: tuple(x.split("+")), temp_call_stack)
 
@@ -93,15 +94,15 @@ class CallStackManager (Manager):
         temp_call_stack = map(lambda x: (x[0][6:-1], x[1][6:], x[2][3:]), temp_call_stack)
 
         # avoid duplication.
-        if current_model in _m.stack_book.keys():
-            if temp_call_stack not in _m.stack_book[current_model]:
-                _m.stack_book.setdefault(current_model, []).append(temp_call_stack)
+        if current_model in GLOBAL_DICT.stack_book.keys():
+            if temp_call_stack not in GLOBAL_DICT.stack_book[current_model]:
+                GLOBAL_DICT.stack_book.setdefault(current_model, []).append(temp_call_stack)
                 log.info("logging new call in global stack book")
-                log.info(_m.stack_book)
+                log.info(GLOBAL_DICT.stack_book)
         else:
-            _m.stack_book.setdefault(current_model, []).append(temp_call_stack)
+            GLOBAL_DICT.stack_book.setdefault(current_model, []).append(temp_call_stack)
             log.info("logging new model class in global stack book")
-            log.info(_m.stack_book)
+            log.info(GLOBAL_DICT.stack_book)
 
     def get_query_set(self):
         """

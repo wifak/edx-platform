@@ -105,7 +105,7 @@ class TestTeamAPI(APITestCase, ModuleStoreTestCase):
     def test_list_teams_logged_in_not_active(self):
         self.setup_inactive_user()
         response = self.client.get(reverse('teams_list'))
-        self.assertEqual(200, response.status_code)
+        self.assertEqual(403, response.status_code)
 
     def test_list_teams_filter_invalid_course_id(self):
         self.get_teams_list(400, data={'course_id': 'foobar'})
@@ -279,7 +279,7 @@ class TestTeamAPI(APITestCase, ModuleStoreTestCase):
     def test_detail_team_logged_in_not_active(self):
         self.setup_inactive_user()
         response = self.client.get(reverse('teams_detail', args=[self.test_team_1.team_id]))
-        self.assertEquals(response.status_code, 200)
+        self.assertEquals(response.status_code, 403)
 
     def test_detail_team_logged_in(self):
         team = self.get_team_detail_json(self.test_team_1.team_id, 200)

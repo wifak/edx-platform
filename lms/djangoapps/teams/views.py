@@ -3,6 +3,10 @@ from rest_framework.generics import GenericAPIView
 from rest_framework.serializers import ValidationError
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from rest_framework.authentication import (
+    SessionAuthentication,
+    OAuth2Authentication
+)
 from rest_framework import status
 from rest_framework import permissions
 
@@ -13,10 +17,6 @@ from student.models import CourseEnrollment
 
 import sys
 
-from openedx.core.lib.api.authentication import (
-    SessionAuthenticationAllowInactiveUser,
-    OAuth2AuthenticationAllowInactiveUser,
-)
 from openedx.core.lib.api.parsers import MergePatchParser
 from openedx.core.lib.api.permissions import IsStaffOrReadOnly, IsActiveOrReadOnly
 from openedx.core.lib.api.view_utils import RetrievePatchAPIView
@@ -132,8 +132,8 @@ class TeamsListView(GenericAPIView):
             If the specified course does not exist, a 404 error is returned.
     """
 
-    # SessionAuthenticationAllowInactiveUser must come first to return a 403 for unauthenticated users
-    authentication_classes = (SessionAuthenticationAllowInactiveUser, OAuth2AuthenticationAllowInactiveUser)
+    # SessionAuthentication must come first to return a 403 for unauthenticated users
+    authentication_classes = (SessionAuthentication, OAuth2Authentication)
     permission_classes = (permissions.IsAuthenticated, IsActiveOrReadOnly)
 
     paginate_by = 10
@@ -302,7 +302,7 @@ class TeamsDetailView(RetrievePatchAPIView):
             "field_errors" field of the returned JSON.
     """
 
-    authentication_classes = (SessionAuthenticationAllowInactiveUser, OAuth2AuthenticationAllowInactiveUser)
+    authentication_classes = (SessionAuthentication, OAuth2Authentication)
     permission_classes = (permissions.IsAuthenticated, IsStaffOrReadOnly)
     lookup_field = 'team_id'
     serializer_class = CourseTeamSerializer
@@ -363,7 +363,7 @@ class TopicListView(GenericAPIView):
 
     """
 
-    authentication_classes = (SessionAuthenticationAllowInactiveUser,)
+    authentication_classes = (SessionAuthentication, OAuth2Authentication)
     permission_classes = (permissions.IsAuthenticated,)
 
     paginate_by = 10
@@ -439,7 +439,7 @@ class TopicDetailView(APIView):
 
     """
 
-    authentication_classes = (SessionAuthenticationAllowInactiveUser,)
+    authentication_classes = (SessionAuthentication, OAuth2Authentication)
     permission_classes = (permissions.IsAuthenticated,)
 
     def get(self, request, topic_id, course_id):

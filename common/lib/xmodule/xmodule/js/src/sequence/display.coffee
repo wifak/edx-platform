@@ -118,6 +118,8 @@ class @Sequence
 
       @el.trigger "sequence:changed"
 
+      @el.find('.path').html(@el.find('.nav-item.active').data('path'))
+
       @sr_container.focus();
       # @$("a.active").blur()
 

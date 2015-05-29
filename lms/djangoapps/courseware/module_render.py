@@ -647,7 +647,7 @@ def get_module_system_for_user(user, field_data_cache,
             'field-data': field_data,
             'user': DjangoXBlockUserService(user, user_is_staff=user_is_staff),
             'reverification': ReverificationService(),
-            'bookmarks': BookmarksService(user=user)
+            'bookmarks': BookmarksService(user=user),
         },
         get_user_role=lambda: get_user_role(user, course_id),
         descriptor_runtime=descriptor._runtime,  # pylint: disable=protected-access

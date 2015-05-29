@@ -113,14 +113,14 @@ class SequenceModule(SequenceFields, XModule):
         contents = []
 
         fragment = Fragment()
-        context = {} if not context else context
+        context = context or {}
 
         bookmarks_service = self.runtime.service(self, "bookmarks")
         context["username"] = self.runtime.service(self, "user").get_current_user().opt_attrs['edx-platform.username']
 
+        sequence_path = '{0} > {1}'.format(self.display_name, self.get_parent().display_name)
         for child in self.get_display_items():
             is_bookmarked = bookmarks_service.is_bookmarked(usage_key=child.scope_ids.usage_id)
-
             context["bookmarked"] = is_bookmarked
 
             progress = child.get_progress()
@@ -137,6 +137,7 @@ class SequenceModule(SequenceFields, XModule):
                 'type': child.get_icon_class(),
                 'id': child.scope_ids.usage_id.to_deprecated_string(),
                 'bookmarked': is_bookmarked,
+                'path': '{0} > {1}'.format(sequence_path, child.display_name)
             }
             if childinfo['title'] == '':
                 childinfo['title'] = child.display_name_with_default

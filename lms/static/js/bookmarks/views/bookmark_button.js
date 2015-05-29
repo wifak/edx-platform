@@ -23,62 +23,56 @@
                     el: $('.coursewide-message-banner'),
                     templateId: '#message_banner-tpl'
                 });
-                this.bookmarksUrl = this.$('.courseware-bookmarks-button').data('bookmarksApiUrl');
+                this.bookmarksUrl = $(".courseware-bookmarks-button").data('bookmarksApiUrl');
             },
 
             bookmark: function(event) {
                 event.preventDefault();
 
                 var $buttonElement = $(event.currentTarget);
-                var usageId = $buttonElement.data("id");
-                $buttonElement.attr("disabled", true).addClass('is-disabled');
+                var bookmarkId = $buttonElement.data("bookmarkId");
 
                 if ($buttonElement.hasClass('bookmarked')) {
-                    this.removeBookmark($buttonElement, usageId);
+                    this.removeBookmark($buttonElement, bookmarkId);
                 } else {
-                    this.addBookmark($buttonElement, usageId);
+                    this.addBookmark($buttonElement, bookmarkId);
                 }
             },
 
-            addBookmark: function($buttonElement, usageId) {
+            addBookmark: function($buttonElement, bookmarkId) {
                 var view = this;
+                var usageId = bookmarkId.split(',')[1];
                 $.ajax({
                     data: {usage_id: usageId},
                     type: "POST",
                     url: view.bookmarksUrl,
                     dataType: 'json',
                     success: function () {
-                        $('.seq-book.active').find('.bookmark-icon').removeClass('is-hidden').addClass('bookmarked');
+                        $('.nav-item.active').find('.bookmark-icon').removeClass('is-hidden').addClass('bookmarked');
                         $buttonElement.removeClass('un-bookmarked').addClass('bookmarked');
                         $buttonElement.attr('aria-pressed', 'true');
                         $buttonElement.find('.bookmark-sr').text(view.srRemoveBookmarkText);
                     },
                     error: function() {
                         view.errorMessageView.showMessage(view.errorMessage, view.errorIcon);
-                    },
-                    complete: function () {
-                        $buttonElement.attr("disabled", false).removeClass('is-disabled');
                     }
                 });
             },
 
-            removeBookmark: function($buttonElement, usageId) {
+            removeBookmark: function($buttonElement, bookmarkId) {
                 var view = this;
-                var deleteUrl = view.bookmarksUrl + $buttonElement.data('username') + ',' + usageId;
+                var deleteUrl = view.bookmarksUrl + bookmarkId + '/';
                 $.ajax({
                     type: "DELETE",
                     url: deleteUrl,
                     success: function () {
-                        $('.seq-book.active').find('.bookmark-icon').removeClass('bookmarked').addClass('is-hidden');
+                        $('.nav-item.active').find('.bookmark-icon').removeClass('bookmarked').addClass('is-hidden');
                         $buttonElement.removeClass('bookmarked').addClass('un-bookmarked');
                         $buttonElement.attr('aria-pressed', 'false');
                         $buttonElement.find('.bookmark-sr').text(view.srAddBookmarkText);
                     },
                     error: function() {
                         view.errorMessageView.showMessage(view.errorMessage, view.errorIcon);
-                    },
-                    complete: function () {
-                        $buttonElement.attr("disabled", false).removeClass('is-disabled');
                     }
                 });
             },

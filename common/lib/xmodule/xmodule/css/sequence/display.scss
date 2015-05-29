@@ -1,5 +1,5 @@
 $sequence--border-color: #C8C8C8;
-
+$link-color: rgb(26, 161, 222);
 // repeated extends - needed since LMS styling was referenced
 .block-link {
   border-left: 1px solid lighten($sequence--border-color, 10%);
@@ -134,7 +134,7 @@ $sequence--border-color: #C8C8C8;
           }
 
           i.fa-bookmark {
-            color: rgb(26,161,222);
+            color: $link-color;
           }
 
           &:hover, &:focus {
@@ -147,7 +147,7 @@ $sequence--border-color: #C8C8C8;
             }
 
             i.fa-bookmark {
-              color: rgb(26,161,222);
+              color: $link-color;
             }
           }
         }

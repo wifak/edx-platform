@@ -17,7 +17,7 @@ class Migration(SchemaMigration):
             ('course_id', self.gf('xmodule_django.models.CourseKeyField')(max_length=255, db_index=True)),
             ('topic_id', self.gf('django.db.models.fields.CharField')(db_index=True, max_length=255, blank=True)),
             ('date_created', self.gf('django.db.models.fields.DateTimeField')(auto_now_add=True, blank=True)),
-            ('description', self.gf('django.db.models.fields.CharField')(max_length=1000)),
+            ('description', self.gf('django.db.models.fields.CharField')(max_length=300)),
             ('country', self.gf('django_countries.fields.CountryField')(max_length=2, blank=True)),
             ('language', self.gf('django.db.models.fields.CharField')(max_length=16, blank=True)),
         ))
@@ -89,7 +89,7 @@ class Migration(SchemaMigration):
             'country': ('django_countries.fields.CountryField', [], {'max_length': '2', 'blank': 'True'}),
             'course_id': ('xmodule_django.models.CourseKeyField', [], {'max_length': '255', 'db_index': 'True'}),
             'date_created': ('django.db.models.fields.DateTimeField', [], {'auto_now_add': 'True', 'blank': 'True'}),
-            'description': ('django.db.models.fields.CharField', [], {'max_length': '1000'}),
+            'description': ('django.db.models.fields.CharField', [], {'max_length': '300'}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'is_active': ('django.db.models.fields.BooleanField', [], {'default': 'True'}),
             'language': ('django.db.models.fields.CharField', [], {'max_length': '16', 'blank': 'True'}),

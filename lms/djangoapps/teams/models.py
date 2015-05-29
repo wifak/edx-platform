@@ -24,7 +24,7 @@ class CourseTeam(models.Model):
     topic_id = models.CharField(max_length=255, db_index=True, blank=True)
     date_created = models.DateTimeField(auto_now_add=True)
     # last_activity is computed through a query
-    description = models.CharField(max_length=1000)
+    description = models.CharField(max_length=300)
     country = CountryField(blank=True)
     language = models.CharField(
         max_length=16,

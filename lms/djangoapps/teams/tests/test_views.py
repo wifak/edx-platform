@@ -124,6 +124,7 @@ class TestTeamAPI(APITestCase, ModuleStoreTestCase):
     def test_list_teams_filter_include_inactive(self):
         teams = self.get_teams_list_json(data={'include_inactive': True})
         self.assertEqual(4, teams['count'])
+        self.assertIn('coal team', [team['name'] for team in teams['results']])
 
     # Text search is not yet implemented, so this should return HTTP
     # 400 for now
@@ -148,6 +149,16 @@ class TestTeamAPI(APITestCase, ModuleStoreTestCase):
     @ddt.data({'course_id': 'foobar/foobar/foobar'}, {'topic_id': 'foobar'})
     def test_list_team_no_results(self, data):
         self.get_teams_list(404, data=data)
+
+    def test_list_team_page_size(self):
+        result = self.get_teams_list_json(data={'page_size': 2})
+        self.assertEquals(2, result['num_pages'])
+
+    def test_list_team_page(self):
+        result = self.get_teams_list_json(data={'page_size': 1, 'page': 3})
+        self.assertEquals(3, result['num_pages'])
+        self.assertIsNone(result['next'])
+        self.assertIsNotNone(result['previous'])
 
     def build_team_data(self, name="Test team", course=None, description="Filler description", **kwargs):
         """

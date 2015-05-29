@@ -121,12 +121,14 @@ class ShoppingCartViewsTests(ModuleStoreTestCase):
                         percentage_discount=self.percentage_discount, created_by=self.user, is_active=is_active)
         coupon.save()
 
-    def add_reg_code(self, course_key, mode_slug='honor'):
+    def add_reg_code(self, course_key, mode_slug='honor', is_valid=True):
         """
         add dummy registration code into models
         """
         course_reg_code = CourseRegistrationCode(
-            code=self.reg_code, course_id=course_key, created_by=self.user, mode_slug=mode_slug
+            code=self.reg_code, course_id=course_key,
+            created_by=self.user, mode_slug=mode_slug,
+            is_valid=is_valid
         )
         course_reg_code.save()
 
@@ -386,6 +388,23 @@ class ShoppingCartViewsTests(ModuleStoreTestCase):
         resp = self.client.post(reverse('shoppingcart.views.use_code'), {'code': self.coupon_code})
         self.assertEqual(resp.status_code, 404)
         self.assertIn("Discount does not exist against code '{0}'.".format(self.coupon_code), resp.content)
+
+    def test_inactive_registration_code_returns_error(self):
+        """
+        test to redeem inactive registration code and
+        it returns an error.
+        """
+        course_key = self.course_key.to_deprecated_string()
+        self.add_reg_code(course_key, is_valid=False)
+        self.add_course_to_user_cart(self.course_key)
+
+        # now apply the inactive registration code
+        # it will raise an exception
+        resp = self.client.post(reverse('shoppingcart.views.use_code'), {'code': self.reg_code})
+        self.assertEqual(resp.status_code, 400)
+        self.assertIn(
+            "The registration code '{registration_code}' is not longer valid.".format(
+                registration_code=self.reg_code), resp.content)
 
     def test_course_does_not_exist_in_cart_against_valid_reg_code(self):
         course_key = self.course_key.to_deprecated_string() + 'testing'

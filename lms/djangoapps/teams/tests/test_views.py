@@ -395,8 +395,8 @@ class TestTeamAPI(APITestCase, ModuleStoreTestCase):
         self.assertEqual(page_size, len(response.data['results']))
         self.assertIn('next', response.data)
         self.assertIn('previous', response.data)
-        self.assertEqual(response.data['previous'], None)
-        self.assertNotEqual(response.data['next'], None)
+        self.assertIsNone(response.data['previous'])
+        self.assertIsNotNone(response.data['next'])
 
     def test_topic_detail_anonymous(self):
         response = self.client.get(

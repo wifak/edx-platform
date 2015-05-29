@@ -136,6 +136,7 @@ def add_serializer_errors(serializer, data, field_errors):
                 ),
                 'user_message': _(u"This value is invalid."),
             }
+    return field_errors
 
 
 class RetrievePatchAPIView(RetrieveModelMixin, UpdateModelMixin, GenericAPIView):

@@ -59,11 +59,10 @@ class StudentModule(models.Model):
     class Meta(object):  # pylint: disable=missing-docstring
         unique_together = (('student', 'module_state_key', 'course_id'),)
 
-
-    ## Internal state of the object
+    # Internal state of the object
     state = models.TextField(null=True, blank=True)
 
-    ## Grade, and are we done?
+    # Grade, and are we done?
     grade = models.FloatField(null=True, blank=True, db_index=True)
     max_grade = models.FloatField(null=True, blank=True)
     DONE_TYPES = (
@@ -75,8 +74,6 @@ class StudentModule(models.Model):
 
     created = models.DateTimeField(auto_now_add=True, db_index=True)
     modified = models.DateTimeField(auto_now=True, db_index=True)
-
-
 
     @classmethod
     def all_submitted_problems_read_only(cls, course_id):
@@ -114,7 +111,6 @@ class StudentModuleHistory(models.Model):
     explode in size."""
     HISTORY_SAVING_TYPES = {'problem'}
 
-
     class Meta(object):  # pylint: disable=missing-docstring
         get_latest_by = "created"
 
@@ -142,8 +138,6 @@ class StudentModuleHistory(models.Model):
                                                  grade=instance.grade,
                                                  max_grade=instance.max_grade)
             history_entry.save()
-
-
 
 
 class XBlockFieldBase(models.Model):

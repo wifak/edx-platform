@@ -73,7 +73,7 @@ class CallStackManager (Manager):
         """
         # get name of current model class
         current_model = str(self.model)
-        current_model = current_model[current_model.find('\'')+1: current_model.rfind('\'')]
+        current_model = current_model[current_model.find('\'') + 1: current_model.rfind('\'')]
 
         # holds temporary callstack
         temp_call_stack = []

@@ -12,21 +12,30 @@ file and check it in at the same time as your model changes. To do that,
 ASSUMPTIONS: modules have unique IDs, even across different module_types
 
 """
+
+from __future__ import absolute_import
+import logging
+
 from django.contrib.auth.models import User
 from django.conf import settings
 from django.db import models
 from django.db.models.signals import post_save
 from django.dispatch import receiver
-
 from model_utils.models import TimeStampedModel
 
 from xmodule_django.models import CourseKeyField, LocationKeyField, BlockTypeKeyField  # pylint: disable=import-error
+from openedx.core.lib.call_stack_manager import CallStackManager
+
+log = logging.getLogger(__name__)
 
 
 class StudentModule(models.Model):
     """
     Keeps student state for a particular module in a particular course.
     """
+    # For call stack overriding in call stacks
+    objects = CallStackManager()
+
     MODEL_TAGS = ['course_id', 'module_type']
 
     # For a homework problem, contains a JSON
@@ -50,6 +59,7 @@ class StudentModule(models.Model):
     class Meta(object):  # pylint: disable=missing-docstring
         unique_together = (('student', 'module_state_key', 'course_id'),)
 
+
     ## Internal state of the object
     state = models.TextField(null=True, blank=True)
 
@@ -65,6 +75,8 @@ class StudentModule(models.Model):
 
     created = models.DateTimeField(auto_now_add=True, db_index=True)
     modified = models.DateTimeField(auto_now=True, db_index=True)
+
+
 
     @classmethod
     def all_submitted_problems_read_only(cls, course_id):
@@ -100,8 +112,8 @@ class StudentModuleHistory(models.Model):
     """Keeps a complete history of state changes for a given XModule for a given
     Student. Right now, we restrict this to problems so that the table doesn't
     explode in size."""
-
     HISTORY_SAVING_TYPES = {'problem'}
+
 
     class Meta(object):  # pylint: disable=missing-docstring
         get_latest_by = "created"
@@ -132,10 +144,14 @@ class StudentModuleHistory(models.Model):
             history_entry.save()
 
 
+
+
 class XBlockFieldBase(models.Model):
     """
     Base class for all XBlock field storage.
     """
+    objects = CallStackManager()
+
     class Meta(object):  # pylint: disable=missing-docstring
         abstract = True
 
@@ -163,7 +179,6 @@ class XModuleUserStateSummaryField(XBlockFieldBase):
     """
     Stores data set in the Scope.user_state_summary scope by an xmodule field
     """
-
     class Meta(object):  # pylint: disable=missing-docstring
         unique_together = (('usage_id', 'field_name'),)
 
@@ -175,7 +190,6 @@ class XModuleStudentPrefsField(XBlockFieldBase):
     """
     Stores data set in the Scope.preferences scope by an xmodule field
     """
-
     class Meta(object):  # pylint: disable=missing-docstring
         unique_together = (('student', 'module_type', 'field_name'),)
 
@@ -189,7 +203,6 @@ class XModuleStudentInfoField(XBlockFieldBase):
     """
     Stores data set in the Scope.preferences scope by an xmodule field
     """
-
     class Meta(object):  # pylint: disable=missing-docstring
         unique_together = (('student', 'field_name'),)
 

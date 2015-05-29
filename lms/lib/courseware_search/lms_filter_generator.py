@@ -26,16 +26,16 @@ class LmsSearchFilterGenerator(SearchFilterGenerator):
     _user_enrollments = {}
 
     def _enrollments_for_user(self, user):
-        """ Return users course enrollments """
+        """ Return the specified user's course enrollments """
         if user not in self._user_enrollments:
             self._user_enrollments[user] = CourseEnrollment.enrollments_for_user(user)
         return self._user_enrollments[user]
 
     def filter_dictionary(self, **kwargs):
-        """ LMS implementation, adds filtering by content groups, course id and user """
+        """ LMS implementation, adds filtering by user partition, course id and user """
 
         def get_group_for_user_partition(user_partition, course_key, user):
-            """ Returns users group for user partition """
+            """ Returns the specified user's group for user partition """
             if user_partition.scheme in SCHEME_SUPPORTS_ASSIGNMENT:
                 return user_partition.scheme.get_group_for_user(
                     course_key,
@@ -50,7 +50,7 @@ class LmsSearchFilterGenerator(SearchFilterGenerator):
                     user_partition,
                 )
 
-        def get_content_groups(course, user):
+        def get_groups_for_user(course, user):
             """ Collect content groups for user for this course """
             partition_groups = []
             for user_partition in course.user_partitions:
@@ -77,14 +77,14 @@ class LmsSearchFilterGenerator(SearchFilterGenerator):
                 # Need to check course exist (if course gets deleted enrollments don't get cleaned up)
                 course = modulestore().get_course(course_key)
                 if course:
-                    filter_dictionary['content_groups'] = get_content_groups(course, user)
+                    filter_dictionary['content_groups'] = get_groups_for_user(course, user)
             else:
                 user_enrollments = self._enrollments_for_user(user)
                 content_groups = []
                 for enrollment in user_enrollments:
                     course = modulestore().get_course(enrollment.course_id)
                     if course:
-                        enrollment_content_groups = get_content_groups(course, user)
+                        enrollment_content_groups = get_groups_for_user(course, user)
                         if enrollment_content_groups:
                             content_groups.extend(enrollment_content_groups)
 

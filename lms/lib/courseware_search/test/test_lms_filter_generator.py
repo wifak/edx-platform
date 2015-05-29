@@ -124,7 +124,7 @@ class LmsSearchFilterGeneratorTestCase(ModuleStoreTestCase):
         self.courses[0].save()
         modulestore().update_item(self.courses[0], self.user.id)
 
-    def add_splittest_with_content_groups(self, groups=None):
+    def add_split_test(self, groups=None):
         """
         Adds split test and two content groups to second course in courses list.
         """
@@ -362,7 +362,7 @@ class LmsSearchFilterGeneratorTestCase(ModuleStoreTestCase):
         """
         Tests that we don't get content group ID when user is not assigned to a split test group
         """
-        self.add_splittest_with_content_groups()
+        self.add_split_test()
 
         field_dictionary, filter_dictionary, _ = LmsSearchFilterGenerator.generate_field_filters(
             user=self.user,
@@ -377,7 +377,7 @@ class LmsSearchFilterGeneratorTestCase(ModuleStoreTestCase):
         """
         Tests that we get content group ID when user is assigned to a split test group
         """
-        self.add_splittest_with_content_groups()
+        self.add_split_test()
         self.add_user_to_splittest_group()
 
         field_dictionary, filter_dictionary, _ = LmsSearchFilterGenerator.generate_field_filters(

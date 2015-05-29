@@ -132,22 +132,24 @@ class TestTeamAPI(APITestCase, ModuleStoreTestCase):
     def test_list_teams_filter_text_search(self):
         self.get_teams_list(400, data={'text_search': 'foobar'})
 
-    def test_list_teams_order_by_name(self):
-        teams = self.get_teams_list_json(data={'order_by': 'name'})
+    @ddt.data(
+        ({}, ['Nuclear Team', 'solar team', 'Wind Team']),
+        ({'order_by': 'name'}, ['Nuclear Team', 'solar team', 'Wind Team']),
+        ({'order_by': 'open_slots'}, ['Wind Team', 'Nuclear Team', 'solar team']),
+    )
+    @ddt.unpack
+    def test_list_teams_order_by(self, data, names):
+        teams = self.get_teams_list_json(data=data)
         self.assertEqual(3, teams['count'])
-        self.assertEqual([team['name'] for team in teams['results']], ['Nuclear Team', 'solar team', 'Wind Team'])
+        self.assertEqual([team['name'] for team in teams['results']], names)
 
-    def test_list_teams_order_by_open_slots(self):
-        teams = self.get_teams_list_json(data={'order_by': 'open_slots'})
-        self.assertEqual(3, teams['count'])
-        self.assertEqual([team['name'] for team in teams['results']], ['Wind Team', 'Nuclear Team', 'solar team'])
-
+    # Last activity is not yet implemented, so this should return HTTP 400 for now
     def test_list_teams_order_by_last_activity(self):
         self.get_teams_list(400, data={'order_by': 'last_activity'})
 
-    def test_list_team_no_results(self):
-        self.get_teams_list(404, data={'course_id': 'foobar/foobar/foobar'})
-        self.get_teams_list(404, data={'topic_id': 'foobar'})
+    @ddt.data({'course_id': 'foobar/foobar/foobar'}, {'topic_id': 'foobar'})
+    def test_list_team_no_results(self, data):
+        self.get_teams_list(404, data=data)
 
     def build_team_data(self, name="Test team", course=None, description="Filler description", **kwargs):
         """

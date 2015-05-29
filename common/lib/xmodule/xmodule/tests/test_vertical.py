@@ -39,6 +39,7 @@ class BaseVerticalBlockTest(XModuleXmlImportTest):
 
         self.default_context = {"bookmarked": False, "username": "test_username"}
 
+
 class VerticalBlockTestCase(BaseVerticalBlockTest):
     """
     Tests for the VerticalBlock.

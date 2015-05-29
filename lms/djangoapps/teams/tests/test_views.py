@@ -326,9 +326,11 @@ class TestTeamAPI(APITestCase, ModuleStoreTestCase):
         team = self.get_team_detail_json(self.test_team_1.team_id, 200, user=self.staff_user)
         self.assertEquals(team['name'], 'foo')
 
+    def test_update_team_ignore_extra_fields(self):
+        self.patch_team_detail(self.test_team_1.team_id, 200, user=self.staff_user, data={'foo': 'bar'})
+
     @ddt.data(
-        ('foo', 'bar'),
-        ('team_id', 'foobar'),
+        ('id', 'foobar'),
         ('description', ''),
         ('country', 'foobar'),
         ('language', 'foobar')

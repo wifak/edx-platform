@@ -209,13 +209,6 @@ class TeamsListView(GenericAPIView):
         except ValueError:
             return Response(status=status.HTTP_404_NOT_FOUND)
 
-        for key in request.DATA:
-            if key not in ['name', 'course_id', 'description', 'topic_id', 'country', 'language']:
-                field_errors[key] = {
-                    'developer_message': "This field is not present on this resource",
-                    'user_message': _("This field is not present on this resource."),
-                }
-
         data = request.DATA
         data['course_id'] = course_key
 

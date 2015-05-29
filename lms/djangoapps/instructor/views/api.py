@@ -64,8 +64,9 @@ from student.models import (
     CourseEnrollment, unique_id_for_user, anonymous_id_for_user,
     UserProfile, Registration, EntranceExamConfiguration,
     ManualEnrollmentAudit, UNENROLLED_TO_ALLOWEDTOENROLL, ALLOWEDTOENROLL_TO_ENROLLED,
-    ENROLLED_TO_ENROLLED, ENROLLED_TO_UNENROLLED, UNENROLLED_TO_ENROLLED, UNENROLLED_TO_UNENROLLED, ALLOWEDTOENROLL_TO_UNENROLLED,
-    DEFAULT_TRANSITION_STATE)
+    ENROLLED_TO_ENROLLED, ENROLLED_TO_UNENROLLED, UNENROLLED_TO_ENROLLED,
+    UNENROLLED_TO_UNENROLLED, ALLOWEDTOENROLL_TO_UNENROLLED, DEFAULT_TRANSITION_STATE
+)
 import instructor_task.api
 from instructor_task.api_helper import AlreadyRunningError
 from instructor_task.models import ReportStore

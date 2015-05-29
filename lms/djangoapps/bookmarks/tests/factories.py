@@ -34,6 +34,6 @@ class XBlockCacheFactory(DjangoModelFactory):
     FACTORY_FOR = XBlockCache
 
     course_key = COURSE_KEY
-    usage_key = LOCATION('usage_id')
+    usage_key = factory.Sequence(u'4x://edx/100/block/{0}'.format)
     display_name = ''
     paths = list()

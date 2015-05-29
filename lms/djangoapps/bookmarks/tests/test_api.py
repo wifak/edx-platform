@@ -1,6 +1,7 @@
 """
 Tests for bookmarks api.
 """
+import ddt
 
 from django.core.exceptions import ObjectDoesNotExist
 
@@ -17,6 +18,7 @@ from .. import api, DEFAULT_FIELDS, OPTIONAL_FIELDS
 from ..models import Bookmark
 
 
+@ddt.ddt
 class BookmarksAPITests(ModuleStoreTestCase):
     """
     These tests cover the parts of the API methods.
@@ -112,43 +114,61 @@ class BookmarksAPITests(ModuleStoreTestCase):
         with self.assertRaises(ObjectDoesNotExist):
             api.get_bookmark(user=self.other_user, usage_key=self.vertical.location)
 
-    def test_get_bookmarks(self):
+
+    @ddt.data(
+        1, 10, 100
+    )
+    def test_get_bookmarks(self, count):
         """
         Verifies that get_bookmarks returns data as expected.
         """
+
+        blocks = [ItemFactory.create(
+            parent_location=self.course.location, category='chapter'
+        ) for index in range(count)]
+
+        bookmarks = [BookmarkFactory.create(
+            user=self.user,
+            course_key=self.course.id,
+            usage_key=block.location,
+            xblock_cache__display_name=block.display_name
+        ) for block in blocks]
+
         # Without course key.
         with self.assertNumQueries(1):
             bookmarks_data = api.get_bookmarks(user=self.user)
-            self.assertEqual(len(bookmarks_data), 3)
+            self.assertEqual(len(bookmarks_data), count+3)
         # Assert them in ordered manner.
-        self.assert_bookmark_response(bookmarks_data[0], self.bookmark_3)
-        self.assert_bookmark_response(bookmarks_data[1], self.bookmark_2)
-        self.assert_bookmark_response(bookmarks_data[2], self.bookmark)
+        self.assert_bookmark_response(bookmarks_data[0], bookmarks[-1])
+        self.assert_bookmark_response(bookmarks_data[-1], self.bookmark)
+        self.assert_bookmark_response(bookmarks_data[-2], self.bookmark_2)
 
         # Without course key, with optional fields.
         with self.assertNumQueries(1):
             bookmarks_data = api.get_bookmarks(user=self.user, fields=self.all_fields)
-            self.assertEqual(len(bookmarks_data), 3)
-        self.assert_bookmark_response(bookmarks_data[0], self.bookmark_3)
+            self.assertEqual(len(bookmarks_data), count+3)
+        self.assert_bookmark_response(bookmarks_data[0], bookmarks[-1])
+        self.assert_bookmark_response(bookmarks_data[-1], self.bookmark)
 
         # With course key.
         with self.assertNumQueries(1):
             bookmarks_data = api.get_bookmarks(user=self.user, course_key=self.course.id)
-            self.assertEqual(len(bookmarks_data), 1)
-        self.assert_bookmark_response(bookmarks_data[0], self.bookmark)
+            self.assertEqual(len(bookmarks_data), count+1)
+        self.assert_bookmark_response(bookmarks_data[0], bookmarks[-1])
+        self.assert_bookmark_response(bookmarks_data[-1], self.bookmark)
 
         # With course key, with optional fields.
         with self.assertNumQueries(1):
             bookmarks_data = api.get_bookmarks(user=self.user, course_key=self.course.id, fields=self.all_fields)
-            self.assertEqual(len(bookmarks_data), 1)
-        self.assert_bookmark_response(bookmarks_data[0], self.bookmark, optional_fields=True)
+            self.assertEqual(len(bookmarks_data), count+1)
+        self.assert_bookmark_response(bookmarks_data[0], bookmarks[-1])
+        self.assert_bookmark_response(bookmarks_data[-1], self.bookmark)
 
         # Without Serialized.
         with self.assertNumQueries(1):
             bookmarks = api.get_bookmarks(user=self.user, course_key=self.course.id, serialized=False)
-            self.assertEqual(len(bookmarks), 1)
+            self.assertEqual(len(bookmarks), count+1)
         self.assertTrue(bookmarks.model is Bookmark)  # pylint: disable=no-member
-        self.assertEqual(bookmarks[0], self.bookmark)
 
     def test_create_bookmark(self):
         """

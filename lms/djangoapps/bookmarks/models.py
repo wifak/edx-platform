@@ -65,8 +65,11 @@ class Bookmark(TimeStampedModel):
         data['xblock_cache'] = xblock_cache
 
         if xblock_cache.paths and len(xblock_cache.paths) == 1:
+            # If there is only one path to the block, use it.
             data['path'] = xblock_cache.paths[0]
         else:
+            # In case of multiple paths, in the future get_path_data()
+            # can be updated to look at which path the user has access to.
             data['path'] = Bookmark.get_path_data(usage_key)
 
         user = data.pop('user')
@@ -108,10 +111,11 @@ class Bookmark(TimeStampedModel):
         """
         Returns data for the path to the block in the course graph.
 
-        Note: Right now, in case of multiple paths to the block from the
-        root, this function returns a path arbitrarily but consistently.
-        In the future, we may want to extend it to check which of the paths,
-        the student has access to and return its data.
+        Note: In case of multiple paths to the block from the course
+        root, this function returns a path arbitrarily but consistently,
+        depending on the modulestore. In the future, we may want to
+        extend it to check which of the paths, the user has access to
+        and return its data.
 
         Arguments:
             block (XBlock): The block whose path is required.
@@ -125,7 +129,7 @@ class Bookmark(TimeStampedModel):
             log.error(u'Block with usage_key: %s not found.', usage_key)
             return []
         except NoPathToItem:
-            log.error(u'No path to block with usage_key: %s not found.', usage_key)
+            log.error(u'No path to block with usage_key: %s.', usage_key)
             return []
 
         path_data = []
@@ -134,7 +138,7 @@ class Bookmark(TimeStampedModel):
                 try:
                     block = modulestore().get_item(ancestor_usage_key)
                 except ItemNotFoundError:
-                    return []
+                    return []  # No valid path can be found.
 
                 path_data.append({
                     'display_name': block.display_name,
@@ -174,12 +178,8 @@ class XBlockCache(TimeStampedModel):
 
         if not created:
             new_display_name = data.get('display_name', xblock_cache.display_name)
-            current_paths = xblock_cache.paths or []
-            new_paths = current_paths + [path for path in data.get('paths', []) if path not in current_paths]
-
-            if xblock_cache.display_name != new_display_name or xblock_cache.paths != new_paths:
+            if xblock_cache.display_name != new_display_name:
                 xblock_cache.display_name = new_display_name
-                xblock_cache.paths = new_paths
                 xblock_cache.save()
 
         return xblock_cache

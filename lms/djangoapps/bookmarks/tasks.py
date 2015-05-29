@@ -13,7 +13,9 @@ log = logging.getLogger('edx.celery.task')
 
 def _calculate_course_xblocks_data(course_key):
     """
-    Calculate display_name and paths for all the blocks in the course.
+    Fetch data for all the blocks in the course.
+
+    This data consists of the display_name and path of the block.
     """
     course = modulestore().get_course(course_key, depth=None)
 

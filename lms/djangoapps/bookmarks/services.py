@@ -20,6 +20,15 @@ CACHE_KEY_TEMPLATE = u"bookmarks.list.{}.{}"
 class BookmarksService(object):
     """
     A service that provides access to the bookmarks API.
+
+    When is_bookmarked() is called the first time, the service
+    fetches and caches all the bookmarks of the user for the
+    course of the usage_key. So multiple calls to get bookmark
+    status during a request (for, example when rendering
+    courseware and getting bookmarks status for search results)
+    will not cause repeated queries to the database. The cache
+    is cleared at the end of the request and when set_bookmarked()
+    or unset_bookmarked() are called.
     """
 
     def __init__(self, user, **kwargs):
@@ -61,12 +70,6 @@ class BookmarksService(object):
     def is_bookmarked(self, usage_key):
         """
         Return whether the block has been bookmarked by the user.
-
-        This method fetches and caches all the bookmarks of the user
-        with course_key the same as usage_key.course_key. So multiple
-        calls to this method during a request will not result in repeated
-        queries to the database. The cache is cleared at the end of the
-        request and when set_bookmarked or unset_bookmarked are called.
 
         Arguments:
             usage_key: UsageKey of the block.

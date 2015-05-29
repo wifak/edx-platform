@@ -175,10 +175,6 @@ class XBlockCacheModelTest(ModuleStoreTestCase):
         self.assertEqual(xblock_cache.course_key, data['usage_key'].course_key)
         self.assertEqual(xblock_cache.display_name, data['display_name'])
 
-        for index, path in enumerate(data.get('paths', [])):
-            for depth, node in enumerate(path):
-                self.assertDictEqual(xblock_cache.paths[index][depth], node)
-
     @ddt.data(
         (
             [

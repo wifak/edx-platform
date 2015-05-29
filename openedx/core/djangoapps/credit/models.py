@@ -167,7 +167,7 @@ class CreditRequest(TimeStampedModel):
     Each CreditRequest is assigned a unique identifier so we can find it when the request
     is approved by the provider.  The CreditRequest record stores the parameters to be sent
     at the time the request is made.  If the user re-issues the request
-    (perhaps because the user did not finish filling in forms on the credit provider’s site),
+    (perhaps because the user did not finish filling in forms on the credit provider's site),
     the request record will be updated, but the UUID will remain the same.
     """
 

@@ -1,5 +1,7 @@
-""" Tests for credit course api """
+""" Tests for the API functions in the credit app. """
 import ddt
+
+from django.test import TestCase
 
 from opaque_keys.edx.keys import CourseKey
 from openedx.core.djangoapps.credit.api import (
@@ -7,15 +9,14 @@ from openedx.core.djangoapps.credit.api import (
 )
 from openedx.core.djangoapps.credit.exceptions import InvalidCreditRequirements, InvalidCreditCourse
 from openedx.core.djangoapps.credit.models import CreditCourse, CreditRequirement
-from xmodule.modulestore.tests.django_utils import ModuleStoreTestCase
 
 
 @ddt.ddt
-class ApiTestCases(ModuleStoreTestCase):
-    """ Tests for credit course api """
+class CreditRequirementApiTests(TestCase):
+    """ Test Python API for credit requirements and eligibility. """
 
     def setUp(self, **kwargs):
-        super(ApiTestCases, self).setUp()
+        super(CreditRequirementApiTests, self).setUp()
         self.course_key = CourseKey.from_string("edX/DemoX/Demo_Course")
 
     @ddt.data(
@@ -173,3 +174,8 @@ class ApiTestCases(ModuleStoreTestCase):
         credit_course = CreditCourse(course_key=self.course_key, enabled=enabled)
         credit_course.save()
         return credit_course
+
+
+class CreditProviderIntegrationApiTests(TestCase):
+    """Test Python API for credit provider integration. """
+    pass

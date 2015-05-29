@@ -123,10 +123,10 @@ def create_credit_request(course_key, provider_id, user_info, grade):
     Only users who are eligible for credit (have satisfied all credit requirements) are allowed to make requests.
 
     A database record will be created to track the request with a 32-character UUID.
-    The returned dictionary can be used by the user’s browser to send a POST request to the credit provider.
+    The returned dictionary can be used by the user's browser to send a POST request to the credit provider.
 
     If a pending request already exists, this function should return a request description with the same UUID.
-    (Other parameters, such as the user’s full name may be different than the original request).
+    (Other parameters, such as the user's full name may be different than the original request).
 
     If a completed request (either accepted or rejected) already exists, this function will
     raise an exception.  Users are not allowed to make additional requests once a request
@@ -136,7 +136,7 @@ def create_credit_request(course_key, provider_id, user_info, grade):
         course_key (CourseKey): The identifier for the course.
         provider_id (str): The identifier of the credit provider.
         user_info (dict): Dictionary of user information.
-        grade (float): The user’s final grade in the course, which is a value in the range [0.0, 1.0] (inclusive).
+        grade (float): The user's final grade in the course, which is a value in the range [0.0, 1.0] (inclusive).
 
     Returns: dict
 

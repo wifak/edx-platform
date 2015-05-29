@@ -15,7 +15,7 @@ class Migration(SchemaMigration):
             ('name', self.gf('django.db.models.fields.CharField')(max_length=255)),
             ('is_active', self.gf('django.db.models.fields.BooleanField')(default=True)),
             ('course_id', self.gf('xmodule_django.models.CourseKeyField')(max_length=255, db_index=True)),
-            ('topic_id', self.gf('django.db.models.fields.CharField')(db_index=True, max_length=100, blank=True)),
+            ('topic_id', self.gf('django.db.models.fields.CharField')(db_index=True, max_length=255, blank=True)),
             ('date_created', self.gf('django.db.models.fields.DateTimeField')(auto_now_add=True, blank=True)),
             ('description', self.gf('django.db.models.fields.CharField')(max_length=1000)),
             ('country', self.gf('django_countries.fields.CountryField')(max_length=2, blank=True)),
@@ -95,7 +95,7 @@ class Migration(SchemaMigration):
             'language': ('django.db.models.fields.CharField', [], {'max_length': '16', 'blank': 'True'}),
             'name': ('django.db.models.fields.CharField', [], {'max_length': '255'}),
             'team_id': ('django.db.models.fields.CharField', [], {'unique': 'True', 'max_length': '255'}),
-            'topic_id': ('django.db.models.fields.CharField', [], {'db_index': 'True', 'max_length': '100', 'blank': 'True'}),
+            'topic_id': ('django.db.models.fields.CharField', [], {'db_index': 'True', 'max_length': '255', 'blank': 'True'}),
             'users': ('django.db.models.fields.related.ManyToManyField', [], {'db_index': 'True', 'related_name': "'teams'", 'symmetrical': 'False', 'through': "orm['teams.CourseTeamMembership']", 'to': "orm['auth.User']"})
         },
         'teams.courseteammembership': {

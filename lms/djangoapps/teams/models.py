@@ -21,7 +21,7 @@ class CourseTeam(models.Model):
     name = models.CharField(max_length=255)
     is_active = models.BooleanField(default=True)
     course_id = CourseKeyField(max_length=255, db_index=True)
-    topic_id = models.CharField(max_length=100, db_index=True, blank=True)
+    topic_id = models.CharField(max_length=255, db_index=True, blank=True)
     date_created = models.DateTimeField(auto_now_add=True)
     # last_activity is computed through a query
     description = models.CharField(max_length=1000)
@@ -30,7 +30,7 @@ class CourseTeam(models.Model):
         max_length=16,
         blank=True,
         choices=settings.ALL_LANGUAGES,
-        help_text=ugettext_lazy("The ISO 639-1 language code for this language.")
+        help_text=ugettext_lazy("Optional language the team uses as ISO 639-1 code.")
     )
     users = models.ManyToManyField(User, db_index=True, related_name='teams', through='CourseTeamMembership')
 

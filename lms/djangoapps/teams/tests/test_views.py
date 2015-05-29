@@ -374,7 +374,7 @@ class TestTeamAPI(APITestCase, ModuleStoreTestCase):
         self.assertIn('next', response.data)
         self.assertIn('previous', response.data)
         self.assertEqual(response.data['previous'], None)
-        self.assertNotEqual(response.data['next'], 'null')
+        self.assertNotEqual(response.data['next'], None)
 
     def test_topic_detail_anonymous(self):
         response = self.client.get(

@@ -298,49 +298,49 @@ class TeamsDetailView(RetrievePatchAPIView):
 
 class TopicListView(GenericAPIView):
     """
-    **Use Cases**
+        **Use Cases**
 
-    Retrieve a list of topics associated with a single course.
+            Retrieve a list of topics associated with a single course.
 
-    **Example Requests**
+        **Example Requests**
 
-    GET /api/team/v0/topics/?course_id={course_id}
+            GET /api/team/v0/topics/?course_id={course_id}
 
-    **Response Values for GET**
+        **Response Values for GET**
 
-    The following options can be specified as query parameters:
+            The following options can be specified as query parameters:
 
-    * course_id: Filters the result to topics belonging to the given course (required).
+            * course_id: Filters the result to topics belonging to the given course (required).
 
-    * order_by: Orders the results. Currently only 'name' is supported, and is also the default value.
+            * order_by: Orders the results. Currently only 'name' is supported, and is also the default value.
 
-    * page_size: Number of results to return per page.
+            * page_size: Number of results to return per page.
 
-    * page: Page number to retrieve.
+            * page: Page number to retrieve.
 
-    If the course_id is not given or an unsupported value is passed for order_by, returns a 400 error.
+            If the course_id is not given or an unsupported value is passed for order_by, returns a 400 error.
 
-    If the user is not logged in or not enrolled in the course, returns a 403 error.
+            If the user is not logged in or not enrolled in the course, returns a 403 error.
 
-    If the course does not exist, returns a 404 error.
+            If the course does not exist, returns a 404 error.
 
-    Otherwise, a 200 response is returned containing the following fields:
+            Otherwise, a 200 response is returned containing the following fields:
 
-    * count: The total number of topics matching the request.
+            * count: The total number of topics matching the request.
 
-    * next: The URL to the next page of results, or null if this is the last page.
+            * next: The URL to the next page of results, or null if this is the last page.
 
-    * previous: The URL to the previous page of results, or null if this is the first page.
+            * previous: The URL to the previous page of results, or null if this is the first page.
 
-    * num_pages: The total number of pages in the result.
+            * num_pages: The total number of pages in the result.
 
-    * results: A list of the topics matching the request.
+            * results: A list of the topics matching the request.
 
-        * id: The topic's unique identifier.
+                * id: The topic's unique identifier.
 
-        * name: The name of the topic.
+                * name: The name of the topic.
 
-        * description: A description of the topic.
+                * description: A description of the topic.
 
     """
 
@@ -388,35 +388,35 @@ class TopicListView(GenericAPIView):
 
 class TopicDetailView(APIView):
     """
-    **Use Cases**
+        **Use Cases**
 
-    Retrieve a single topic from a course.
+            Retrieve a single topic from a course.
 
-    **Example Requests**
+            **Example Requests**
 
-    GET /api/team/v0/topics/{topic_id},{course_id}
+            GET /api/team/v0/topics/{topic_id},{course_id}
 
-    **Response Values for GET**
+            **Response Values for GET**
 
-    The following options can be specified as query parameters:
+            The following options can be specified as query parameters:
 
-    * topic_id: The ID of the topic to retrieve (required).
+            * topic_id: The ID of the topic to retrieve (required).
 
-    * course_id: The ID of the course to retrieve the topic from (required).
+            * course_id: The ID of the course to retrieve the topic from (required).
 
-    If the topic_id course_id are not given or an unsupported value is passed for order_by, returns a 400 error.
+            If the topic_id course_id are not given or an unsupported value is passed for order_by, returns a 400 error.
 
-    If the user is not logged in or not enrolled in the course, returns a 403 error.
+            If the user is not logged in or not enrolled in the course, returns a 403 error.
 
-    If the course does not exist, returns a 404 error.
+            If the course does not exist, returns a 404 error.
 
-    Otherwise, a 200 response is returned containing the following fields:
+            Otherwise, a 200 response is returned containing the following fields:
 
-    * id: The topic's unique identifier.
+            * id: The topic's unique identifier.
 
-    * name: The name of the topic.
+            * name: The name of the topic.
 
-    * description: A description of the topic.
+            * description: A description of the topic.
 
     """
 

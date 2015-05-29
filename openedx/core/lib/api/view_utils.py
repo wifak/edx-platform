@@ -132,7 +132,7 @@ def add_serializer_errors(serializer, data, field_errors):
         for key, error in errors.iteritems():
             field_errors[key] = {
                 'developer_message': u"Value '{field_value}' is not valid for field '{field_name}': {error}".format(
-                    field_value=data[key] if key in data else '', field_name=key, error=error
+                    field_value=data.get(key, ''), field_name=key, error=error
                 ),
                 'user_message': _(u"This value is invalid."),
             }

@@ -167,18 +167,16 @@ class TeamsListView(GenericAPIView):
             return Response({'detail': "text_search is not yet supported"}, status=status.HTTP_400_BAD_REQUEST)
 
         queryset = CourseTeam.objects.filter(**result_filter)
-        queryset = queryset.extra(select={'lower_name': "lower(name)"})
 
-        order_by_field = 'lower_name'
-        if 'order_by' in request.QUERY_PARAMS:
-            order_by_input = request.QUERY_PARAMS['order_by']
-            if order_by_input == 'name':
-                order_by_field = 'lower_name'
-            elif order_by_input == 'open_slots':
-                queryset = queryset.annotate(team_size=Count('users'))
-                order_by_field = 'team_size'
-            elif order_by_input == 'last_activity':
-                return Response({'detail': "last_activity is not yet supported"}, status=status.HTTP_400_BAD_REQUEST)
+        order_by_input = request.QUERY_PARAMS.get('order_by', 'name')
+        if order_by_input == 'name':
+            queryset = queryset.extra(select={'lower_name': "lower(name)"})
+            order_by_field = 'lower_name'
+        elif order_by_input == 'open_slots':
+            queryset = queryset.annotate(team_size=Count('users'))
+            order_by_field = 'team_size'
+        elif order_by_input == 'last_activity':
+            return Response({'detail': "last_activity is not yet supported"}, status=status.HTTP_400_BAD_REQUEST)
 
         queryset = queryset.order_by(order_by_field)
 

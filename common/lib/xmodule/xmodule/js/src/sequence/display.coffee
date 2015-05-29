@@ -189,8 +189,8 @@ class @Sequence
 
   addBookmarkIcon: (event) =>
     event.preventDefault()
-    @el.find('nav-item.active').find('.bookmark-icon').removeClass('is-hidden').addClass('bookmarked');
+    @el.find('.nav-item.active').find('.bookmark-icon').removeClass('is-hidden').addClass('bookmarked');
 
   removeBookmarkIcon: (event) =>
     event.preventDefault()
-    @el.find('nav-item.active').find('.bookmark-icon').removeClass('bookmarked').addClass('is-hidden');
+    @el.find('.nav-item.active').find('.bookmark-icon').removeClass('bookmarked').addClass('is-hidden');

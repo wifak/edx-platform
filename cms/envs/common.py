@@ -123,7 +123,7 @@ FEATURES = {
     # Is this an edX-owned domain? (edx.org)
     # for consistency in user-experience, keep the value of this feature flag
     # in sync with the one in lms/envs/common.py
-    'IS_EDX_DOMAIN': False,
+    'IS_EDX_DOMAIN': True,
 
     # let students save and manage their annotations
     # for consistency in user-experience, keep the value of this feature flag

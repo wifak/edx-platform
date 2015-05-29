@@ -152,7 +152,7 @@ FEATURES = {
     'ENABLE_XBLOCK_VIEW_ENDPOINT': False,
 
     # Allows to configure the LMS to provide CORS headers to serve requests from other domains
-    'ENABLE_CORS_HEADERS': False,
+    'ENABLE_CORS_HEADERS': True,
 
     # Can be turned off if course lists need to be hidden. Effects views and templates.
     'COURSES_ARE_BROWSABLE': True,
@@ -221,7 +221,8 @@ FEATURES = {
     'ENABLE_INSTRUCTOR_LEGACY_DASHBOARD': True,
 
     # Is this an edX-owned domain? (used for edX specific messaging and images)
-    'IS_EDX_DOMAIN': False,
+    'IS_EDX_DOMAIN': True,
+
 
     # Toggle to enable certificates of courses on dashboard
     'ENABLE_VERIFIED_CERTIFICATES': False,
@@ -296,7 +297,7 @@ FEATURES = {
 
     # Turn on third-party auth. Disabled for now because full implementations are not yet available. Remember to syncdb
     # if you enable this; we don't create tables by default.
-    'ENABLE_THIRD_PARTY_AUTH': False,
+    'ENABLE_THIRD_PARTY_AUTH': True,
 
     # Toggle to enable alternate urls for marketing links
     'ENABLE_MKTG_SITE': False,
@@ -323,7 +324,7 @@ FEATURES = {
     'ENABLE_MOBILE_SOCIAL_FACEBOOK_FEATURES': False,
 
     # Enable the combined login/registration form
-    'ENABLE_COMBINED_LOGIN_REGISTRATION': False,
+    'ENABLE_COMBINED_LOGIN_REGISTRATION': True,
 
     # Enable organizational email opt-in
     'ENABLE_MKTG_EMAIL_OPT_IN': False,
@@ -340,7 +341,7 @@ FEATURES = {
     'DISPLAY_ANALYTICS_ENROLLMENTS': True,
 
     # Show the mobile app links in the footer
-    'ENABLE_FOOTER_MOBILE_APP_LINKS': False,
+    'ENABLE_FOOTER_MOBILE_APP_LINKS': True,
 
     # Let students save and manage their annotations
     'ENABLE_EDXNOTES': False,
@@ -1060,7 +1061,7 @@ FOOTER_OPENEDX_LOGO_IMAGE = "https://files.edx.org/openedx-logos/edx-openedx-log
 
 # This is just a placeholder image.
 # Site operators can customize this with their organization's image.
-FOOTER_ORGANIZATION_IMAGE = "images/default-theme/logo.png"
+FOOTER_ORGANIZATION_IMAGE = "images/edx-theme/edx-header-logo.png"
 
 # These are referred to both by the Django asset pipeline
 # AND by the branding footer API, which needs to decide which
@@ -1864,7 +1865,14 @@ SOCIAL_MEDIA_FOOTER_NAMES = [
 
 # The footer URLs dictionary maps social footer names
 # to URLs defined in configuration.
-SOCIAL_MEDIA_FOOTER_URLS = {}
+SOCIAL_MEDIA_FOOTER_URLS = {
+  'facebook': "https://www.facebook.com/edX",
+  'youtube': "https://www.youtube.com/user/edxonline?sub_confirmation=1",
+  'twitter': "https://twitter.com/edxonline",
+  'linkedin': "https://www.linkedin.com/company/edx",
+  'google_plus': "https://plus.google.com/+edXOnline",
+  'reddit': "http://www.reddit.com/r/edx",
+}
 
 # The display dictionary defines the title
 # and icon class for each social media link.

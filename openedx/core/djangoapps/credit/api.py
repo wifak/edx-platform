@@ -202,6 +202,23 @@ def update_credit_request_status(request_uuid, status):
     pass
 
 
+def get_credit_request_status(request_uuid):
+    """Retrieve the status of a credit request.
+
+    Returns either "pending", "accepted", or "rejected"
+
+    Arguments:
+        request_uuid (str): The unique identifier for the credit request.
+
+    Returns: string
+
+    Raises:
+        CreditRequestNotFound: The request does not exist.
+
+    """
+    pass
+
+
 def _get_requirements_to_disable(old_requirements, new_requirements):
     """ Returns the ids of CreditRequirement to be disabled that are deleted from the courseware
 

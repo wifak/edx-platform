@@ -18,8 +18,8 @@ class Migration(SchemaMigration):
             ('topic_id', self.gf('django.db.models.fields.CharField')(db_index=True, max_length=100, blank=True)),
             ('date_created', self.gf('django.db.models.fields.DateTimeField')(auto_now_add=True, blank=True)),
             ('description', self.gf('django.db.models.fields.CharField')(max_length=1000)),
-            ('country', self.gf('django.db.models.fields.CharField')(max_length=50, blank=True)),
-            ('language', self.gf('django.db.models.fields.CharField')(max_length=20, blank=True)),
+            ('country', self.gf('django_countries.fields.CountryField')(max_length=2, blank=True)),
+            ('language', self.gf('django.db.models.fields.CharField')(max_length=16, blank=True)),
         ))
         db.send_create_signal('teams', ['CourseTeam'])
 
@@ -86,13 +86,13 @@ class Migration(SchemaMigration):
         },
         'teams.courseteam': {
             'Meta': {'object_name': 'CourseTeam'},
-            'country': ('django.db.models.fields.CharField', [], {'max_length': '50', 'blank': 'True'}),
+            'country': ('django_countries.fields.CountryField', [], {'max_length': '2', 'blank': 'True'}),
             'course_id': ('xmodule_django.models.CourseKeyField', [], {'max_length': '255', 'db_index': 'True'}),
             'date_created': ('django.db.models.fields.DateTimeField', [], {'auto_now_add': 'True', 'blank': 'True'}),
             'description': ('django.db.models.fields.CharField', [], {'max_length': '1000'}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'is_active': ('django.db.models.fields.BooleanField', [], {'default': 'True'}),
-            'language': ('django.db.models.fields.CharField', [], {'max_length': '20', 'blank': 'True'}),
+            'language': ('django.db.models.fields.CharField', [], {'max_length': '16', 'blank': 'True'}),
             'name': ('django.db.models.fields.CharField', [], {'max_length': '255'}),
             'team_id': ('django.db.models.fields.CharField', [], {'unique': 'True', 'max_length': '255'}),
             'topic_id': ('django.db.models.fields.CharField', [], {'db_index': 'True', 'max_length': '100', 'blank': 'True'}),

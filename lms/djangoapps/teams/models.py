@@ -4,6 +4,9 @@ Django models related to teams functionality.
 
 from django.contrib.auth.models import User
 from django.db import models
+from django.utils.translation import ugettext_lazy
+from django.conf import settings
+from django_countries.fields import CountryField
 from .utils import slugify
 
 from xmodule_django.models import CourseKeyField
@@ -22,8 +25,13 @@ class CourseTeam(models.Model):
     date_created = models.DateTimeField(auto_now_add=True)
     # last_activity is computed through a query
     description = models.CharField(max_length=1000)
-    country = models.CharField(max_length=50, blank=True)
-    language = models.CharField(max_length=20, blank=True)
+    country = CountryField(blank=True)
+    language = models.CharField(
+        max_length=16,
+        blank=True,
+        choices=settings.ALL_LANGUAGES,
+        help_text=ugettext_lazy("The ISO 639-1 language code for this language.")
+    )
     users = models.ManyToManyField(User, db_index=True, related_name='teams', through='CourseTeamMembership')
 
     @classmethod
@@ -36,8 +44,8 @@ class CourseTeam(models.Model):
             course_id: Course id
             description: Description of the team
             topic_id: Optional identifier for the topic the team formed around
-            country: Optional country where the team is based
-            language: Optional language the team uses
+            country: Optional country where the team is based as ISO 3166-1 code
+            language: Optional language the team uses as ISO 639-1 code
         """
 
         team_id = slugify(name)

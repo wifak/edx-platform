@@ -239,22 +239,22 @@ class TestTeamAPI(APITestCase, ModuleStoreTestCase):
             course=self.test_course_1,
             description="Another fantastic team",
             topic_id='great-topic',
-            country='USA',
-            language='English'
+            country='CA',
+            language='fr'
         ))
 
         # Remove date_created because it changes between test runs
         del team['date_created']
         self.assertEquals(team, {
-            'name': "Fully specified team",
-            'language': "English",
-            'country': "USA",
+            'name': 'Fully specified team',
+            'language': 'fr',
+            'country': 'CA',
             'is_active': True,
             'membership': [],
-            'topic_id': "great-topic",
+            'topic_id': 'great-topic',
             'course_id': str(self.test_course_1.id),
             'id': 'fully-specified-team',
-            'description': "Another fantastic team",
+            'description': 'Another fantastic team'
         })
 
     def get_team_detail(self, team_id, expected_status, user=None):
@@ -317,10 +317,21 @@ class TestTeamAPI(APITestCase, ModuleStoreTestCase):
         team = self.get_team_detail_json(self.test_team_1.team_id, 200, user=self.staff_user)
         self.assertEquals(team['name'], 'foo')
 
-    @ddt.data(('foo', 'bar'), ('team_id', 'foobar'), ('description', ''))
+    @ddt.data(
+        ('foo', 'bar'),
+        ('team_id', 'foobar'),
+        ('description', ''),
+        ('country', 'foobar'),
+        ('language', 'foobar')
+    )
     @ddt.unpack
     def test_update_team_bad_requests(self, key, value):
         self.patch_team_detail(self.test_team_1.team_id, 400, user=self.staff_user, data={key: value})
+
+    @ddt.data(('country', 'US'), ('language', 'en'))
+    @ddt.unpack
+    def test_update_team_valid_country_language(self, key, value):
+        self.patch_team_detail(self.test_team_1.team_id, 200, user=self.staff_user, data={key: value})
 
     def test_update_team_does_not_exist(self):
         self.patch_team_detail('foobar', 404, user=self.staff_user)

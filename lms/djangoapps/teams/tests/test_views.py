@@ -62,8 +62,8 @@ class TestTeamAPI(APITestCase, ModuleStoreTestCase):
 
         self.test_team_1.add_user(self.student_user)
 
-        CourseEnrollment.get_or_create_enrollment(
-            self.student_user_enrolled, self.test_course_1.location.course_key
+        CourseEnrollment.enroll(
+            self.student_user_enrolled, self.test_course_1.id, check_access=True
         )
 
     def setup_inactive_user(self):
@@ -177,7 +177,7 @@ class TestTeamAPI(APITestCase, ModuleStoreTestCase):
         """
         Posts data to the team creation endpoint as user. Verifies expected_status.
         """
-        user = user if user else self.student_user
+        user = user if user else self.student_user_enrolled
         self.client.login(username=user.username, password=self.test_password)
         response = self.client.post(reverse('teams_list'), data=data)
         self.assertEquals(response.status_code, expected_status)
@@ -199,8 +199,13 @@ class TestTeamAPI(APITestCase, ModuleStoreTestCase):
         response = self.client.post(reverse('teams_list'), self.build_team_data())
         self.assertEquals(403, response.status_code)
 
-    def test_create_team_logged_in(self):
-        new_team = self.post_create_team_json(200, self.build_team_data(name="New Team"))
+    def test_create_team_logged_in_unenrolled(self):
+        self.post_create_team(403, self.build_team_data(), user=self.student_user)
+
+    @ddt.data('student_user_enrolled', 'staff_user')
+    def test_create_team_logged_in(self, user_field):
+        user = getattr(self, user_field)
+        new_team = self.post_create_team_json(200, self.build_team_data(name="New Team"), user=user)
         self.assertEquals(new_team['id'], 'new-team')
 
         teams = self.get_teams_list_json()

@@ -205,6 +205,9 @@ class TeamsListView(GenericAPIView):
         except ValueError:
             return Response(status=status.HTTP_404_NOT_FOUND)
 
+        if course_key and not (CourseEnrollment.is_enrolled(request.user, course_key) or request.user.is_staff):
+            return Response({'detail': "User must be enrolled."}, status=status.HTTP_403_FORBIDDEN)
+
         data = request.DATA
         data['course_id'] = course_key
 
@@ -366,7 +369,7 @@ class TopicListView(GenericAPIView):
         if course_module is None:  # course is None if not found
             return Response(status=status.HTTP_404_NOT_FOUND)
 
-        if CourseEnrollment.get_enrollment(request.user, course_id) is None:
+        if not CourseEnrollment.is_enrolled(request.user, course_id):
             return Response({'detail': "user must be enrolled"}, status=status.HTTP_403_FORBIDDEN)
 
         topics = course_module.teams_topics
@@ -433,7 +436,7 @@ class TopicDetailView(APIView):
         if course_module is None:
             return Response(status=status.HTTP_404_NOT_FOUND)
 
-        if CourseEnrollment.get_enrollment(request.user, course_id) is None:
+        if not CourseEnrollment.is_enrolled(request.user, course_id):
             return Response({'detail': "user must be enrolled"}, status=status.HTTP_403_FORBIDDEN)
 
         topics = [t for t in course_module.teams_topics if t['id'] == topic_id]

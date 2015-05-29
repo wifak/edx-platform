@@ -23,6 +23,7 @@ from discussion_api.api import (
     get_comment_list,
     get_course_topics,
     get_thread_list,
+    get_thread_list_url
 )
 from discussion_api.tests.utils import (
     CommentsServiceMockMixin,
@@ -58,9 +59,10 @@ def _remove_discussion_tab(course, user_id):
 
 
 @mock.patch.dict("django.conf.settings.FEATURES", {"DISABLE_START_DATES": False})
-class GetCourseTopicsTest(ModuleStoreTestCase):
+class GetCourseTopicsTest(UrlResetMixin, ModuleStoreTestCase):
     """Test for get_course_topics"""
 
+    @mock.patch.dict("django.conf.settings.FEATURES", {"ENABLE_DISCUSSION_SERVICE": True})
     def setUp(self):
         super(GetCourseTopicsTest, self).setUp()
         self.maxDiff = None  # pylint: disable=invalid-name
@@ -82,6 +84,8 @@ class GetCourseTopicsTest(ModuleStoreTestCase):
             days_early_for_beta=3
         )
         self.user = UserFactory.create()
+        self.request = RequestFactory().get("/dummy")
+        self.request.user = self.user
         CourseEnrollmentFactory.create(user=self.user, course_id=self.course.id)
 
     def make_discussion_module(self, topic_id, category, subcategory, **kwargs):
@@ -95,34 +99,40 @@ class GetCourseTopicsTest(ModuleStoreTestCase):
             **kwargs
         )
 
-    def get_course_topics(self, user=None):
+    def get_course_topics(self):
         """
         Get course topics for self.course, using the given user or self.user if
         not provided, and generating absolute URIs with a test scheme/host.
         """
-        return get_course_topics(self.course.id, user or self.user)
+        return get_course_topics(self.request, self.course.id)
 
-    def make_expected_tree(self, topic_id, name, children=None):
+    def make_expected_tree(self, topic_id_list, name, children=None):
         """
-        Build an expected result tree given a topic id, display name, and
-        children
+        Build an expected result tree given a topic id, display name, children
+        and thread_list_url
         """
         children = children or []
         node = {
-            "id": topic_id,
             "name": name,
             "children": children,
+            "thread_list_url": get_thread_list_url(self.request, self.course.id, topic_id_list)
         }
+        if children:
+            node["id"] = None
+        else:
+            node["id"] = topic_id_list[0]
+
         return node
 
     def test_nonexistent_course(self):
         with self.assertRaises(Http404):
-            get_course_topics(CourseLocator.from_string("non/existent/course"), self.user)
+            get_course_topics(self.request, CourseLocator.from_string("non/existent/course"))
 
     def test_not_enrolled(self):
         unenrolled_user = UserFactory.create()
+        self.request.user = unenrolled_user
         with self.assertRaises(Http404):
-            get_course_topics(self.course.id, unenrolled_user)
+            self.get_course_topics()
 
     def test_discussions_disabled(self):
         _remove_discussion_tab(self.course, self.user.id)
@@ -134,7 +144,7 @@ class GetCourseTopicsTest(ModuleStoreTestCase):
         expected = {
             "courseware_topics": [],
             "non_courseware_topics": [
-                self.make_expected_tree("non-courseware-topic-id", "Test Topic")
+                self.make_expected_tree(["non-courseware-topic-id"], "Test Topic")
             ],
         }
         self.assertEqual(actual, expected)
@@ -145,13 +155,13 @@ class GetCourseTopicsTest(ModuleStoreTestCase):
         expected = {
             "courseware_topics": [
                 self.make_expected_tree(
-                    None,
+                    ["courseware-topic-id"],
                     "Foo",
-                    [self.make_expected_tree("courseware-topic-id", "Bar")]
+                    [self.make_expected_tree(["courseware-topic-id"], "Bar")]
                 ),
             ],
             "non_courseware_topics": [
-                self.make_expected_tree("non-courseware-topic-id", "Test Topic")
+                self.make_expected_tree(["non-courseware-topic-id"], "Test Topic")
             ],
         }
         self.assertEqual(actual, expected)
@@ -171,30 +181,30 @@ class GetCourseTopicsTest(ModuleStoreTestCase):
         expected = {
             "courseware_topics": [
                 self.make_expected_tree(
-                    None,
+                    ["courseware-1", "courseware-2"],
                     "A",
                     [
-                        self.make_expected_tree("courseware-1", "1"),
-                        self.make_expected_tree("courseware-2", "2"),
+                        self.make_expected_tree(["courseware-1"], "1"),
+                        self.make_expected_tree(["courseware-2"], "2"),
                     ]
                 ),
                 self.make_expected_tree(
-                    None,
+                    ["courseware-3", "courseware-4"],
                     "B",
                     [
-                        self.make_expected_tree("courseware-3", "1"),
-                        self.make_expected_tree("courseware-4", "2"),
+                        self.make_expected_tree(["courseware-3"], "1"),
+                        self.make_expected_tree(["courseware-4"], "2"),
                     ]
                 ),
                 self.make_expected_tree(
-                    None,
+                    ["courseware-5"],
                     "C",
-                    [self.make_expected_tree("courseware-5", "1")]
+                    [self.make_expected_tree(["courseware-5"], "1")]
                 ),
             ],
             "non_courseware_topics": [
-                self.make_expected_tree("non-courseware-1", "A"),
-                self.make_expected_tree("non-courseware-2", "B"),
+                self.make_expected_tree(["non-courseware-1"], "A"),
+                self.make_expected_tree(["non-courseware-2"], "B"),
             ],
         }
         self.assertEqual(actual, expected)
@@ -218,30 +228,30 @@ class GetCourseTopicsTest(ModuleStoreTestCase):
         expected = {
             "courseware_topics": [
                 self.make_expected_tree(
-                    None,
+                    ["courseware-1", "courseware-2", "courseware-3"],
                     "First",
                     [
-                        self.make_expected_tree("courseware-2", "B"),
-                        self.make_expected_tree("courseware-1", "A"),
-                        self.make_expected_tree("courseware-3", "C"),
+                        self.make_expected_tree(["courseware-2"], "B"),
+                        self.make_expected_tree(["courseware-1"], "A"),
+                        self.make_expected_tree(["courseware-3"], "C"),
                     ]
                 ),
                 self.make_expected_tree(
-                    None,
+                    ["courseware-4", "courseware-5", "courseware-6", "courseware-7"],
                     "Second",
                     [
-                        self.make_expected_tree("courseware-7", "D"),
-                        self.make_expected_tree("courseware-6", "C"),
-                        self.make_expected_tree("courseware-4", "A"),
-                        self.make_expected_tree("courseware-5", "B"),
+                        self.make_expected_tree(["courseware-7"], "D"),
+                        self.make_expected_tree(["courseware-6"], "C"),
+                        self.make_expected_tree(["courseware-4"], "A"),
+                        self.make_expected_tree(["courseware-5"], "B"),
                     ]
                 ),
             ],
             "non_courseware_topics": [
-                self.make_expected_tree("non-courseware-4", "Z"),
-                self.make_expected_tree("non-courseware-2", "X"),
-                self.make_expected_tree("non-courseware-3", "Y"),
-                self.make_expected_tree("non-courseware-1", "W"),
+                self.make_expected_tree(["non-courseware-4"], "Z"),
+                self.make_expected_tree(["non-courseware-2"], "X"),
+                self.make_expected_tree(["non-courseware-3"], "Y"),
+                self.make_expected_tree(["non-courseware-1"], "W"),
             ],
         }
         self.assertEqual(actual, expected)
@@ -298,66 +308,67 @@ class GetCourseTopicsTest(ModuleStoreTestCase):
         student_expected = {
             "courseware_topics": [
                 self.make_expected_tree(
-                    None,
+                    ["courseware-1", "courseware-2"],
                     "First",
                     [
-                        self.make_expected_tree("courseware-2", "Cohort A"),
-                        self.make_expected_tree("courseware-1", "Everybody"),
+                        self.make_expected_tree(["courseware-2"], "Cohort A"),
+                        self.make_expected_tree(["courseware-1"], "Everybody"),
                     ]
                 ),
             ],
             "non_courseware_topics": [
-                self.make_expected_tree("non-courseware-topic-id", "Test Topic"),
+                self.make_expected_tree(["non-courseware-topic-id"], "Test Topic"),
             ],
         }
         self.assertEqual(student_actual, student_expected)
-
-        beta_actual = self.get_course_topics(beta_tester)
+        self.request.user = beta_tester
+        beta_actual = self.get_course_topics()
         beta_expected = {
             "courseware_topics": [
                 self.make_expected_tree(
-                    None,
+                    ["courseware-1", "courseware-3"],
                     "First",
                     [
-                        self.make_expected_tree("courseware-3", "Cohort B"),
-                        self.make_expected_tree("courseware-1", "Everybody"),
+                        self.make_expected_tree(["courseware-3"], "Cohort B"),
+                        self.make_expected_tree(["courseware-1"], "Everybody"),
                     ]
                 ),
                 self.make_expected_tree(
-                    None,
+                    ["courseware-5"],
                     "Second",
-                    [self.make_expected_tree("courseware-5", "Future Start Date")]
+                    [self.make_expected_tree(["courseware-5"], "Future Start Date")]
                 ),
             ],
             "non_courseware_topics": [
-                self.make_expected_tree("non-courseware-topic-id", "Test Topic"),
+                self.make_expected_tree(["non-courseware-topic-id"], "Test Topic"),
             ],
         }
         self.assertEqual(beta_actual, beta_expected)
 
-        staff_actual = self.get_course_topics(staff)
+        self.request.user = staff
+        staff_actual = self.get_course_topics()
         staff_expected = {
             "courseware_topics": [
                 self.make_expected_tree(
-                    None,
+                    ["courseware-1", "courseware-2", "courseware-3"],
                     "First",
                     [
-                        self.make_expected_tree("courseware-2", "Cohort A"),
-                        self.make_expected_tree("courseware-3", "Cohort B"),
-                        self.make_expected_tree("courseware-1", "Everybody"),
+                        self.make_expected_tree(["courseware-2"], "Cohort A"),
+                        self.make_expected_tree(["courseware-3"], "Cohort B"),
+                        self.make_expected_tree(["courseware-1"], "Everybody"),
                     ]
                 ),
                 self.make_expected_tree(
-                    None,
+                    ["courseware-4", "courseware-5"],
                     "Second",
                     [
-                        self.make_expected_tree("courseware-5", "Future Start Date"),
-                        self.make_expected_tree("courseware-4", "Staff Only"),
+                        self.make_expected_tree(["courseware-5"], "Future Start Date"),
+                        self.make_expected_tree(["courseware-4"], "Staff Only"),
                     ]
                 ),
             ],
             "non_courseware_topics": [
-                self.make_expected_tree("non-courseware-topic-id", "Test Topic"),
+                self.make_expected_tree(["non-courseware-topic-id"], "Test Topic"),
             ],
         }
         self.assertEqual(staff_actual, staff_expected)
@@ -382,14 +393,14 @@ class GetThreadListTest(CommentsServiceMockMixin, UrlResetMixin, ModuleStoreTest
         self.author = UserFactory.create()
         self.cohort = CohortFactory.create(course_id=self.course.id)
 
-    def get_thread_list(self, threads, page=1, page_size=1, num_pages=1, course=None, topic_id=None):
+    def get_thread_list(self, threads, page=1, page_size=1, num_pages=1, course=None, topic_id_list=None):
         """
         Register the appropriate comments service response, then call
         get_thread_list and return the result.
         """
         course = course or self.course
-        self.register_get_threads_response(threads, page, num_pages, topic_id)
-        ret = get_thread_list(self.request, course.id, page, page_size, topic_id)
+        self.register_get_threads_response(threads, page, num_pages, topic_id_list)
+        ret = get_thread_list(self.request, course.id, page, page_size, topic_id_list)
         return ret
 
     def test_nonexistent_course(self):
@@ -417,7 +428,7 @@ class GetThreadListTest(CommentsServiceMockMixin, UrlResetMixin, ModuleStoreTest
         )
 
     def test_get_threads_by_topic_id(self):
-        self.get_thread_list([], topic_id="test_topic")
+        self.get_thread_list([], topic_id_list=["test_topic"])
         self.assertEqual(urlparse(httpretty.last_request().path).path, "/api/v1/test_topic/threads")
 
     def test_basic_query_params(self):

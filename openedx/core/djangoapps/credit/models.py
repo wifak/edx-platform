@@ -143,7 +143,7 @@ class CreditRequirementStatus(TimeStampedModel):
 
     username = models.CharField(max_length=255, db_index=True)
     requirement = models.ForeignKey(CreditRequirement, related_name="statuses")
-    status = models.CharField(choices=REQUIREMENT_STATUS_CHOICES, max_length=32)
+    status = models.CharField(max_length=32, choices=REQUIREMENT_STATUS_CHOICES)
 
 
 class CreditEligibility(TimeStampedModel):
@@ -158,3 +158,52 @@ class CreditEligibility(TimeStampedModel):
     class Meta(object):
         """Model metadata"""
         unique_together = ('username', 'course')
+
+
+class CreditRequest(TimeStampedModel):
+    """A request for credit from a particular credit provider.
+
+    When a user initiates a request for credit, a CreditRequest record will be created.
+    Each CreditRequest is assigned a unique identifier so we can find it when the request
+    is approved by the provider.  The CreditRequest record stores the parameters to be sent
+    at the time the request is made.  If the user re-issues the request
+    (perhaps because the user did not finish filling in forms on the credit provider’s site),
+    the request record will be updated, but the UUID will remain the same.
+    """
+
+    uuid = models.CharField(max_length=32, unique=True, db_index=True)
+    username = models.CharField(max_length=255, db_index=True)
+    course = models.ForeignKey(CreditCourse, related_name="credit_requests")
+    provider = models.ForeignKey(CreditProvider, related_name="credit_requests")
+    parameters = JSONField()
+
+
+class CreditRequestStatus(TimeStampedModel):
+    """The status of a request for credit.
+
+    For auditing purposes, each time a credit request is issued,
+    a CreditRequestStatus is created with status “pending” and a timestamp.
+
+    When a credit request is approved by the credit provider, a CreditRequestStatus
+    record will be created and associated with the initiating CreditRequest.
+    CreditRequestStatus records are immutable and timestamped.
+
+    The state transitions are:
+
+        [request]--> (pending) --[approved]--> (approved)
+                         |
+                     [rejected]
+                         |
+                         V
+                     (rejected)
+
+    """
+
+    REQUEST_STATUS_CHOICES = (
+        ("pending", "Pending"),
+        ("approved", "Approved"),
+        ("rejected", "Rejected"),
+    )
+
+    request = models.ForeignKey(CreditRequest, related_name="statuses")
+    status = models.CharField(max_length=255, choices=REQUEST_STATUS_CHOICES)

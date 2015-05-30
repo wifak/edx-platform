@@ -84,9 +84,9 @@ class CallStackManager(Manager):
                                    line.split(',')[2].strip())
 
         # filtering w.r.t. regular_expressions
-        filtered_call_stack = [frame for frame in temp_call_stack if not(len(filter(lambda re: re.match(frame),
-                                                                                GLOBAL_DICT.regular_expressions)))]
-
+        #filtered_call_stack = [frame for frame in temp_call_stack if not(len(filter(lambda re: re.match(frame),
+                                                                                    #GLOBAL_DICT.regular_expressions)))]
+        filtered_call_stack = [frame for frame in temp_call_stack if not (len([re for re in GLOBAL_DICT.regular_expressions if re.match(frame)]))]
         call_stack = [(x[0][6:-1], x[1][6:], x[2][3:]) for x in [tuple(x.split("+")) for x in filtered_call_stack]]
 
         # avoid duplication.

@@ -5,8 +5,6 @@
 
         return Backbone.View.extend({
 
-            el: '.course-content',
-
             errorIcon: '<i class="fa fa-fw fa-exclamation-triangle message-error" aria-hidden="true"></i>',
             errorMessage: gettext('An error has occurred. Please try again.'),
 
@@ -14,16 +12,18 @@
             srRemoveBookmarkText: gettext('Click to remove bookmark from this unit'),
 
             events: {
-                'click .bookmark-button': 'bookmark',
-                'sequence:changed .sequence': 'updateBookmarkState'
+                'click .bookmark-button': 'bookmark'
             },
 
-            initialize: function () {
+            initialize: function (options) {
+                this.bookmarked = options.bookmarked;
+
                 this.errorMessageView = new MessageView({
                     el: $('.coursewide-message-banner'),
                     templateId: '#message_banner-tpl'
                 });
                 this.bookmarksUrl = $(".courseware-bookmarks-button").data('bookmarksApiUrl');
+                this.updateBookmarkState(this.bookmarked);
             },
 
             bookmark: function(event) {
@@ -77,13 +77,14 @@
                 });
             },
 
-            updateBookmarkState: function(event) {
-                var $currentElement = $(event.currentTarget);
-                var $bookmarkButton = $currentElement.find('.bookmark-button');
-                if ($currentElement.find('.active').find('.bookmark-icon').hasClass('bookmarked')) {
+            updateBookmarkState: function(isBookmarked) {
+                var $bookmarkButton = this.$el.find('.bookmark-button');
+                if (isBookmarked) {
+                    //this.$el.trigger('bookmark:add');
                     $bookmarkButton.addClass("bookmarked").removeClass("un-bookmarked");
                     $bookmarkButton.find('.bookmark-sr').text(this.srRemoveBookmarkText);
                 } else {
+                    //this.$el.trigger('bookmark:remove');
                     $bookmarkButton.find('.bookmark-sr').text(this.srAddBookmarkText);
                     $bookmarkButton.addClass("un-bookmarked").removeClass("bookmarked");
                 }

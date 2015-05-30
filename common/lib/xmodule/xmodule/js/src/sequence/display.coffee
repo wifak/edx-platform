@@ -104,8 +104,9 @@ class @Sequence
       @mark_active new_position
 
       current_tab = @contents.eq(new_position - 1)
-      @content_container.html(current_tab.text()).attr("aria-labelledby", current_tab.attr("aria-labelledby"))
 
+      bookmarked = if @el.find('.active .bookmark-icon').hasClass('bookmarked') then true else false
+      @content_container.html(current_tab.text()).attr("aria-labelledby", current_tab.attr("aria-labelledby")).data('bookmarked', bookmarked)
       XBlock.initializeBlocks(@content_container, @requestToken)
 
       window.update_schematics() # For embedded circuit simulator exercises in 6.002x
@@ -117,8 +118,6 @@ class @Sequence
 
       sequence_links = @content_container.find('a.seqnav')
       sequence_links.click @goto
-
-      @el.trigger "sequence:changed"
 
       @el.find('.path').html(@el.find('.nav-item.active').data('path'))
 

@@ -44,6 +44,15 @@ class VerticalBlockTestCase(BaseVerticalBlockTest):
     """
     Tests for the VerticalBlock.
     """
+    def assert_bookmarks_info(self, block):
+        """
+         Verifies the block has all the bookmarks related info.
+        """
+        self.assertIn('bookmark_id', block)
+        self.assertIn('test_username,{}'.format(unicode(self.vertical.location)), block)
+        self.assertIn('bookmarked', block)
+        self.assertIn('show_bookmark_button', block)
+
     def test_render_student_view(self):
         """
         Test the rendering of the student view.
@@ -51,6 +60,7 @@ class VerticalBlockTestCase(BaseVerticalBlockTest):
         html = self.module_system.render(self.vertical, STUDENT_VIEW, self.default_context).content
         self.assertIn(self.test_html_1, html)
         self.assertIn(self.test_html_2, html)
+        self.assert_bookmarks_info(html)
 
     def test_render_studio_view(self):
         """

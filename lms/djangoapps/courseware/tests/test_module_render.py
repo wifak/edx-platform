@@ -1388,7 +1388,7 @@ class LMSXBlockServiceBindingTest(ModuleStoreTestCase):
         self.request_token = Mock()
 
     @XBlock.register_temp_plugin(PureXBlock, identifier='pure')
-    @ddt.data("user", "i18n", "fs", "field-data")
+    @ddt.data("user", "i18n", "fs", "field-data", "bookmarks")
     def test_expected_services_exist(self, expected_service):
         """
         Tests that the 'user', 'i18n', and 'fs' services are provided by the LMS runtime.

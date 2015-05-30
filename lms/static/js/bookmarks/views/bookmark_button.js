@@ -8,8 +8,8 @@
             errorIcon: '<i class="fa fa-fw fa-exclamation-triangle message-error" aria-hidden="true"></i>',
             errorMessage: gettext('An error has occurred. Please try again.'),
 
-            srAddBookmarkText: gettext('Click to bookmark this unit'),
-            srRemoveBookmarkText: gettext('Click to remove bookmark from this unit'),
+            srAddBookmarkText: gettext('Click to add'),
+            srRemoveBookmarkText: gettext('Click to remove'),
 
             events: {
                 'click .bookmark-button': 'bookmark'
@@ -80,11 +80,9 @@
             updateBookmarkState: function(isBookmarked) {
                 var $bookmarkButton = this.$el.find('.bookmark-button');
                 if (isBookmarked) {
-                    //this.$el.trigger('bookmark:add');
                     $bookmarkButton.addClass("bookmarked").removeClass("un-bookmarked");
                     $bookmarkButton.find('.bookmark-sr').text(this.srRemoveBookmarkText);
                 } else {
-                    //this.$el.trigger('bookmark:remove');
                     $bookmarkButton.find('.bookmark-sr').text(this.srAddBookmarkText);
                     $bookmarkButton.addClass("un-bookmarked").removeClass("bookmarked");
                 }

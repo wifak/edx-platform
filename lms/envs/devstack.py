@@ -41,6 +41,13 @@ ANALYTICS_API_KEY = ""
 # dashboard to the Analytics Dashboard.
 ANALYTICS_DASHBOARD_URL = None
 
+################################ PYFS XBLOCKS SERVICE ###############
+
+DJFS = {
+    'type': 'osfs',
+    'directory_root': 'lms/static/djpyfs',
+    'url_root': '/static/djpyfs'
+}
 
 ################################ DEBUG TOOLBAR ################################
 

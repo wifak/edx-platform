@@ -594,11 +594,8 @@ class TestListMayEnroll(TestReportMixin, InstructorTaskCourseTestCase):
         for email in enrollments:
             self._create_enrollment(email)
 
-        self.current_task = Mock()  # pylint: disable=attribute-defined-outside-init
-        self.current_task.update_state = Mock()
         task_input = {'features': ['email']}
-        with patch('instructor_task.tasks_helper._get_current_task') as mock_current_task:
-            mock_current_task.return_value = self.current_task
+        with patch('instructor_task.tasks_helper._get_current_task'):
             result = upload_may_enroll_csv(None, None, self.course.id, task_input, 'calculated')
         # This assertion simply confirms that the generation completed with no errors
         num_enrollments = len(enrollments)

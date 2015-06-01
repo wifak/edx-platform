@@ -1681,6 +1681,29 @@ class EntranceExamConfiguration(models.Model):
         return can_skip
 
 
+class LanguageField(models.CharField):
+    """Represents a language from the ISO 639-1 language set."""
+
+    def __init__(self, *args, **kwargs):
+        """Creates a LanguageField.
+
+        Accepts all the same kwargs as a CharField, except for max_length and
+        choices. help_text defaults to a description of the ISO 639-1 set.
+        """
+        kwargs.pop('max_length', None)
+        kwargs.pop('choices', None)
+        help_text = kwargs.pop(
+            'help_text',
+            ugettext_lazy("The ISO 639-1 language code for this language."),
+        )
+        super(LanguageField, self).__init__(
+            max_length=16,
+            choices=settings.ALL_LANGUAGES,
+            help_text=help_text,
+            *args,
+            **kwargs
+        )
+
 class LanguageProficiency(models.Model):
     """
     Represents a user's language proficiency.
@@ -1695,9 +1718,4 @@ class LanguageProficiency(models.Model):
         unique_together = (('code', 'user_profile'),)
 
     user_profile = models.ForeignKey(UserProfile, db_index=True, related_name='language_proficiencies')
-    code = models.CharField(
-        max_length=16,
-        blank=False,
-        choices=settings.ALL_LANGUAGES,
-        help_text=ugettext_lazy("The ISO 639-1 language code for this language.")
-    )
+    code = LanguageField(blank=False)

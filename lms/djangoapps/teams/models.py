@@ -10,6 +10,7 @@ from django_countries.fields import CountryField
 
 from xmodule_django.models import CourseKeyField
 from util.model_utils import generate_unique_readable_id
+from student.models import LanguageField
 
 class CourseTeam(models.Model):
     """
@@ -25,11 +26,9 @@ class CourseTeam(models.Model):
     # last_activity is computed through a query
     description = models.CharField(max_length=300)
     country = CountryField(blank=True)
-    language = models.CharField(
-        max_length=16,
+    language = LanguageField(
         blank=True,
-        choices=settings.ALL_LANGUAGES,
-        help_text=ugettext_lazy("Optional language the team uses as ISO 639-1 code.")
+        help_text=ugettext_lazy("Optional language the team uses as ISO 639-1 code."),
     )
     users = models.ManyToManyField(User, db_index=True, related_name='teams', through='CourseTeamMembership')
 

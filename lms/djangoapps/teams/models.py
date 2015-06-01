@@ -7,10 +7,9 @@ from django.db import models
 from django.utils.translation import ugettext_lazy
 from django.conf import settings
 from django_countries.fields import CountryField
-from .utils import slugify
 
 from xmodule_django.models import CourseKeyField
-
+from util.model_utils import generate_unique_readable_id
 
 class CourseTeam(models.Model):
     """
@@ -52,17 +51,7 @@ class CourseTeam(models.Model):
 
         """
 
-        team_id = slugify(name)
-        conflicts = cls.objects.filter(team_id__startswith=team_id).values_list('team_id', flat=True)
-
-        if conflicts and team_id in conflicts:
-            suffix = 2
-            while True:
-                new_id = team_id + '-' + str(suffix)
-                if new_id not in conflicts:
-                    team_id = new_id
-                    break
-                suffix += 1
+        team_id = generate_unique_readable_id(name, cls.objects.all(), 'team_id')
 
         course_team = cls(
             team_id=team_id,

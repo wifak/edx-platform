@@ -66,7 +66,6 @@ def compare_with_tolerance(student_complex, instructor_complex, tolerance=defaul
         # `inf <= inf` which is a fail. Instead, compare directly.
         return student_complex == instructor_complex
 
-
     # because student_complex and instructor_complex are not necessarily
     # complex here, we enforce it here:
     student_complex = complex(student_complex)

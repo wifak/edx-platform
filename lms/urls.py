@@ -2,6 +2,7 @@ from django.conf import settings
 from django.conf.urls import patterns, include, url
 from django.contrib import admin
 from django.conf.urls.static import static
+from ratelimitbackend.admin import autodiscover as ratelimit_autodiscover
 
 import django.contrib.auth.views
 from microsite_configuration import microsite
@@ -12,6 +13,7 @@ from edx_admin.admin import RatelimitSudoAdminSite
 if settings.DEBUG or settings.FEATURES.get('ENABLE_DJANGO_ADMIN_SITE'):
     admin.site = RatelimitSudoAdminSite()
     admin.autodiscover()
+    ratelimit_autodiscover()
 
 # Use urlpatterns formatted as within the Django docs with first parameter "stuck" to the open parenthesis
 # pylint: disable=bad-continuation

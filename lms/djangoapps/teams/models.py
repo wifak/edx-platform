@@ -47,7 +47,7 @@ class CourseTeam(models.Model):
               team formed around.
             country (str, optional): An optional country where the team
               is based, as ISO 3166-1 code.
-            language (str, optional): An optional language which the 
+            language (str, optional): An optional language which the
               team uses, as ISO 639-1 code.
 
         """

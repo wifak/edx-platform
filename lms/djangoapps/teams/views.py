@@ -164,17 +164,28 @@ class TeamsListView(GenericAPIView):
         }
 
         if 'course_id' in request.QUERY_PARAMS:
+            course_id_string = request.QUERY_PARAMS['course_id']
             try:
-                course_key = CourseKey.from_string(request.QUERY_PARAMS['course_id'])
+                course_key = CourseKey.from_string(course_id_string)
                 result_filter.update({'course_id': course_key})
             except InvalidKeyError:
-                return Response({'detail': "course_id is not valid"}, status=status.HTTP_400_BAD_REQUEST)
+                return Response({
+                    'developer_message': "The supplied course id {course_id} is not valid.".format(
+                        course_id=course_id_string
+                    ),
+                    'user_message': _("The supplied course id {course_id} is not valid").format(
+                        course_id=course_id_string
+                    ),
+                }, status=status.HTTP_400_BAD_REQUEST)
         if 'topic_id' in request.QUERY_PARAMS:
             result_filter.update({'topic_id': request.QUERY_PARAMS['topic_id']})
         if 'include_inactive' in request.QUERY_PARAMS and request.QUERY_PARAMS['include_inactive'].lower() == 'true':
             del result_filter['is_active']
         if 'text_search' in request.QUERY_PARAMS:
-            return Response({'detail': "text_search is not yet supported"}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({
+                'developer_message': "text_search is not yet supported",
+                'user_message': _("text_search is not yet supported"),
+            }, status=status.HTTP_400_BAD_REQUEST)
 
         queryset = CourseTeam.objects.filter(**result_filter)
 
@@ -186,7 +197,10 @@ class TeamsListView(GenericAPIView):
             queryset = queryset.annotate(team_size=Count('users'))
             order_by_field = 'team_size'
         elif order_by_input == 'last_activity':
-            return Response({'detail': "last_activity is not yet supported"}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({
+                'developer_message': "last_activity is not yet supported",
+                'user_message': "last_activity is not yet supported",
+            }, status=status.HTTP_400_BAD_REQUEST)
 
         queryset = queryset.order_by(order_by_field)
 
@@ -410,10 +424,8 @@ class TopicListView(GenericAPIView):
             topics = sorted(topics, key=lambda t: t['name'].lower())
         else:
             return Response({
-                'detail': {
-                    'developer_message': "unsupported order_by value {}".format(ordering),
-                    'user_message': u"The ordering {} is not supported".format(ordering)
-                }
+                'developer_message': "unsupported order_by value {}".format(ordering),
+                'user_message': u"The ordering {} is not supported".format(ordering),
             }, status=status.HTTP_400_BAD_REQUEST)
 
         page = self.paginate_queryset(topics)

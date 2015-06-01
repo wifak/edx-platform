@@ -281,7 +281,8 @@ class TeamsDetailView(RetrievePatchAPIView):
             stored exactly as specified. The intention is that plain text is
             supported, not HTML.
 
-            If the user is not logged in, a 403 error is returned.
+            If the user is not logged in or is not staff for the course, a 403 error
+            is returned.
 
             If the specified team does not exist, a 404 error is returned.
 

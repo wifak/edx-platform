@@ -110,6 +110,11 @@ class CoursewarePage(CoursePage):
         attribute_value = lambda el: el.get_attribute('data-id')
         return self.q(css='#sequence-list a').filter(get_active).map(attribute_value).results[0]
 
+    @property
+    def breadcrumb(self):
+        """ Return the course tree breadcrumb shown above the sequential bar """
+        return [part.strip() for part in self.q(css='.path').text[0].split('>')]
+
 
 class CoursewareSequentialTabPage(CoursePage):
     """

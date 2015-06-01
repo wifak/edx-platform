@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """Tests for the teams API at the HTTP request level."""
 # pylint: disable=maybe-no-member
 import json
@@ -52,7 +53,7 @@ class TestTeamAPI(APITestCase, ModuleStoreTestCase):
         self.staff_user = UserFactory.create(password=self.test_password, is_staff=True)
 
         self.test_team_1 = CourseTeamFactory.create(
-            name='solar team',
+            name=u'sólar team',
             course_id=self.test_course_1.id,
             topic_id='renewable'
         )
@@ -119,7 +120,7 @@ class TestTeamAPI(APITestCase, ModuleStoreTestCase):
             'topic_id': 'renewable',
         })
         self.assertEqual(1, teams['count'])
-        self.assertEqual(teams['results'][0]['name'], 'solar team')
+        self.assertEqual(teams['results'][0]['name'], u'sólar team')
 
     def test_list_teams_filter_include_inactive(self):
         teams = self.get_teams_list_json(data={'include_inactive': True})
@@ -132,9 +133,9 @@ class TestTeamAPI(APITestCase, ModuleStoreTestCase):
         self.get_teams_list(400, data={'text_search': 'foobar'})
 
     @ddt.data(
-        ({}, ['Nuclear Team', 'solar team', 'Wind Team']),
-        ({'order_by': 'name'}, ['Nuclear Team', 'solar team', 'Wind Team']),
-        ({'order_by': 'open_slots'}, ['Wind Team', 'Nuclear Team', 'solar team']),
+        ({}, ['Nuclear Team', u'sólar team', 'Wind Team']),
+        ({'order_by': 'name'}, ['Nuclear Team', u'sólar team', 'Wind Team']),
+        ({'order_by': 'open_slots'}, ['Wind Team', 'Nuclear Team', u'sólar team']),
     )
     @ddt.unpack
     def test_list_teams_order_by(self, data, names):

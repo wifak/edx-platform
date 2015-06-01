@@ -18,6 +18,11 @@ define(['backbone', 'jquery', 'underscore', 'logger', 'js/common_helpers/ajax_he
                     ]
                 );
                 spyOn(Logger, 'log').andReturn($.Deferred().resolve());
+                this.addMatchers({
+                   toHaveBeenCalledWithUrl: function (expectedUrl) {
+                       return expectedUrl === this.actual.argsForCall[0][0].target.pathname;
+                   }
+                });
 
                 bookmarksButtonView = new BookmarksListButtonView();
             });
@@ -143,11 +148,9 @@ define(['backbone', 'jquery', 'underscore', 'logger', 'js/common_helpers/ajax_he
                 bookmarksButtonView.$('.bookmarks-list-button').click();
                 AjaxHelpers.respondWithJson(requests, createBookmarksData(1));
 
-                debugger;
-
                 bookmarksButtonView.bookmarksListView.$('.bookmarks-results-list-item').click();
                 var url = bookmarksButtonView.bookmarksListView.$('.bookmarks-results-list-item').attr('href');
-                expect(bookmarksButtonView.bookmarksListView.visitBookmark).toHaveBeenCalledWith(url);
+                expect(bookmarksButtonView.bookmarksListView.visitBookmark).toHaveBeenCalledWithUrl(url);
             });
 
             it("shows an error message for HTTP 500", function () {

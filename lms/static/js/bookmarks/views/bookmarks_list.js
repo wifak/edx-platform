@@ -17,7 +17,7 @@
             loadingMessage: gettext('Loading'),
 
             events : {
-                'click .bookmarks-results-list-item': 'logBookmarkedItem'
+                'click .bookmarks-results-list-item': 'visitBookmark'
             },
 
             initialize: function (options) {
@@ -59,14 +59,9 @@
                 });
             },
 
-            visitBookmark: function (url) {
-                window.location.href = url;
-            },
-
-            logBookmarkedItem: function (event) {
-                var self = this;
-                var bookmark_id = event.currentTarget.dataset.id;
-                var component_usage_id = bookmark_id.split(',')[1];
+            visitBookmark: function (event) {
+                var bookmark_id = $(event.currentTarget).data('bookmarkId');
+                var component_usage_id = $(event.currentTarget).data('usageId');
                 Logger.log(
                     'edx.course.bookmark.accessed',
                     {
@@ -75,7 +70,7 @@
                        component_usage_id: component_usage_id
                     }
                 ).always(function () {
-                    self.visitBookmark(event.currentTarget.pathname);
+                    window.location.href = event.currentTarget.pathname;
                 });
             },
 

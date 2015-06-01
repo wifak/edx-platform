@@ -21,14 +21,14 @@ from ..models import Bookmark
 
 class BookmarkApiEventTestMixin(EventTestMixin):
     """ Mixin for verifying that bookmark api events were emitted during a test. """
-    def setUp(self):
+    def setUp(self):  # pylint: disable=arguments-differ
         super(BookmarkApiEventTestMixin, self).setUp('lms.djangoapps.bookmarks.api.tracker')
 
-    def assert_bookmark_event_emitted(self, event_name, username, usage_key):
+    def assert_bookmark_event_emitted(self, event_name, bookmark_id, usage_key):
         """ Assert that an event has been emitted. """
         self.assert_event_emitted(
             event_name,
-            bookmark_id='{},{}'.format(username, unicode(usage_key)),
+            bookmark_id=bookmark_id,
             component_type=usage_key.category,
             component_usage_id=unicode(usage_key),
         )
@@ -155,9 +155,9 @@ class BookmarksAPITests(BookmarkApiEventTestMixin, ModuleStoreTestCase):
         """
         self.assertEqual(len(api.get_bookmarks(user=self.user, course_key=self.course.id)), 1)
 
-        api.create_bookmark(user=self.user, usage_key=self.vertical_1.location)
+        bookmark_data = api.create_bookmark(user=self.user, usage_key=self.vertical_1.location)
 
-        self.assert_bookmark_event_emitted('edx.course.bookmark.added', self.user.username, self.vertical_1.location)
+        self.assert_bookmark_event_emitted('edx.course.bookmark.added', bookmark_data['id'], self.vertical_1.location)
 
         self.assertEqual(len(api.get_bookmarks(user=self.user, course_key=self.course.id)), 2)
 
@@ -168,7 +168,7 @@ class BookmarksAPITests(BookmarkApiEventTestMixin, ModuleStoreTestCase):
         self.assertEqual(len(api.get_bookmarks(user=self.user, course_key=self.course.id)), 1)
         bookmark_data = api.create_bookmark(user=self.user, usage_key=self.vertical_1.location)
 
-        self.assert_bookmark_event_emitted('edx.course.bookmark.added', self.user.username, self.vertical_1.location)
+        self.assert_bookmark_event_emitted('edx.course.bookmark.added', bookmark_data['id'], self.vertical_1.location)
 
         self.assertEqual(len(api.get_bookmarks(user=self.user, course_key=self.course.id)), 2)
 
@@ -176,7 +176,7 @@ class BookmarksAPITests(BookmarkApiEventTestMixin, ModuleStoreTestCase):
         self.assertEqual(len(api.get_bookmarks(user=self.user, course_key=self.course.id)), 2)
         self.assertEqual(bookmark_data, bookmark_data_2)
 
-        self.assert_bookmark_event_emitted('edx.course.bookmark.added', self.user.username, self.vertical_1.location)
+        self.assert_bookmark_event_emitted('edx.course.bookmark.added', bookmark_data_2['id'], self.vertical_1.location)
 
     def test_create_bookmark_raises_error(self):
         """
@@ -195,7 +195,11 @@ class BookmarksAPITests(BookmarkApiEventTestMixin, ModuleStoreTestCase):
 
         api.delete_bookmark(user=self.user, usage_key=self.vertical.location)
 
-        self.assert_bookmark_event_emitted('edx.course.bookmark.removed', self.user.username, self.vertical.location)
+        self.assert_bookmark_event_emitted(
+            'edx.course.bookmark.removed',
+            self.bookmark.resource_id,
+            self.vertical.location
+        )
 
         bookmarks_data = api.get_bookmarks(user=self.user)
         self.assertEqual(len(bookmarks_data), 1)

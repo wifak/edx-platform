@@ -224,13 +224,6 @@ class BookmarksTest(BookmarksTestMixin):
         When I click on bookmarked link
         Then I can navigate to correct bookmarked unit
         """
-        # NOTE: We are checking the order of bookmarked units at API
-        # We are unable to check the order here because we are bookmarking
-        # the units by sending POSTs to API, And the time(created) between
-        # the bookmarked units is in milliseconds. These milliseconds are
-        # discarded by the current version of MySQL we are using due to the
-        # lack of support. Due to which order of bookmarked units will be
-        # incorrect.
         self._test_setup()
         self._bookmark_units(2)
 
@@ -241,9 +234,10 @@ class BookmarksTest(BookmarksTestMixin):
 
         bookmarked_breadcrumbs = self.bookmarks.breadcrumbs()
 
-        # Verify bookmarked breadcrumbs
+        # Verify bookmarked breadcrumbs and bookmarks order(most recently bookmarked unit should come first)
         breadcrumbs = self._breadcrumb(2)
-        self.assertItemsEqual(bookmarked_breadcrumbs, breadcrumbs)
+        breadcrumbs.reverse()
+        self.assertEqual(bookmarked_breadcrumbs, breadcrumbs)
 
         # get usage ids for units
         xblocks = self.course_fixture.get_nested_xblocks(category="vertical")
@@ -277,7 +271,7 @@ class BookmarksTest(BookmarksTestMixin):
         self.assertTrue(self.bookmarks.results_present())
         self.assertEqual(self.bookmarks.count(), 2)
 
-        self.bookmarks.click_bookmarked_unit(0)
+        self.bookmarks.click_bookmarked_unit(1)
         self.assertTrue(is_404_page(self.browser))
 
     def test_page_size_limit(self):

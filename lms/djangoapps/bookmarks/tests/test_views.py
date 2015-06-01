@@ -32,8 +32,6 @@ class BookmarksViewTestsMixin(ModuleStoreTestCase):
         self.create_test_data()
         self.client = self.login_client(user=self.user)
 
-        # self.reset_tracker()
-
     def login_client(self, user):
         """
         Helper method for getting the client and user and logging in. Returns client.
@@ -328,6 +326,25 @@ class BookmarksListViewTests(BookmarksViewTestsMixin):
         self.client.login(username=self.user.username, password=self.test_password)
         self.assertEqual(405, self.client.put(reverse('bookmarks')).status_code)
         self.assertEqual(405, self.client.delete(reverse('bookmarks')).status_code)
+
+    @ddt.data(
+        (-1, (2, 10, 1)),
+        (0, (2, 10, 1)),
+        (999, (2, 500, 1)),
+    )
+    @ddt.unpack
+    @patch('lms.djangoapps.bookmarks.views.tracker.emit')
+    def test_listed_event_for_different_page_size_values(self, page_size, expected_values, mock_tracker):
+        """ Test that edx.course.bookmark.listed event values are as expected for different page size values """
+        query_parameters = 'course_id={}&page_size={}'.format(self.course_id, page_size)
+        self.send_get(client=self.client, url=reverse('bookmarks'), query_parameters=query_parameters)
+
+        self.assert_bookmark_listed_event_emitted(
+            mock_tracker,
+            bookmarks_count=expected_values[0],
+            page_size=expected_values[1],
+            page_number=expected_values[2]
+        )
 
 
 @ddt.ddt

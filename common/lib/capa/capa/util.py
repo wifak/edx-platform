@@ -5,7 +5,7 @@ import bleach
 from decimal import Decimal
 
 from calc import evaluator
-from cmath import isinf
+from cmath import isinf, isnan
 #-----------------------------------------------------------------------------
 #
 # Utility functions used in CAPA responsetypes
@@ -67,13 +67,17 @@ def compare_with_tolerance(student_complex, instructor_complex, tolerance=defaul
         return student_complex == instructor_complex
 
 
-    # because student_complex and instructor_complex are not necessarily complex here, we enforce this type:
+    # because student_complex and instructor_complex are not necessarily
+    # complex here, we enforce it here:
     student_complex = complex(student_complex)
     instructor_complex = complex(instructor_complex)
 
     # if both the instructor and student input are real,
     # compare them as Decimals to avoid rounding errors
-    if not instructor_complex.imag and not student_complex.imag:
+    if not (instructor_complex.imag or student_complex.imag):
+        # if either of these are not a number, short circuit and return False
+        if isnan(instructor_complex.real) or isnan(student_complex.real):
+            return False
         student_decimal = Decimal(str(student_complex.real))
         instructor_decimal = Decimal(str(instructor_complex.real))
         tolerance_decimal = Decimal(str(tolerance))

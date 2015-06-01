@@ -1,5 +1,5 @@
 """
-Defines serializers used by the Teams API.
+Defines serializers used by the Team API.
 """
 
 from django.contrib.auth.models import User

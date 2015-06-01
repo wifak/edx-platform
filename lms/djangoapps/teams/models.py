@@ -36,16 +36,20 @@ class CourseTeam(models.Model):
 
     @classmethod
     def create(cls, name, course_id, description, topic_id=None, country=None, language=None):
-        """
-        Create a complete CourseTeam object.
+        """Create a complete CourseTeam object.
 
         Args:
-            name: Name of the team to be created
-            course_id: Course id
-            description: Description of the team
-            topic_id: Optional identifier for the topic the team formed around
-            country: Optional country where the team is based as ISO 3166-1 code
-            language: Optional language the team uses as ISO 639-1 code
+            name (str): The name of the team to be created.
+            course_id (str): The ID string of the course associated
+              with this team.
+            description (str): A description of the team.
+            topic_id (str): An optional identifier for the topic the
+              team formed around.
+            country (str or None): An optional country where the team
+              is based, as ISO 3166-1 code.
+            language (str or None): An optional language which the 
+              team uses, as ISO 639-1 code.
+
         """
 
         team_id = slugify(name)

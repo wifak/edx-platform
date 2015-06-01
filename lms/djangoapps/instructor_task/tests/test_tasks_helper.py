@@ -585,12 +585,12 @@ class TestListMayEnroll(TestReportMixin, InstructorTaskCourseTestCase):
         self.assertEquals(len(links), 1)
         self.assertDictContainsSubset({'attempted': 1, 'succeeded': 1, 'failed': 0}, result)
 
-    @ddt.data([u'student@example.com', u'ni\xf1o@example.com'])
-    def test_unicode_email_addresses(self, enrollments):
+    def test_unicode_email_addresses(self):
         """
         Test handling of unicode characters in email addresses of students
         who may enroll in a course.
         """
+        enrollments = [u'student@example.com', u'ni\xf1o@example.com']
         for email in enrollments:
             self._create_enrollment(email)
 

@@ -250,31 +250,31 @@ class TeamsDetailView(RetrievePatchAPIView):
 
             If the user is logged in, the response contains the following fields:
 
-            * id: The team's unique identifier.
+                * id: The team's unique identifier.
 
-            * name: The name of the team.
+                * name: The name of the team.
 
-            * is_active: True if the team is currently active. If false, the team
-              is considered "soft deleted" and will not be included by default in
-              results.
+                * is_active: True if the team is currently active. If false, the team
+                  is considered "soft deleted" and will not be included by default in
+                  results.
 
-            * course_id: The identifier for the course this team belongs to.
+                * course_id: The identifier for the course this team belongs to.
 
-            * topic_id: Optionally specifies which topic the team is 
-              associated with.
+                * topic_id: Optionally specifies which topic the team is
+                  associated with.
 
-            * date_created: Date and time when the team was created.
+                * date_created: Date and time when the team was created.
 
-            * description: A description of the team.
+                * description: A description of the team.
 
-            * country: Optionally specifies which country the team is 
-              associated with.
+                * country: Optionally specifies which country the team is
+                  associated with.
 
-            * language: Optionally specifies which language the team is 
-              associated with.
+                * language: Optionally specifies which language the team is
+                  associated with.
 
-            * membership: A list of the users that are members of the team. See
-              membership endpoint for more detail.
+                * membership: A list of the users that are members of the team. See
+                  membership endpoint for more detail.
 
             For all text fields, clients rendering the values should take care
             to HTML escape them to avoid script injections, as the data is

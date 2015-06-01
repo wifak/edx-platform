@@ -413,8 +413,12 @@ class TopicListView(GenericAPIView):
         if ordering == 'name':
             topics = sorted(topics, key=lambda t: t['name'])
         else:
-            return Response({'detail': "unsupported order_by value {}".format(ordering)},
-                            status=status.HTTP_400_BAD_REQUEST)
+            return Response({
+                'detail': {
+                    'developer_message': "unsupported order_by value {}".format(ordering),
+                    'user_message': u"The ordering {} is not supported".format(ordering)
+                }
+            }, status=status.HTTP_400_BAD_REQUEST)
 
         page = self.paginate_queryset(topics)
         serializer = self.get_pagination_serializer(page)

@@ -381,7 +381,14 @@ class TopicListView(GenericAPIView):
         """
         course_id_string = request.QUERY_PARAMS.get('course_id', None)
         if course_id_string is None:
-            return Response(status=status.HTTP_400_BAD_REQUEST)
+            return Response({
+                'field_errors': {
+                    'course_id': {
+                        'developer_message': "course_id {} is not valid.".format(course_id_string),
+                        'user_message': _('The supplied course_id {} is not valid.').format(course_id_string)
+                    }
+                }
+            }, status=status.HTTP_400_BAD_REQUEST)
 
         try:
             course_id = CourseKey.from_string(course_id_string)

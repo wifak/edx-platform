@@ -8,7 +8,7 @@ import ddt
 from django.core.urlresolvers import reverse
 from rest_framework.test import APITestCase
 
-from student.tests.factories import UserFactory
+from student.tests.factories import UserFactory, AdminFactory
 from student.models import CourseEnrollment
 from xmodule.modulestore.tests.factories import CourseFactory
 from .factories import CourseTeamFactory
@@ -50,7 +50,7 @@ class TestTeamAPI(APITestCase, ModuleStoreTestCase):
         self.student_user = UserFactory.create(password=self.test_password)
         self.student_user_enrolled = UserFactory.create(password=self.test_password)
         self.student_user_not_active = UserFactory.create(password=self.test_password, is_active=False)
-        self.staff_user = UserFactory.create(password=self.test_password, is_staff=True)
+        self.staff_user = AdminFactory.create(password=self.test_password)
 
         # 'solar team' is intentionally lower case to test case insensitivity in name ordering
         self.test_team_1 = CourseTeamFactory.create(

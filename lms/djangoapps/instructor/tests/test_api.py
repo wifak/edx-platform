@@ -2043,7 +2043,7 @@ class TestInstructorAPILevelsDataDump(ModuleStoreTestCase, LoginEnrollmentTestCa
         """
         url = reverse(
             'get_students_who_may_enroll',
-            kwargs={'course_id': self.course.id.to_deprecated_string()}
+            kwargs={'course_id': unicode(self.course.id)}
         )
         # Successful case:
         response = self.client.get(url, {})

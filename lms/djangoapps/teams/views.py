@@ -29,6 +29,7 @@ from courseware.courses import get_course
 from .models import CourseTeam
 from .serializers import CourseTeamSerializer, CourseTeamCreationSerializer, TopicSerializer
 
+
 class TeamsListView(GenericAPIView):
     """
         **Use Cases**
@@ -48,7 +49,7 @@ class TeamsListView(GenericAPIView):
             * course_id: Filters the result to teams belonging to the given
               course.
 
-            * topic_id: Filters the result to teams associated with the given 
+            * topic_id: Filters the result to teams associated with the given
               topic.
 
             * text_search: Currently not supported.
@@ -99,13 +100,13 @@ class TeamsListView(GenericAPIView):
 
                 * description: A description of the team.
 
-                * country: Optionally specifies which country the team is 
+                * country: Optionally specifies which country the team is
                   associated with.
 
-                * language: Optionally specifies which language the team is 
+                * language: Optionally specifies which language the team is
                   associated with.
 
-                * membership: A list of the users that are members of the team. 
+                * membership: A list of the users that are members of the team.
                   See membership endpoint for more detail.
 
             For all text fields, clients rendering the values should take care
@@ -210,7 +211,7 @@ class TeamsListView(GenericAPIView):
         except InvalidKeyError:
             field_errors['course_id'] = {
                 'developer_message': "course_id {} is not valid.".format(course_id),
-                'user_message': _("The supplied course_id {} is not valid.".format(course_id)),
+                'user_message': _("The supplied course_id {} is not valid.").format(course_id),
             }
         except ValueError:
             return Response(status=status.HTTP_404_NOT_FOUND)
@@ -326,33 +327,33 @@ class TopicListView(GenericAPIView):
 
             The following options can be specified as query parameters:
 
-            * course_id: Filters the result to topics belonging to the given 
+            * course_id: Filters the result to topics belonging to the given
               course (required).
 
-            * order_by: Orders the results. Currently only 'name' is supported, 
+            * order_by: Orders the results. Currently only 'name' is supported,
               and is also the default value.
 
             * page_size: Number of results to return per page.
 
             * page: Page number to retrieve.
 
-            If the course_id is not given or an unsupported value is passed for 
+            If the course_id is not given or an unsupported value is passed for
             order_by, returns a 400 error.
 
-            If the user is not logged in or not enrolled in the course, returns 
+            If the user is not logged in or not enrolled in the course, returns
             a 403 error.
 
             If the course does not exist, returns a 404 error.
 
-            Otherwise, a 200 response is returned containing the following 
+            Otherwise, a 200 response is returned containing the following
             fields:
 
             * count: The total number of topics matching the request.
 
-            * next: The URL to the next page of results, or null if this is the 
+            * next: The URL to the next page of results, or null if this is the
               last page.
 
-            * previous: The URL to the previous page of results, or null if this 
+            * previous: The URL to the previous page of results, or null if this
               is the first page.
 
             * num_pages: The total number of pages in the result.
@@ -441,13 +442,13 @@ class TopicDetailView(APIView):
 
             * topic_id: The ID of the topic to retrieve (required).
 
-            * course_id: The ID of the course to retrieve the topic from 
+            * course_id: The ID of the course to retrieve the topic from
               (required).
 
-            If the topic_id course_id are not given or an unsupported value is 
+            If the topic_id course_id are not given or an unsupported value is
             passed for order_by, returns a 400 error.
 
-            If the user is not logged in or not enrolled in the course, returns 
+            If the user is not logged in or not enrolled in the course, returns
             a 403 error.
 
             If the course does not exist, returns a 404 error.

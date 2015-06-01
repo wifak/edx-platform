@@ -203,13 +203,14 @@ class TeamsListView(GenericAPIView):
         field_errors = {}
         course_key = None
 
+        course_id = request.DATA.get('course_id')
         try:
-            course_key = CourseKey.from_string(request.DATA.get('course_id'))
+            course_key = CourseKey.from_string(course_id)
             get_course(course_key)
         except InvalidKeyError:
             field_errors['course_id'] = {
-                'developer_message': "course_id is not valid.",
-                'user_message': _("course_id is not valid"),
+                'developer_message': "course_id {} is not valid.".format(course_id),
+                'user_message': _("The supplied course_id {} is not valid.".format(course_id)),
             }
         except ValueError:
             return Response(status=status.HTTP_404_NOT_FOUND)

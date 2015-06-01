@@ -17,7 +17,7 @@
             loadingMessage: gettext('Loading'),
 
             events : {
-                'click .bookmarks-results-list-item': 'visitBookmark'
+                'click .bookmarks-results-list-item': 'logBookmarkedItem'
             },
 
             initialize: function (options) {
@@ -59,7 +59,12 @@
                 });
             },
 
-            visitBookmark: function (event) {
+            visitBookmark: function (url) {
+                window.location.href = url;
+            },
+
+            logBookmarkedItem: function (event) {
+                var self = this;
                 var bookmark_id = event.currentTarget.dataset.id;
                 var component_usage_id = bookmark_id.split(',')[1];
                 Logger.log(
@@ -69,8 +74,9 @@
                        component_type: 'vertical',
                        component_usage_id: component_usage_id
                     }
-                );
-                window.location = event.currentTarget.pathname;
+                ).always(function () {
+                    self.visitBookmark(event.currentTarget.pathname);
+                });
             },
 
             /**

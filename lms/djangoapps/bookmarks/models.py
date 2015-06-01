@@ -69,3 +69,10 @@ class Bookmark(TimeStampedModel):
 
         parents_data.reverse()
         return parents_data
+
+    @property
+    def resource_id(self):
+        """
+        Return the resource id: {username,usage_id}.
+        """
+        return "{0},{1}".format(self.user.username, self.usage_key)  # pylint: disable=no-member

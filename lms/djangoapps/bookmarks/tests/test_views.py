@@ -5,10 +5,10 @@ Tests for bookmark views.
 import ddt
 import json
 from django.core.urlresolvers import reverse
+from mock import patch
 from rest_framework.test import APIClient
 
 from student.tests.factories import UserFactory
-from util.testing import EventTestMixin
 
 from xmodule.modulestore.tests.django_utils import ModuleStoreTestCase
 from xmodule.modulestore.tests.factories import CourseFactory, ItemFactory
@@ -18,26 +18,7 @@ from .factories import BookmarkFactory
 # pylint: disable=no-member
 
 
-class BookmarkViewsEventTestMixin(EventTestMixin):
-    """
-    Mixin for verifying that bookmark api events were emitted during a test.
-    """
-    def setUp(self):
-        super(BookmarkViewsEventTestMixin, self).setUp('lms.djangoapps.bookmarks.views.tracker')
-
-    def verify_bookmark_listed_event_emitted(self, bookmarks_count, page_size, page_number):
-        """
-        Helper method to assert that `edx.course.bookmark.listed` event is emitted with correct data.
-        """
-        self.assert_event_emitted(
-            'edx.course.bookmark.listed',
-            bookmarks_count=bookmarks_count,
-            page_size=page_size,
-            page_number=page_number,
-        )
-
-
-class BookmarksViewTestsMixin(BookmarkViewsEventTestMixin, ModuleStoreTestCase):
+class BookmarksViewTestsMixin(ModuleStoreTestCase):
     """
     Mixin for bookmarks views tests.
     """
@@ -51,7 +32,7 @@ class BookmarksViewTestsMixin(BookmarkViewsEventTestMixin, ModuleStoreTestCase):
         self.create_test_data()
         self.client = self.login_client(user=self.user)
 
-        self.reset_tracker()
+        # self.reset_tracker()
 
     def login_client(self, user):
         """
@@ -165,12 +146,20 @@ class BookmarksListViewTests(BookmarksViewTestsMixin):
     GET /api/bookmarks/v1/bookmarks/?course_id={course_id1}
     POST /api/bookmarks/v1/bookmarks
     """
+    def assert_bookmark_listed_event_emitted(self, mock_tracker, **kwargs):
+        """ Assert that edx.course.bookmark.listed event is emitted with correct data. """
+        mock_tracker.assert_any_call(
+            'edx.course.bookmark.listed',
+            kwargs
+        )
+
     @ddt.data(
         ('course_id={}', False),
         ('course_id={}&fields=path,display_name', True),
     )
     @ddt.unpack
-    def test_get_bookmarks_successfully(self, query_params, check_optionals):
+    @patch('lms.djangoapps.bookmarks.views.tracker.emit')
+    def test_get_bookmarks_successfully(self, query_params, check_optionals, mock_tracker):
         """
         Test that requesting bookmarks for a course returns records successfully in
         expected order without optional fields.
@@ -191,9 +180,10 @@ class BookmarksListViewTests(BookmarksViewTestsMixin):
         self.assert_valid_bookmark_response(bookmarks[0], self.bookmark_2, optional_fields=check_optionals)
         self.assert_valid_bookmark_response(bookmarks[1], self.bookmark_1, optional_fields=check_optionals)
 
-        self.verify_bookmark_listed_event_emitted(2, 10, 1)
+        self.assert_bookmark_listed_event_emitted(mock_tracker, bookmarks_count=2, page_size=10, page_number=1)
 
-    def test_get_bookmarks_with_pagination(self):
+    @patch('lms.djangoapps.bookmarks.views.tracker.emit')
+    def test_get_bookmarks_with_pagination(self, mock_tracker):
         """
         Test that requesting bookmarks for a course return results with pagination 200 code.
         """
@@ -210,7 +200,10 @@ class BookmarksListViewTests(BookmarksViewTestsMixin):
         self.assertEqual(len(bookmarks), 1)
         self.assert_valid_bookmark_response(bookmarks[0], self.bookmark_2)
 
-    def test_get_bookmarks_with_invalid_data(self):
+        self.assert_bookmark_listed_event_emitted(mock_tracker, bookmarks_count=2, page_size=1, page_number=1)
+
+    @patch('lms.djangoapps.bookmarks.views.tracker.emit')
+    def test_get_bookmarks_with_invalid_data(self, mock_tracker):
         """
         Test that requesting bookmarks with invalid data returns 0 records.
         """
@@ -219,7 +212,10 @@ class BookmarksListViewTests(BookmarksViewTestsMixin):
         bookmarks = response.data['results']
         self.assertEqual(len(bookmarks), 0)
 
-    def test_get_all_bookmarks_when_course_id_not_given(self):
+        self.assert_bookmark_listed_event_emitted(mock_tracker, bookmarks_count=0, page_size=10, page_number=1)
+
+    @patch('lms.djangoapps.bookmarks.views.tracker.emit')
+    def test_get_all_bookmarks_when_course_id_not_given(self, mock_tracker):
         """
         Test that requesting bookmarks returns all records for that user.
         """
@@ -230,6 +226,8 @@ class BookmarksListViewTests(BookmarksViewTestsMixin):
         self.assert_valid_bookmark_response(bookmarks[0], self.other_bookmark)
         self.assert_valid_bookmark_response(bookmarks[1], self.bookmark_2)
         self.assert_valid_bookmark_response(bookmarks[2], self.bookmark_1)
+
+        self.assert_bookmark_listed_event_emitted(mock_tracker, bookmarks_count=3, page_size=10, page_number=1)
 
     def test_anonymous_access(self):
         """

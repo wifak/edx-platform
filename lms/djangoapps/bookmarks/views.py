@@ -167,14 +167,14 @@ class BookmarksListView(ListCreateAPIView, BookmarksViewMixin):
 
         return api.get_bookmarks(user=self.request.user, course_key=course_key, serialized=False)
 
-    def paginate_queryset(self, queryset):
+    def paginate_queryset(self, queryset, page_size=None):
         """ Override GenericAPIView.paginate_queryset for the purpose of eventing """
-        page = super(BookmarksListView, self).paginate_queryset(queryset)
+        page = super(BookmarksListView, self).paginate_queryset(queryset, page_size)
         tracker.emit(
             'edx.course.bookmark.listed',
             {
                 'bookmarks_count': page.paginator.count,
-                'page_size': self.request.QUERY_PARAMS.get('page_size', self.paginate_by),
+                'page_size': self.get_paginate_by(),
                 'page_number': page.number,
             }
         )

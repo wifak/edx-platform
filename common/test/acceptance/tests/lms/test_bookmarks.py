@@ -45,6 +45,13 @@ class BookmarksTestMixin(EventsTestMixin, UniqueCourseTest):
         self.course_fixture.add_children(*xblocks).install()
 
     def verify_event_data(self, event_type, event_data):
+        """
+        Verify emitted event data.
+
+        Arguments:
+            event_type: expected event type
+            event_data: expected event data
+        """
         actual_events = self.wait_for_events(event_filter={'event_type': event_type}, number_of_matches=1)
         self.assert_events_match(event_data, actual_events)
 

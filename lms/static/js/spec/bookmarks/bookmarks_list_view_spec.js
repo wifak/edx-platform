@@ -1,7 +1,7 @@
-define(['backbone', 'jquery', 'underscore', 'js/common_helpers/ajax_helpers', 'js/common_helpers/template_helpers',
-        'js/bookmarks/views/bookmarks_list_button'
+define(['backbone', 'jquery', 'underscore', 'logger', 'js/common_helpers/ajax_helpers',
+        'js/common_helpers/template_helpers', 'js/bookmarks/views/bookmarks_list_button'
        ],
-    function (Backbone, $, _, AjaxHelpers, TemplateHelpers, BookmarksListButtonView) {
+    function (Backbone, $, _, Logger, AjaxHelpers, TemplateHelpers, BookmarksListButtonView) {
         'use strict';
 
         describe("lms.courseware.bookmarks", function () {
@@ -17,14 +17,9 @@ define(['backbone', 'jquery', 'underscore', 'js/common_helpers/ajax_helpers', 'j
                         'templates/bookmarks/bookmarks_list'
                     ]
                 );
+                spyOn(Logger, 'log').andReturn($.Deferred().resolve());
 
                 bookmarksButtonView = new BookmarksListButtonView();
-
-                this.addMatchers({
-                   toHaveBeenCalledWithUrl: function (expectedUrl) {
-                       return expectedUrl === this.actual.argsForCall[0][0].target.pathname;
-                   }
-                });
             });
 
             var createBookmarksData = function (count) {
@@ -148,9 +143,11 @@ define(['backbone', 'jquery', 'underscore', 'js/common_helpers/ajax_helpers', 'j
                 bookmarksButtonView.$('.bookmarks-list-button').click();
                 AjaxHelpers.respondWithJson(requests, createBookmarksData(1));
 
+                debugger;
+
                 bookmarksButtonView.bookmarksListView.$('.bookmarks-results-list-item').click();
                 var url = bookmarksButtonView.bookmarksListView.$('.bookmarks-results-list-item').attr('href');
-                expect(bookmarksButtonView.bookmarksListView.visitBookmark).toHaveBeenCalledWithUrl(url);
+                expect(bookmarksButtonView.bookmarksListView.visitBookmark).toHaveBeenCalledWith(url);
             });
 
             it("shows an error message for HTTP 500", function () {

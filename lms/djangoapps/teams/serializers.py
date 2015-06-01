@@ -4,39 +4,10 @@ Defines serializers used by the Team API.
 
 from django.contrib.auth.models import User
 from rest_framework import serializers
+from openedx.core.lib.api.serializers import CollapsedReferenceSerializer
 from openedx.core.lib.api.fields import ExpandableField
 from .models import CourseTeam, CourseTeamMembership
 from openedx.core.djangoapps.user_api.serializers import UserSerializer
-
-
-class CollapsedUserSerializer(serializers.HyperlinkedModelSerializer):
-    """
-    Serializes users in a collapsed format, with just a username and url.
-    """
-    url = serializers.HyperlinkedIdentityField(view_name='accounts_api', lookup_field='username')
-
-    class Meta(object):
-        """
-        Defines meta information for the ModelSerializer.
-        """
-        model = User
-        fields = ("username", "url")
-        read_only_fields = ("username",)
-
-
-class CollapsedCourseTeamSerializer(serializers.HyperlinkedModelSerializer):
-    """
-    Serializes CourseTeams in a collapsed format, with just an id and url.
-    """
-    id = serializers.CharField(source='team_id', read_only=True)  # pylint: disable=invalid-name
-    url = serializers.HyperlinkedIdentityField(view_name='teams_detail', lookup_field='team_id')
-
-    class Meta(object):
-        """
-        Defines meta information for the ModelSerializer.
-        """
-        model = CourseTeam
-        fields = ("id", "url")
 
 
 class UserMembershipSerializer(serializers.ModelSerializer):
@@ -44,7 +15,12 @@ class UserMembershipSerializer(serializers.ModelSerializer):
     Serializes CourseTeamMemberships with only information about the user and date_joined, for listing team members.
     """
     user = ExpandableField(
-        collapsed_serializer=CollapsedUserSerializer(),
+        collapsed_serializer=CollapsedReferenceSerializer(
+            model_class=User,
+            id_source='username',
+            view_name='accounts_api',
+            read_only=True,
+        ),
         expanded_serializer=UserSerializer(),
     )
 
@@ -54,22 +30,6 @@ class UserMembershipSerializer(serializers.ModelSerializer):
         """
         model = CourseTeamMembership
         fields = ("user", "date_joined")
-        read_only_fields = ("date_joined",)
-
-
-class MembershipSerializer(serializers.ModelSerializer):
-    """
-    Serializes CourseTeamMemberships with information about both teams and users.
-    """
-    user = CollapsedUserSerializer(read_only=True)
-    team = CollapsedCourseTeamSerializer(read_only=True)
-
-    class Meta(object):
-        """
-        Defines meta information for the ModelSerializer.
-        """
-        model = CourseTeamMembership
-        fields = ("user", "team", "date_joined")
         read_only_fields = ("date_joined",)
 
 
@@ -131,6 +91,38 @@ class CourseTeamCreationSerializer(serializers.ModelSerializer):
             country=attrs.get("country", ''),
             language=attrs.get("language", ''),
         )
+
+
+class MembershipSerializer(serializers.ModelSerializer):
+    """
+    Serializes CourseTeamMemberships with information about both teams and users.
+    """
+    user = ExpandableField(
+        collapsed_serializer=CollapsedReferenceSerializer(
+            model_class=User,
+            id_source='username',
+            view_name='accounts_api',
+            read_only=True,
+        ),
+        expanded_serializer=UserSerializer(read_only=True)
+    )
+    team = ExpandableField(
+        collapsed_serializer=CollapsedReferenceSerializer(
+            model_class=CourseTeam,
+            id_source='team_id',
+            view_name='teams_detail',
+            read_only=True,
+        ),
+        expanded_serializer=CourseTeamSerializer(read_only=True)
+    )
+
+    class Meta(object):
+        """
+        Defines meta information for the ModelSerializer.
+        """
+        model = CourseTeamMembership
+        fields = ("user", "team", "date_joined")
+        read_only_fields = ("date_joined",)
 
 
 class TopicSerializer(serializers.Serializer):

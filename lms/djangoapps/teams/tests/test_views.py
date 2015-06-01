@@ -52,6 +52,7 @@ class TestTeamAPI(APITestCase, ModuleStoreTestCase):
         self.student_user_not_active = UserFactory.create(password=self.test_password, is_active=False)
         self.staff_user = UserFactory.create(password=self.test_password, is_staff=True)
 
+        # 'solar team' is intentionally lower case to test case insensitivity in name ordering
         self.test_team_1 = CourseTeamFactory.create(
             name=u'sólar team',
             course_id=self.test_course_1.id,
@@ -59,7 +60,7 @@ class TestTeamAPI(APITestCase, ModuleStoreTestCase):
         )
         self.test_team_2 = CourseTeamFactory.create(name='Wind Team', course_id=self.test_course_2.id)
         self.test_team_3 = CourseTeamFactory.create(name='Nuclear Team', course_id=self.test_course_1.id)
-        self.test_team_4 = CourseTeamFactory.create(name='coal team', course_id=self.test_course_2.id, is_active=False)
+        self.test_team_4 = CourseTeamFactory.create(name='Coal Team', course_id=self.test_course_2.id, is_active=False)
 
         self.test_team_1.add_user(self.student_user)
 
@@ -125,7 +126,7 @@ class TestTeamAPI(APITestCase, ModuleStoreTestCase):
     def test_list_teams_filter_include_inactive(self):
         teams = self.get_teams_list_json(data={'include_inactive': True})
         self.assertEqual(4, teams['count'])
-        self.assertIn('coal team', [team['name'] for team in teams['results']])
+        self.assertIn('Coal Team', [team['name'] for team in teams['results']])
 
     # Text search is not yet implemented, so this should return HTTP
     # 400 for now

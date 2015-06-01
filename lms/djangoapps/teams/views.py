@@ -29,7 +29,6 @@ from courseware.courses import get_course
 from .models import CourseTeam
 from .serializers import CourseTeamSerializer, CourseTeamCreationSerializer, TopicSerializer
 
-
 class TeamsListView(GenericAPIView):
     """
         **Use Cases**
@@ -46,9 +45,11 @@ class TeamsListView(GenericAPIView):
 
             The following options can be specified as query parameters:
 
-            * course_id: Filters the result to teams belonging to the given course.
+            * course_id: Filters the result to teams belonging to the given
+              course.
 
-            * topic_id: Filters the result to teams associated with the given topic.
+            * topic_id: Filters the result to teams associated with the given 
+              topic.
 
             * text_search: Currently not supported.
 
@@ -64,15 +65,18 @@ class TeamsListView(GenericAPIView):
 
             * page: Page number to retrieve.
 
-            * include_inactive: If true, inactive teams will be returned. The default is to not include inactive teams.
+            * include_inactive: If true, inactive teams will be returned. The
+              default is to not include inactive teams.
 
             If the user is logged in, the response contains:
 
             * count: The total number of teams matching the request.
 
-            * next: The URL to the next page of results, or null if this is the last page.
+            * next: The URL to the next page of results, or null if this is the
+              last page.
 
-            * previous: The URL to the previous page of results, or null if this is the first page.
+            * previous: The URL to the previous page of results, or null if this
+              is the first page.
 
             * num_pages: The total number of pages in the result.
 
@@ -82,22 +86,27 @@ class TeamsListView(GenericAPIView):
 
                 * name: The name of the team.
 
-                * is_active: True if the team is currently active. If false, the team is considered "soft deleted" and
-                  will not be included by default in results.
+                * is_active: True if the team is currently active. If false, the
+                  team is considered "soft deleted" and will not be included by
+                  default in results.
 
                 * course_id: The identifier for the course this team belongs to.
 
-                * topic_id: Optionally specifies which topic the team is associated with.
+                * topic_id: Optionally specifies which topic the team is associated
+                  with.
 
                 * date_created: Date and time when the team was created.
 
                 * description: A description of the team.
 
-                * country: Optionally specifies which country the team is associated with.
+                * country: Optionally specifies which country the team is 
+                  associated with.
 
-                * language: Optionally specifies which language the team is associated with.
+                * language: Optionally specifies which language the team is 
+                  associated with.
 
-                * membership: A list of the users that are members of the team. See membership endpoint for more detail.
+                * membership: A list of the users that are members of the team. 
+                  See membership endpoint for more detail.
 
             For all text fields, clients rendering the values should take care
             to HTML escape them to avoid script injections, as the data is
@@ -244,22 +253,27 @@ class TeamsDetailView(RetrievePatchAPIView):
 
             * name: The name of the team.
 
-            * is_active: True if the team is currently active. If false, the team is considered "soft deleted" and
-              will not be included by default in results.
+            * is_active: True if the team is currently active. If false, the team
+              is considered "soft deleted" and will not be included by default in
+              results.
 
             * course_id: The identifier for the course this team belongs to.
 
-            * topic_id: Optionally specifies which topic the team is associated with.
+            * topic_id: Optionally specifies which topic the team is 
+              associated with.
 
             * date_created: Date and time when the team was created.
 
             * description: A description of the team.
 
-            * country: Optionally specifies which country the team is associated with.
+            * country: Optionally specifies which country the team is 
+              associated with.
 
-            * language: Optionally specifies which language the team is associated with.
+            * language: Optionally specifies which language the team is 
+              associated with.
 
-            * membership: A list of the users that are members of the team. See membership endpoint for more detail.
+            * membership: A list of the users that are members of the team. See
+              membership endpoint for more detail.
 
             For all text fields, clients rendering the values should take care
             to HTML escape them to avoid script injections, as the data is
@@ -310,27 +324,34 @@ class TopicListView(GenericAPIView):
 
             The following options can be specified as query parameters:
 
-            * course_id: Filters the result to topics belonging to the given course (required).
+            * course_id: Filters the result to topics belonging to the given 
+              course (required).
 
-            * order_by: Orders the results. Currently only 'name' is supported, and is also the default value.
+            * order_by: Orders the results. Currently only 'name' is supported, 
+              and is also the default value.
 
             * page_size: Number of results to return per page.
 
             * page: Page number to retrieve.
 
-            If the course_id is not given or an unsupported value is passed for order_by, returns a 400 error.
+            If the course_id is not given or an unsupported value is passed for 
+            order_by, returns a 400 error.
 
-            If the user is not logged in or not enrolled in the course, returns a 403 error.
+            If the user is not logged in or not enrolled in the course, returns 
+            a 403 error.
 
             If the course does not exist, returns a 404 error.
 
-            Otherwise, a 200 response is returned containing the following fields:
+            Otherwise, a 200 response is returned containing the following 
+            fields:
 
             * count: The total number of topics matching the request.
 
-            * next: The URL to the next page of results, or null if this is the last page.
+            * next: The URL to the next page of results, or null if this is the 
+              last page.
 
-            * previous: The URL to the previous page of results, or null if this is the first page.
+            * previous: The URL to the previous page of results, or null if this 
+              is the first page.
 
             * num_pages: The total number of pages in the result.
 
@@ -402,11 +423,14 @@ class TopicDetailView(APIView):
 
             * topic_id: The ID of the topic to retrieve (required).
 
-            * course_id: The ID of the course to retrieve the topic from (required).
+            * course_id: The ID of the course to retrieve the topic from 
+              (required).
 
-            If the topic_id course_id are not given or an unsupported value is passed for order_by, returns a 400 error.
+            If the topic_id course_id are not given or an unsupported value is 
+            passed for order_by, returns a 400 error.
 
-            If the user is not logged in or not enrolled in the course, returns a 403 error.
+            If the user is not logged in or not enrolled in the course, returns 
+            a 403 error.
 
             If the course does not exist, returns a 404 error.
 

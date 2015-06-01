@@ -431,11 +431,11 @@ class TopicDetailView(APIView):
 
             Retrieve a single topic from a course.
 
-            **Example Requests**
+        **Example Requests**
 
             GET /api/team/v0/topics/{topic_id},{course_id}
 
-            **Response Values for GET**
+        **Response Values for GET**
 
             The following options can be specified as query parameters:
 

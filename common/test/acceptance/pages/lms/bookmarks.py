@@ -69,7 +69,7 @@ class BookmarksPage(CoursePage):
         return True
 
     @property
-    def bookmark_button_state(self):
+    def bookmark_button_bookmarked(self):
         """ Return `bookmarked` if button is in bookmarked state else `un-bookmarked` """
         return 'bookmarked' if self.q(css='.bookmark-button.bookmarked').present else 'un-bookmarked'
 
@@ -80,6 +80,6 @@ class BookmarksPage(CoursePage):
 
     def click_bookmark_unit_button(self):
         """ Bookmark an unit by clicking on Bookmark button """
-        previous_state = self.bookmark_button_state
+        previous_state = self.bookmark_button_bookmarked
         self.q(css='.bookmark-button').first.click()
-        EmptyPromise(lambda: self.bookmark_button_state != previous_state, "Bookmarked button toggled").fulfill()
+        EmptyPromise(lambda: self.bookmark_button_bookmarked != previous_state, "Bookmarked button toggled").fulfill()

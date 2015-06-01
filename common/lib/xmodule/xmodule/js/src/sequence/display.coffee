@@ -18,8 +18,8 @@ class @Sequence
 
   bind: ->
     @$('#sequence-list a').click @goto
-    @el.on 'bookmark:add', @addBookmarkIcon
-    @el.on 'bookmark:remove', @removeBookmarkIcon
+    @el.on 'bookmark:add', @addBookmarkIconToActiveNavItem
+    @el.on 'bookmark:remove', @removeBookmarkIconToActiveNavItem
 
   initProgress: ->
     @progressTable = {}  # "#problem_#{id}" -> progress
@@ -186,12 +186,12 @@ class @Sequence
     .removeClass("visited")
     .addClass("active")
 
-  addBookmarkIcon: (event) =>
+  addBookmarkIconToActiveNavItem: (event) =>
     event.preventDefault()
-    @el.find('.nav-item.active .bookmark-icon').removeClass('is-hidden').addClass('bookmarked');
-    @el.find('.nav-item.active .bookmark-icon-sr').text(gettext('Bookmarked'));
+    @el.find('.nav-item.active .bookmark-icon').removeClass('is-hidden').addClass('bookmarked')
+    @el.find('.nav-item.active .bookmark-icon-sr').text(gettext('Bookmarked'))
 
-  removeBookmarkIcon: (event) =>
+  removeBookmarkIconToActiveNavItem: (event) =>
     event.preventDefault()
-    @el.find('.nav-item.active .bookmark-icon').removeClass('bookmarked').addClass('is-hidden');
-    @el.find('.nav-item.active .bookmark-icon-sr').text('');
+    @el.find('.nav-item.active .bookmark-icon').removeClass('bookmarked').addClass('is-hidden')
+    @el.find('.nav-item.active .bookmark-icon-sr').text('')

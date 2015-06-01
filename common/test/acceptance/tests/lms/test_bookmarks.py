@@ -64,7 +64,7 @@ class BookmarksTest(BookmarksTestMixin):
         )
 
         self.courseware_page = CoursewarePage(self.browser, self.course_id)
-        self.bookmarks = BookmarksPage(self.browser, self.course_id)
+        self.bookmarks_page = BookmarksPage(self.browser, self.course_id)
         self.course_nav = CourseNavPage(self.browser)
 
     def _test_setup(self, num_chapters=2):
@@ -81,7 +81,7 @@ class BookmarksTest(BookmarksTestMixin):
 
         self.courseware_page.visit()
 
-    def bookmark_single_unit(self, index):
+    def _bookmark_unit(self, index):
         """
         Bookmark a unit
 
@@ -89,7 +89,7 @@ class BookmarksTest(BookmarksTestMixin):
             index: unit index to bookmark
         """
         self.course_nav.go_to_section('TestSection{}'.format(index), 'TestSubsection{}'.format(index))
-        self.bookmarks.click_bookmark_unit_button()
+        self.bookmarks_page.click_bookmark_unit_button()
 
     def _bookmark_units(self, num_units):
         """
@@ -99,7 +99,7 @@ class BookmarksTest(BookmarksTestMixin):
             num_units(int): Number of units to bookmarks
         """
         for index in range(num_units):
-            self.bookmark_single_unit(index)
+            self._bookmark_unit(index)
 
     def _breadcrumb(self, num_units):
         """
@@ -149,12 +149,12 @@ class BookmarksTest(BookmarksTestMixin):
         """
         Bookmark a single unit and then verify
         """
-        self.assertTrue(self.bookmarks.bookmark_button_visible)
-        self.bookmarks.click_bookmark_unit_button()
-        self.assertEqual(self.bookmarks.bookmark_icon_visible, bookmark_icon_state)
-        self.assertEqual(self.bookmarks.bookmark_button_state, bookmark_button_state)
-        self.bookmarks.click_bookmarks_button()
-        self.assertEqual(self.bookmarks.count(), bookmarked_count)
+        self.assertTrue(self.bookmarks_page.bookmark_button_visible)
+        self.bookmarks_page.click_bookmark_unit_button()
+        self.assertEqual(self.bookmarks_page.bookmark_icon_visible, bookmark_icon_state)
+        self.assertEqual(self.bookmarks_page.bookmark_button_bookmarked, bookmark_button_state)
+        self.bookmarks_page.click_bookmarks_button()
+        self.assertEqual(self.bookmarks_page.count(), bookmarked_count)
 
     def test_bookmark_button(self):
         """
@@ -175,7 +175,7 @@ class BookmarksTest(BookmarksTestMixin):
             self.course_nav.go_to_section('TestSection{}'.format(index), 'TestSubsection{}'.format(index))
 
             self._verify_bookmark(True, 'bookmarked', 1)
-            self.bookmarks.click_bookmarks_button(False)
+            self.bookmarks_page.click_bookmarks_button(False)
             self._verify_bookmark(False, 'un-bookmarked', 0)
 
     def test_empty_bookmarks_list(self):
@@ -190,15 +190,15 @@ class BookmarksTest(BookmarksTestMixin):
         And empty bookmarks list content is correct
         """
         self._test_setup()
-        self.assertTrue(self.bookmarks.bookmarks_button_visible())
-        self.bookmarks.click_bookmarks_button()
-        self.assertEqual(self.bookmarks.results_header_text(), 'MY BOOKMARKS')
-        self.assertEqual(self.bookmarks.empty_header_text(), 'You have not bookmarked any courseware pages yet.')
+        self.assertTrue(self.bookmarks_page.bookmarks_button_visible())
+        self.bookmarks_page.click_bookmarks_button()
+        self.assertEqual(self.bookmarks_page.results_header_text(), 'MY BOOKMARKS')
+        self.assertEqual(self.bookmarks_page.empty_header_text(), 'You have not bookmarked any courseware pages yet.')
 
         empty_list_text = ("Use bookmarks to help you easily return to courseware pages. To bookmark a page, "
                            "select Bookmark in the upper right corner of that page. To see a list of all your "
                            "bookmarks, select Bookmarks in the upper left corner of any courseware page.")
-        self.assertEqual(self.bookmarks.empty_list_text(), empty_list_text)
+        self.assertEqual(self.bookmarks_page.empty_list_text(), empty_list_text)
 
     def test_bookmarks_list(self):
         """
@@ -223,12 +223,12 @@ class BookmarksTest(BookmarksTestMixin):
         self._test_setup()
         self._bookmark_units(2)
 
-        self.bookmarks.click_bookmarks_button()
-        self.assertTrue(self.bookmarks.results_present())
-        self.assertEqual(self.bookmarks.results_header_text(), 'MY BOOKMARKS')
-        self.assertEqual(self.bookmarks.count(), 2)
+        self.bookmarks_page.click_bookmarks_button()
+        self.assertTrue(self.bookmarks_page.results_present())
+        self.assertEqual(self.bookmarks_page.results_header_text(), 'MY BOOKMARKS')
+        self.assertEqual(self.bookmarks_page.count(), 2)
 
-        bookmarked_breadcrumbs = self.bookmarks.breadcrumbs()
+        bookmarked_breadcrumbs = self.bookmarks_page.breadcrumbs()
 
         # Verify bookmarked breadcrumbs
         breadcrumbs = self._breadcrumb(2)
@@ -239,11 +239,11 @@ class BookmarksTest(BookmarksTestMixin):
         xblock_usage_ids = [xblock.locator for xblock in xblocks]
         # Verify link navigation
         for index in range(2):
-            self.bookmarks.click_bookmarked_unit(index)
+            self.bookmarks_page.click_bookmarked_unit(index)
             self.courseware_page.wait_for_page()
             self.assertTrue(self.courseware_page.active_usage_id() in xblock_usage_ids)
             self.courseware_page.visit().wait_for_page()
-            self.bookmarks.click_bookmarks_button()
+            self.bookmarks_page.click_bookmarks_button()
 
     def test_unreachable_bookmark(self):
         """
@@ -262,11 +262,11 @@ class BookmarksTest(BookmarksTestMixin):
         self._bookmark_units(2)
         self._delete_section(0)
 
-        self.bookmarks.click_bookmarks_button()
-        self.assertTrue(self.bookmarks.results_present())
-        self.assertEqual(self.bookmarks.count(), 2)
+        self.bookmarks_page.click_bookmarks_button()
+        self.assertTrue(self.bookmarks_page.results_present())
+        self.assertEqual(self.bookmarks_page.count(), 2)
 
-        self.bookmarks.click_bookmarked_unit(0)
+        self.bookmarks_page.click_bookmarked_unit(0)
         self.assertTrue(is_404_page(self.browser))
 
     def test_page_size_limit(self):
@@ -286,6 +286,6 @@ class BookmarksTest(BookmarksTestMixin):
         self._test_setup(11)
         self._bookmark_units(11)
 
-        self.bookmarks.click_bookmarks_button()
-        self.assertTrue(self.bookmarks.results_present())
-        self.assertEqual(self.bookmarks.count(), 11)
+        self.bookmarks_page.click_bookmarks_button()
+        self.assertTrue(self.bookmarks_page.results_present())
+        self.assertEqual(self.bookmarks_page.count(), 11)

@@ -6,7 +6,7 @@ define(['backbone', 'jquery', 'underscore', 'js/common_helpers/ajax_helpers', 'j
 
         describe("bookmarks.button", function () {
 
-            var bookmarkButtonView;
+            var API_URL = 'bookmarks/api/v1/bookmarks/';
 
             beforeEach(function () {
                 loadFixtures('js/fixtures/bookmarks/bookmark_button.html');
@@ -17,102 +17,93 @@ define(['backbone', 'jquery', 'underscore', 'js/common_helpers/ajax_helpers', 'j
                 );
             });
 
-            var setBookmarkButtonView = function(isBookmarked) {
-                bookmarkButtonView = new BookmarkButtonView({el: '.xblock-student_view-vertical', bookmarked: isBookmarked});
+            var createBookmarkButtonView = function(isBookmarked) {
+                return new BookmarkButtonView({
+                    el: '.bookmark-button',
+                    bookmarked: isBookmarked,
+                    bookmarkId: 'bilbo,usage_1',
+                    usageId: 'usage_1',
+                    apiUrl: API_URL
+                });
             };
 
-            var verifyBookmarkButtonState = function (bookmarked) {
-                var $bookmarkButton = bookmarkButtonView.$('.bookmark-button');
+            var verifyBookmarkButtonState = function (view, bookmarked) {
                 if (bookmarked) {
-                    expect($bookmarkButton).toHaveAttr('aria-pressed', 'true');
-                    expect($bookmarkButton).toHaveClass('bookmarked');
-                    expect($bookmarkButton.find('.bookmark-sr').text()).toBe('Click to remove');
+                    expect(view.$el).toHaveAttr('aria-pressed', 'true');
+                    expect(view.$el).toHaveClass('bookmarked');
+                    expect(view.$el.find('.bookmark-sr').text()).toBe('Click to remove');
                 } else {
-                    expect($bookmarkButton).toHaveAttr('aria-pressed', 'false');
-                    expect($bookmarkButton).toHaveClass('un-bookmarked');
-                    expect($bookmarkButton.find('.bookmark-sr').text()).toBe('Click to add');
+                    expect(view.$el).toHaveAttr('aria-pressed', 'false');
+                    expect(view.$el).toHaveClass('un-bookmarked');
+                    expect(view.$el.find('.bookmark-sr').text()).toBe('Click to add');
                 }
-                expect($bookmarkButton.data('bookmarkId')).toBe('testuser,usage_1');
+                expect(view.$el.data('bookmarkId')).toBe('bilbo,usage_1');
             };
 
             it("rendered correctly ", function () {
-                setBookmarkButtonView(false);
-                verifyBookmarkButtonState(false);
+                var view = createBookmarkButtonView(false);
+                verifyBookmarkButtonState(view, false);
+
+                // with bookmarked true
+                view = createBookmarkButtonView(true);
+                verifyBookmarkButtonState(view, true);
             });
 
-            it("bookmark the block correctly", function () {
+            it("bookmark/un-bookmark the block correctly", function () {
+                var addBookmarkedData = {bookmarked: true, handler: 'removeBookmark', event: 'bookmark:remove', method: 'DELETE', url: API_URL + 'bilbo,usage_1/', body: null};
+                var removeBookmarkData = {bookmarked: false, handler: 'addBookmark', event: 'bookmark:add', method: 'POST', url: API_URL, body: 'usage_id=usage_1'};
                 var requests = AjaxHelpers.requests(this);
-                setBookmarkButtonView(false);
-                verifyBookmarkButtonState(false);
 
-                var $bookmarkButton = bookmarkButtonView.$('.bookmark-button');
-                spyOn(bookmarkButtonView, 'addBookmark').andCallThrough();
-                spyOnEvent($bookmarkButton, 'bookmark:add');
+                _.each([[addBookmarkedData, removeBookmarkData], [removeBookmarkData, addBookmarkedData]], function(actionsData) {
+                    var firstActionData = actionsData[0];
+                    var secondActionData =  actionsData[1];
 
-                $bookmarkButton.click();
+                    var bookmarkButtonView = createBookmarkButtonView(firstActionData.bookmarked);
+                    verifyBookmarkButtonState(bookmarkButtonView, firstActionData.bookmarked);
 
-                var flag;
-                runs(function () {
-                    flag = false;
+                    spyOn(bookmarkButtonView, firstActionData.handler).andCallThrough();
+                    spyOnEvent(bookmarkButtonView.$el, firstActionData.event);
 
-                    setTimeout(function () {
-                        flag = true;
-                    }, 50);
-                });
-                waitsFor(function () {
-                    return flag;
-                }, "The block should be bookmarked.");
-                runs(function () {
-                    expect(bookmarkButtonView.addBookmark).toHaveBeenCalled();
+                    bookmarkButtonView.$el.click();
+
+                    AjaxHelpers.expectRequest(requests, firstActionData.method, firstActionData.url, firstActionData.body);
+
+                    expect(bookmarkButtonView[firstActionData.handler]).toHaveBeenCalled();
                     AjaxHelpers.respondWithJson(requests, {});
-                    verifyBookmarkButtonState(true);
-                    expect('bookmark:add').toHaveBeenTriggeredOn($bookmarkButton);
-                });
-            });
+                    expect(firstActionData.event).toHaveBeenTriggeredOn(bookmarkButtonView.$el);
+                    bookmarkButtonView[firstActionData.handler].reset();
 
-            it("un-bookmark the block correctly", function() {
-                var requests = AjaxHelpers.requests(this);
-                setBookmarkButtonView(true);
-                verifyBookmarkButtonState(true);
+                    verifyBookmarkButtonState(bookmarkButtonView, secondActionData.bookmarked);
 
-                var $bookmarkButton = bookmarkButtonView.$('.bookmark-button');
-                spyOn(bookmarkButtonView, 'removeBookmark').andCallThrough();
-                spyOnEvent($bookmarkButton, 'bookmark:remove');
+                    spyOn(bookmarkButtonView, secondActionData.handler).andCallThrough();
+                    spyOnEvent(bookmarkButtonView.$el, secondActionData.event);
 
-                $bookmarkButton.click();
+                    bookmarkButtonView.$el.click();
 
-                var flag;
-                runs(function() {
-                    flag = false;
+                    AjaxHelpers.expectRequest(requests, secondActionData.method, secondActionData.url, secondActionData.body);
 
-                    setTimeout(function() {
-                        flag = true;
-                    }, 50);
-                });
-                waitsFor(function() {
-                    return flag;
-                }, "The block should be un-bookmarked.");
-                runs(function() {
-                    expect(bookmarkButtonView.removeBookmark).toHaveBeenCalled();
+                    expect(bookmarkButtonView[secondActionData.handler]).toHaveBeenCalled();
                     AjaxHelpers.respondWithJson(requests, {});
-                    verifyBookmarkButtonState(false);
-                    expect('bookmark:remove').toHaveBeenTriggeredOn($bookmarkButton);
+                    expect(secondActionData.event).toHaveBeenTriggeredOn(bookmarkButtonView.$el);
+
+                    verifyBookmarkButtonState(bookmarkButtonView, firstActionData.bookmarked);
                 });
+
             });
 
             it("shows an error message for HTTP 500", function () {
                 var requests = AjaxHelpers.requests(this),
-                    $messageBanner = $('.coursewide-message-banner');
-                setBookmarkButtonView(false);
-                bookmarkButtonView.$('.bookmark-button').click();
+                    $messageBanner = $('.coursewide-message-banner'),
+                    bookmarkButtonView = createBookmarkButtonView(false);
+                bookmarkButtonView.$el.click();
 
                 AjaxHelpers.respondWithError(requests);
 
                 expect($messageBanner.text().trim()).toBe(bookmarkButtonView.errorMessage);
 
                 // For bookmarked button.
-                setBookmarkButtonView(true);
-                bookmarkButtonView.$('.bookmark-button').click();
+                bookmarkButtonView = createBookmarkButtonView(true);
+                bookmarkButtonView.$el.click();
 
                 AjaxHelpers.respondWithError(requests);
 

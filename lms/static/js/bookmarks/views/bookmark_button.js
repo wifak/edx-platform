@@ -12,82 +12,85 @@
             srRemoveBookmarkText: gettext('Click to remove'),
 
             events: {
-                'click .bookmark-button': 'bookmark'
+                'click': 'toggleBookmark'
             },
 
             initialize: function (options) {
+                this.apiUrl = options.apiUrl;
+                this.bookmarkId = options.bookmarkId;
                 this.bookmarked = options.bookmarked;
-
-                this.errorMessageView = new MessageView({
-                    el: $('.coursewide-message-banner'),
-                    templateId: '#message_banner-tpl'
-                });
-                this.bookmarksUrl = $(".courseware-bookmarks-button").data('bookmarksApiUrl');
-                this.initializeBookmarkState(this.bookmarked);
+                this.usageId = options.usageId;
+                this.initializeBookmarkState();
             },
 
-            initializeBookmarkState: function(isBookmarked) {
-                var $bookmarkButton = this.$el.find('.bookmark-button');
-                if (isBookmarked) {
-                    $bookmarkButton.addClass("bookmarked").removeClass("un-bookmarked");
-                    $bookmarkButton.find('.bookmark-sr').text(this.srRemoveBookmarkText);
-                    $bookmarkButton.attr('aria-pressed', 'true');
+            initializeBookmarkState: function() {
+                if (this.bookmarked) {
+                    this.$el.addClass("bookmarked").removeClass("un-bookmarked");
+                    this.$el.find('.bookmark-sr').text(this.srRemoveBookmarkText);
+                    this.$el.attr('aria-pressed', 'true');
                 } else {
-                    $bookmarkButton.find('.bookmark-sr').text(this.srAddBookmarkText);
-                    $bookmarkButton.addClass("un-bookmarked").removeClass("bookmarked");
-                    $bookmarkButton.attr('aria-pressed', 'false');
+                    this.$el.find('.bookmark-sr').text(this.srAddBookmarkText);
+                    this.$el.addClass("un-bookmarked").removeClass("bookmarked");
+                    this.$el.attr('aria-pressed', 'false');
                 }
             },
 
-            bookmark: function(event) {
+            toggleBookmark: function(event) {
                 event.preventDefault();
 
-                var $buttonElement = $(event.currentTarget);
-                var bookmarkId = $buttonElement.data("bookmarkId");
-
-                if ($buttonElement.hasClass('bookmarked')) {
-                    this.removeBookmark($buttonElement, bookmarkId);
+                if (this.$el.hasClass('bookmarked')) {
+                    this.removeBookmark();
                 } else {
-                    this.addBookmark($buttonElement, bookmarkId);
+                    this.addBookmark();
                 }
             },
 
-            addBookmark: function($buttonElement, bookmarkId) {
+            addBookmark: function() {
                 var view = this;
-                var usageId = bookmarkId.split(',')[1];
                 $.ajax({
-                    data: {usage_id: usageId},
+                    data: {usage_id:  view.usageId},
                     type: "POST",
-                    url: view.bookmarksUrl,
+                    url: view.apiUrl,
                     dataType: 'json',
                     success: function () {
-                        $buttonElement.trigger('bookmark:add');
-                        $buttonElement.removeClass('un-bookmarked').addClass('bookmarked');
-                        $buttonElement.attr('aria-pressed', 'true');
-                        $buttonElement.find('.bookmark-sr').text(view.srRemoveBookmarkText);
+                        view.$el.trigger('bookmark:add');
+                        view.$el.removeClass('un-bookmarked').addClass('bookmarked');
+                        view.$el.attr('aria-pressed', 'true');
+                        view.$el.find('.bookmark-sr').text(view.srRemoveBookmarkText);
                     },
                     error: function() {
-                        view.errorMessageView.showMessage(view.errorMessage, view.errorIcon);
+                        view.showError();
                     }
                 });
             },
 
-            removeBookmark: function($buttonElement, bookmarkId) {
+            removeBookmark: function() {
                 var view = this;
-                var deleteUrl = view.bookmarksUrl + bookmarkId + '/';
+                var deleteUrl = view.apiUrl + view.bookmarkId + '/';
+
                 $.ajax({
                     type: "DELETE",
                     url: deleteUrl,
                     success: function () {
-                        $buttonElement.trigger('bookmark:remove');
-                        $buttonElement.removeClass('bookmarked').addClass('un-bookmarked');
-                        $buttonElement.attr('aria-pressed', 'false');
-                        $buttonElement.find('.bookmark-sr').text(view.srAddBookmarkText);
+                        view.$el.trigger('bookmark:remove');
+                        view.$el.removeClass('bookmarked').addClass('un-bookmarked');
+                        view.$el.attr('aria-pressed', 'false');
+                        view.$el.find('.bookmark-sr').text(view.srAddBookmarkText);
                     },
                     error: function() {
-                        view.errorMessageView.showMessage(view.errorMessage, view.errorIcon);
+                        view.showError();
                     }
                 });
+            },
+
+            showError: function() {
+                if (!this.messageView) {
+                    this.messageView = new MessageView({
+                        el: $('.coursewide-message-banner'),
+                        templateId: '#message_banner-tpl'
+                    });
+                }
+                this.messageView.showMessage(this.errorMessage, this.errorIcon);
             }
         });
     });

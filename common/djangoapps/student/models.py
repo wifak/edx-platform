@@ -1704,6 +1704,7 @@ class LanguageField(models.CharField):
             **kwargs
         )
 
+
 class LanguageProficiency(models.Model):
     """
     Represents a user's language proficiency.

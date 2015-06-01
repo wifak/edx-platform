@@ -412,7 +412,7 @@ class TopicListView(GenericAPIView):
 
         ordering = request.QUERY_PARAMS.get('order_by', 'name')
         if ordering == 'name':
-            topics = sorted(topics, key=lambda t: t['name'])
+            topics = sorted(topics, key=lambda t: t['name'].lower())
         else:
             return Response({
                 'detail': {

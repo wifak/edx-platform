@@ -5,12 +5,12 @@ Django models related to teams functionality.
 from django.contrib.auth.models import User
 from django.db import models
 from django.utils.translation import ugettext_lazy
-from django.conf import settings
 from django_countries.fields import CountryField
 
 from xmodule_django.models import CourseKeyField
 from util.model_utils import generate_unique_readable_id
 from student.models import LanguageField
+
 
 class CourseTeam(models.Model):
     """

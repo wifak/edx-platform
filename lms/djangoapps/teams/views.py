@@ -217,7 +217,7 @@ class TeamsListView(GenericAPIView):
             return Response(status=status.HTTP_404_NOT_FOUND)
 
         if course_key and not (CourseEnrollment.is_enrolled(request.user, course_key) or request.user.is_staff):
-            return Response({'detail': "User must be enrolled."}, status=status.HTTP_403_FORBIDDEN)
+            return Response(status=status.HTTP_403_FORBIDDEN)
 
         data = request.DATA
         data['course_id'] = course_key
@@ -401,12 +401,7 @@ class TopicListView(GenericAPIView):
             return Response(status=status.HTTP_404_NOT_FOUND)
 
         if not (CourseEnrollment.is_enrolled(request.user, course_id) or request.user.is_staff):
-            return Response({
-                'detail': {
-                    'developer_message': "user must be enrolled",
-                    'user_message': _("You are not currently enrolled in this course.")
-                }
-            }, status=status.HTTP_403_FORBIDDEN)
+            return Response(status=status.HTTP_403_FORBIDDEN)
 
         topics = course_module.teams_topics
 
@@ -480,12 +475,7 @@ class TopicDetailView(APIView):
             return Response(status=status.HTTP_404_NOT_FOUND)
 
         if not (CourseEnrollment.is_enrolled(request.user, course_id) or request.user.is_staff):
-            return Response({
-                'detail': {
-                    'developer_message': "user must be enrolled",
-                    'user_message': _("You are not currently enrolled in this course.")
-                }
-            }, status=status.HTTP_403_FORBIDDEN)
+            return Response(status=status.HTTP_403_FORBIDDEN)
 
         topics = [t for t in course_module.teams_topics if t['id'] == topic_id]
 

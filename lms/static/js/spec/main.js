@@ -99,6 +99,7 @@
             'js/bookmarks/models/bookmark': 'js/bookmarks/models/bookmark',
             'js/bookmarks/views/bookmarks_list_button': 'js/bookmarks/views/bookmarks_list_button',
             'js/bookmarks/views/bookmarks_list': 'js/bookmarks/views/bookmarks_list',
+            'js/bookmarks/views/bookmark_button': 'js/bookmarks/views/bookmark_button',
             'js/views/message': 'js/views/message',
 
             // edxnotes
@@ -634,7 +635,8 @@
         'lms/include/js/spec/edxnotes/plugins/caret_navigation_spec.js',
         'lms/include/js/spec/edxnotes/collections/notes_spec.js',
         'lms/include/js/spec/search/search_spec.js',
-        'lms/include/js/spec/bookmarks/bookmarks_spec.js'
+        'lms/include/js/spec/bookmarks/bookmarks_list_view_spec.js',
+        'lms/include/js/spec/bookmarks/bookmark_button_view_spec.js'
     ]);
 
 }).call(this, requirejs, define);

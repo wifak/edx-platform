@@ -23,7 +23,20 @@
                     templateId: '#message_banner-tpl'
                 });
                 this.bookmarksUrl = $(".courseware-bookmarks-button").data('bookmarksApiUrl');
-                this.updateBookmarkState(this.bookmarked);
+                this.initializeBookmarkState(this.bookmarked);
+            },
+
+            initializeBookmarkState: function(isBookmarked) {
+                var $bookmarkButton = this.$el.find('.bookmark-button');
+                if (isBookmarked) {
+                    $bookmarkButton.addClass("bookmarked").removeClass("un-bookmarked");
+                    $bookmarkButton.find('.bookmark-sr').text(this.srRemoveBookmarkText);
+                    $bookmarkButton.attr('aria-pressed', 'true');
+                } else {
+                    $bookmarkButton.find('.bookmark-sr').text(this.srAddBookmarkText);
+                    $bookmarkButton.addClass("un-bookmarked").removeClass("bookmarked");
+                    $bookmarkButton.attr('aria-pressed', 'false');
+                }
             },
 
             bookmark: function(event) {
@@ -75,17 +88,6 @@
                         view.errorMessageView.showMessage(view.errorMessage, view.errorIcon);
                     }
                 });
-            },
-
-            updateBookmarkState: function(isBookmarked) {
-                var $bookmarkButton = this.$el.find('.bookmark-button');
-                if (isBookmarked) {
-                    $bookmarkButton.addClass("bookmarked").removeClass("un-bookmarked");
-                    $bookmarkButton.find('.bookmark-sr').text(this.srRemoveBookmarkText);
-                } else {
-                    $bookmarkButton.find('.bookmark-sr').text(this.srAddBookmarkText);
-                    $bookmarkButton.addClass("un-bookmarked").removeClass("bookmarked");
-                }
             }
         });
     });

@@ -45,9 +45,9 @@ class CourseTeam(models.Model):
             description (str): A description of the team.
             topic_id (str): An optional identifier for the topic the
               team formed around.
-            country (str or None): An optional country where the team
+            country (str, optional): An optional country where the team
               is based, as ISO 3166-1 code.
-            language (str or None): An optional language which the 
+            language (str, optional): An optional language which the 
               team uses, as ISO 639-1 code.
 
         """

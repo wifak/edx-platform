@@ -9,9 +9,7 @@ class PaginationSerializer(pagination.PaginationSerializer):
 
 
 class CollapsedReferenceSerializer(serializers.HyperlinkedModelSerializer):
-    """
-    Serializes arbitrary models in a collapsed format, with just an id and url.
-    """
+    """Serializes arbitrary models in a collapsed format, with just an id and url."""
     id = serializers.CharField(read_only=True)  # pylint: disable=invalid-name
     url = serializers.HyperlinkedIdentityField(view_name='')
 
@@ -40,8 +38,8 @@ class CollapsedReferenceSerializer(serializers.HyperlinkedModelSerializer):
         self.fields['url'].lookup_field = lookup_field
 
     class Meta(object):
-        """
-        Defines meta information for the ModelSerializer. model is set
-        dynamically in __init__.
+        """Defines meta information for the ModelSerializer.
+
+        model is set dynamically in __init__.
         """
         fields = ("id", "url")

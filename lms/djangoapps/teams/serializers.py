@@ -1,6 +1,4 @@
-"""
-Defines serializers used by the Team API.
-"""
+"""Defines serializers used by the Team API."""
 
 from django.contrib.auth.models import User
 from rest_framework import serializers
@@ -11,8 +9,9 @@ from openedx.core.djangoapps.user_api.serializers import UserSerializer
 
 
 class UserMembershipSerializer(serializers.ModelSerializer):
-    """
-    Serializes CourseTeamMemberships with only information about the user and date_joined, for listing team members.
+    """Serializes CourseTeamMemberships with only user and date_joined
+
+    Used for listing team members.
     """
     user = ExpandableField(
         collapsed_serializer=CollapsedReferenceSerializer(
@@ -25,25 +24,19 @@ class UserMembershipSerializer(serializers.ModelSerializer):
     )
 
     class Meta(object):
-        """
-        Defines meta information for the ModelSerializer.
-        """
+        """Defines meta information for the ModelSerializer."""
         model = CourseTeamMembership
         fields = ("user", "date_joined")
         read_only_fields = ("date_joined",)
 
 
 class CourseTeamSerializer(serializers.ModelSerializer):
-    """
-    Serializes a CourseTeam with membership information.
-    """
+    """Serializes a CourseTeam with membership information."""
     id = serializers.CharField(source='team_id', read_only=True)  # pylint: disable=invalid-name
     membership = UserMembershipSerializer(many=True, read_only=True)
 
     class Meta(object):
-        """
-        Defines meta information for the ModelSerializer.
-        """
+        """Defines meta information for the ModelSerializer."""
         model = CourseTeam
         fields = (
             "id",
@@ -61,14 +54,10 @@ class CourseTeamSerializer(serializers.ModelSerializer):
 
 
 class CourseTeamCreationSerializer(serializers.ModelSerializer):
-    """
-    Deserializes a CourseTeam for creation.
-    """
+    """Deserializes a CourseTeam for creation."""
 
     class Meta(object):
-        """
-        Defines meta information for the ModelSerializer.
-        """
+        """Defines meta information for the ModelSerializer."""
         model = CourseTeam
         fields = (
             "name",
@@ -80,9 +69,7 @@ class CourseTeamCreationSerializer(serializers.ModelSerializer):
         )
 
     def restore_object(self, attrs, instance=None):
-        """
-        Restores a CourseTeam instance from the given attrs.
-        """
+        """Restores a CourseTeam instance from the given attrs."""
         return CourseTeam.create(
             name=attrs.get("name", ''),
             course_id=attrs.get("course_id"),
@@ -94,9 +81,7 @@ class CourseTeamCreationSerializer(serializers.ModelSerializer):
 
 
 class MembershipSerializer(serializers.ModelSerializer):
-    """
-    Serializes CourseTeamMemberships with information about both teams and users.
-    """
+    """Serializes CourseTeamMemberships with information about both teams and users."""
     user = ExpandableField(
         collapsed_serializer=CollapsedReferenceSerializer(
             model_class=User,
@@ -117,9 +102,7 @@ class MembershipSerializer(serializers.ModelSerializer):
     )
 
     class Meta(object):
-        """
-        Defines meta information for the ModelSerializer.
-        """
+        """Defines meta information for the ModelSerializer."""
         model = CourseTeamMembership
         fields = ("user", "team", "date_joined")
         read_only_fields = ("date_joined",)

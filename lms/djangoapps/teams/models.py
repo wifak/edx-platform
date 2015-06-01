@@ -1,6 +1,4 @@
-"""
-Django models related to teams functionality.
-"""
+"""Django models related to teams functionality."""
 
 from django.contrib.auth.models import User
 from django.db import models
@@ -13,9 +11,7 @@ from student.models import LanguageField
 
 
 class CourseTeam(models.Model):
-    """
-    This model represents team related info.
-    """
+    """This model represents team related info."""
 
     team_id = models.CharField(max_length=255, unique=True)
     name = models.CharField(max_length=255)
@@ -65,9 +61,7 @@ class CourseTeam(models.Model):
         return course_team
 
     def add_user(self, user):
-        """
-        Adds the given user to the CourseTeam
-        """
+        """Adds the given user to the CourseTeam."""
         CourseTeamMembership.objects.get_or_create(
             user=user,
             team=self
@@ -75,14 +69,10 @@ class CourseTeam(models.Model):
 
 
 class CourseTeamMembership(models.Model):
-    """
-    This model represents the membership of a single user in a single team.
-    """
+    """This model represents the membership of a single user in a single team."""
 
     class Meta(object):
-        """
-        Stores meta information for the model.
-        """
+        """Stores meta information for the model."""
         unique_together = (('user', 'team'),)
 
     user = models.ForeignKey(User)

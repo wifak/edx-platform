@@ -1,6 +1,4 @@
-"""
-Defines the URL routes for this app.
-"""
+"""Defines the URL routes for this app."""
 
 from django.conf import settings
 from django.conf.urls import patterns, url

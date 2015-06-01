@@ -124,9 +124,7 @@ def view_auth_classes(is_user=False):
 
 
 def add_serializer_errors(serializer, data, field_errors):
-    """
-    Adds errors from serializer validation to field_errors. data is the original data to deserialize.
-    """
+    """Adds errors from serializer validation to field_errors. data is the original data to deserialize."""
     if not serializer.is_valid():  # pylint: disable=maybe-no-member
         errors = serializer.errors  # pylint: disable=maybe-no-member
         for key, error in errors.iteritems():
@@ -140,28 +138,23 @@ def add_serializer_errors(serializer, data, field_errors):
 
 
 class RetrievePatchAPIView(RetrieveModelMixin, UpdateModelMixin, GenericAPIView):
-    """
-    Concrete view for retrieving and updating a model instance. Like DRF's RetriveUpdateAPIView, but without PUT.
+    """Concrete view for retrieving and updating a model instance.
+
+    Like DRF's RetriveUpdateAPIView, but without PUT and with automatic validation errors in the edX format.
     """
     def get(self, request, *args, **kwargs):
-        """
-        Retrieves the specified resource using the RetrieveModelMixin.
-        """
+        """Retrieves the specified resource using the RetrieveModelMixin."""
         return self.retrieve(request, *args, **kwargs)
 
     def patch(self, request, *args, **kwargs):
-        """
-        Checks for validation errors, then updates the model using the UpdateModelMixin.
-        """
+        """Checks for validation errors, then updates the model using the UpdateModelMixin."""
         field_errors = self._validate_patch(request.DATA)
         if field_errors:
             return Response({'field_errors': field_errors}, status=status.HTTP_400_BAD_REQUEST)
         return self.partial_update(request, *args, **kwargs)
 
     def _validate_patch(self, patch):
-        """
-        Validates a JSON merge patch. Captures DRF serializer errors and converts them to edX's standard format.
-        """
+        """Validates a JSON merge patch. Captures DRF serializer errors and converts them to edX's standard format."""
         field_errors = {}
         serializer = self.get_serializer(self.get_object_or_none(), data=patch, partial=True)
         fields = self.get_serializer().get_fields()  # pylint: disable=maybe-no-member

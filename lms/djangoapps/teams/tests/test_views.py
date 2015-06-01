@@ -100,15 +100,11 @@ class TeamAPITestCase(APITestCase, ModuleStoreTestCase):
             return response
 
     def get_teams_list(self, expected_status=200, data=None, **kwargs):
-        """
-        Gets the list of teams as the given user with data as query params. Verifies expected_status.
-        """
+        """Gets the list of teams as the given user with data as query params. Verifies expected_status."""
         return self.make_call(reverse('teams_list'), expected_status, 'get', data, **kwargs)
 
     def build_team_data(self, name="Test team", course=None, description="Filler description", **kwargs):
-        """
-        Creates the payload for creating a team. kwargs can be used to specify additional fields.
-        """
+        """Creates the payload for creating a team. kwargs can be used to specify additional fields."""
         data = kwargs
         course = course if course else self.test_course_1
         data.update({
@@ -119,21 +115,15 @@ class TeamAPITestCase(APITestCase, ModuleStoreTestCase):
         return data
 
     def post_create_team(self, expected_status=200, data=None, **kwargs):
-        """
-        Posts data to the team creation endpoint as user. Verifies expected_status.
-        """
+        """Posts data to the team creation endpoint. Verifies expected_status."""
         return self.make_call(reverse('teams_list'), expected_status, 'post', data, **kwargs)
 
     def get_team_detail(self, team_id, expected_status=200, **kwargs):
-        """
-        Gets detailed team information for team_id as the given user. Verifies expected_status.
-        """
+        """Gets detailed team information for team_id. Verifies expected_status."""
         return self.make_call(reverse('teams_detail', args=[team_id]), expected_status, 'get', **kwargs)
 
     def patch_team_detail(self, team_id, expected_status, data=None, **kwargs):
-        """
-        Patches the team with team_id using data as user. Verifies expected_status.
-        """
+        """Patches the team with team_id using data. Verifies expected_status."""
         return self.make_call(
             reverse('teams_detail', args=[team_id]),
             expected_status,

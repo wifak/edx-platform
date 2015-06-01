@@ -148,17 +148,13 @@ class TeamsListView(GenericAPIView):
     serializer_class = CourseTeamSerializer
 
     def get_serializer_context(self):
-        """
-        Adds expand information from query parameters to the serializer context to support expandable fields.
-        """
+        """Adds expand information from query parameters to the serializer context to support expandable fields."""
         result = super(TeamsListView, self).get_serializer_context()
         result['expand'] = [x for x in self.request.QUERY_PARAMS.get('expand', '').split(',') if x]
         return result
 
     def get(self, request):
-        """
-        GET /api/team/v0/teams/
-        """
+        """GET /api/team/v0/teams/"""
         result_filter = {
             'is_active': True
         }
@@ -212,9 +208,7 @@ class TeamsListView(GenericAPIView):
         return Response(serializer.data)  # pylint: disable=maybe-no-member
 
     def post(self, request):
-        """
-        POST /api/team/v0/teams/
-        """
+        """POST /api/team/v0/teams/"""
         field_errors = {}
         course_key = None
 
@@ -304,7 +298,8 @@ class TeamsDetailView(RetrievePatchAPIView):
         **Response Values for PATCH**
 
             Only staff can patch teams. If the specified team does not exist, a
-            404 error is returned.
+            404 error is returned. If the user is not staff, a 403 error is
+            returned.
 
             If "application/merge-patch+json" is not the specified content type,
             a 415 error is returned.
@@ -321,9 +316,7 @@ class TeamsDetailView(RetrievePatchAPIView):
     parser_classes = (MergePatchParser,)
 
     def get_queryset(self):
-        """
-        Returns the queryset used to access the given team.
-        """
+        """Returns the queryset used to access the given team."""
         return CourseTeam.objects.all()
 
 
@@ -391,9 +384,7 @@ class TopicListView(GenericAPIView):
     serializer_class = TopicSerializer
 
     def get(self, request):
-        """
-        GET /api/team/v0/topics/?course_id={course_id}
-        """
+        """GET /api/team/v0/topics/?course_id={course_id}"""
         course_id_string = request.QUERY_PARAMS.get('course_id', None)
         if course_id_string is None:
             return Response({
@@ -474,9 +465,7 @@ class TopicDetailView(APIView):
     permission_classes = (permissions.IsAuthenticated,)
 
     def get(self, request, topic_id, course_id):
-        """
-        GET /api/team/v0/topics/{topic_id},{course_id}/
-        """
+        """GET /api/team/v0/topics/{topic_id},{course_id}/"""
         try:
             course_id = CourseKey.from_string(course_id)
         except InvalidKeyError:

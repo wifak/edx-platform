@@ -47,7 +47,7 @@ class TeamsListView(GenericAPIView):
             The following options can be specified as query parameters:
 
             * course_id: Filters the result to teams belonging to the given
-              course.
+              course. Required.
 
             * topic_id: Filters the result to teams associated with the given
               topic.
@@ -114,7 +114,8 @@ class TeamsListView(GenericAPIView):
             stored exactly as specified. The intention is that plain text is
             supported, not HTML.
 
-            If the user is not logged in, a 403 error is returned.
+            If the user is not logged in and enrolled in the course specified by
+            course_id or is not staff, a 403 error is returned.
 
             If the specified course_id is not valid or the user attempts to
             use an unsupported query parameter, a 400 error is returned.
@@ -130,7 +131,8 @@ class TeamsListView(GenericAPIView):
             but does not include the id, is_active, date_created, or membership
             fields. id is automatically computed based on name.
 
-            If the user is not logged in a 403 error is returned.
+            If the user is not logged in or is not enrolled in the course, a
+            403 error is returned.
 
             If the course_id is not valid or extra fields are included in the
             request, a 400 error is returned.
@@ -163,6 +165,7 @@ class TeamsListView(GenericAPIView):
             course_id_string = request.QUERY_PARAMS['course_id']
             try:
                 course_key = CourseKey.from_string(course_id_string)
+                get_course(course_key)
                 result_filter.update({'course_id': course_key})
             except InvalidKeyError:
                 return Response({
@@ -173,6 +176,17 @@ class TeamsListView(GenericAPIView):
                         course_id=course_id_string
                     ),
                 }, status=status.HTTP_400_BAD_REQUEST)
+            except ValueError:
+                return Response(status=status.HTTP_404_NOT_FOUND)
+
+            if not CourseEnrollment.is_enrolled(request.user, course_key) and not request.user.is_staff:
+                return Response(status=status.HTTP_403_FORBIDDEN)
+        else:
+            return Response({
+                'developer_message': "course_id must be provided",
+                'user_message': _("course_id must be provided"),
+            }, status=status.HTTP_400_BAD_REQUEST)
+
         if 'topic_id' in request.QUERY_PARAMS:
             result_filter.update({'topic_id': request.QUERY_PARAMS['topic_id']})
         if 'include_inactive' in request.QUERY_PARAMS and request.QUERY_PARAMS['include_inactive'].lower() == 'true':
@@ -309,8 +323,15 @@ class TeamsDetailView(RetrievePatchAPIView):
             "field_errors" field of the returned JSON.
     """
 
+    class IsEnrolledOrIsStaff(permissions.BasePermission):
+        """Permission that checks to see if the user is enrolled in the course or is staff."""
+
+        def has_object_permission(self, request, view, obj):
+            """Returns true if the user is enrolled or is staff."""
+            return CourseEnrollment.is_enrolled(request.user, obj.course_id) or request.user.is_staff
+
     authentication_classes = (SessionAuthentication, OAuth2Authentication)
-    permission_classes = (permissions.IsAuthenticated, IsStaffOrReadOnly)
+    permission_classes = (permissions.IsAuthenticated, IsStaffOrReadOnly, IsEnrolledOrIsStaff,)
     lookup_field = 'team_id'
     serializer_class = CourseTeamSerializer
     parser_classes = (MergePatchParser,)

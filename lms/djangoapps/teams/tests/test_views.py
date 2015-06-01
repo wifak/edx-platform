@@ -55,9 +55,10 @@ class TeamAPITestCase(APITestCase, ModuleStoreTestCase):
             course_id=self.test_course_1.id,
             topic_id='renewable'
         )
-        self.test_team_2 = CourseTeamFactory.create(name='Wind Team', course_id=self.test_course_2.id)
+        self.test_team_2 = CourseTeamFactory.create(name='Wind Team', course_id=self.test_course_1.id)
         self.test_team_3 = CourseTeamFactory.create(name='Nuclear Team', course_id=self.test_course_1.id)
-        self.test_team_4 = CourseTeamFactory.create(name='Coal Team', course_id=self.test_course_2.id, is_active=False)
+        self.test_team_4 = CourseTeamFactory.create(name='Coal Team', course_id=self.test_course_1.id, is_active=False)
+        self.test_team_4 = CourseTeamFactory.create(name='Another Team', course_id=self.test_course_2.id)
 
         self.test_team_1.add_user(self.users['student_enrolled'])
 
@@ -101,6 +102,9 @@ class TeamAPITestCase(APITestCase, ModuleStoreTestCase):
 
     def get_teams_list(self, expected_status=200, data=None, **kwargs):
         """Gets the list of teams as the given user with data as query params. Verifies expected_status."""
+        data = data if data else {}
+        if 'course_id' not in data:
+            data.update({'course_id': self.test_course_1.id})
         return self.make_call(reverse('teams_list'), expected_status, 'get', data, **kwargs)
 
     def build_team_data(self, name="Test team", course=None, description="Filler description", **kwargs):
@@ -155,8 +159,9 @@ class TestListTeamsAPI(TeamAPITestCase):
     @ddt.data(
         (None, 403),
         ('student_inactive', 403),
+        ('student_unenrolled', 403),
+        ('student_enrolled', 200),
         ('staff', 200),
-        ('student_enrolled', 200)
     )
     @ddt.unpack
     def test_access(self, user, status):
@@ -164,9 +169,9 @@ class TestListTeamsAPI(TeamAPITestCase):
         if status == 200:
             self.assertEqual(3, teams['count'])
 
-    def verify_names(self, data, status, names=None):
+    def verify_names(self, data, status, names=None, **kwargs):
         """Gets a team listing with data as query params, verifies status, and then verifies team names if specified."""
-        teams = self.get_teams_list(data=data, expected_status=status)
+        teams = self.get_teams_list(data=data, expected_status=status, **kwargs)
         if names:
             self.assertEqual(names, [team['name'] for team in teams['results']])
 
@@ -174,7 +179,7 @@ class TestListTeamsAPI(TeamAPITestCase):
         self.verify_names({'course_id': 'foobar'}, 400)
 
     def test_filter_course_id(self):
-        self.verify_names({'course_id': self.test_course_2.id}, 200, ['Wind Team'])
+        self.verify_names({'course_id': self.test_course_2.id}, 200, ['Another Team'], user='staff')
 
     def test_filter_topic_id(self):
         self.verify_names({'course_id': self.test_course_1.id, 'topic_id': 'renewable'}, 200, [u'sólar team'])
@@ -297,6 +302,7 @@ class TestDetailTeamAPI(TeamAPITestCase):
     @ddt.data(
         (None, 403),
         ('student_inactive', 403),
+        ('student_unenrolled', 403),
         ('student_enrolled', 200),
         ('staff', 200),
     )

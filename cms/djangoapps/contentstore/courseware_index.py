@@ -11,7 +11,7 @@ from django.utils.translation import ugettext as _
 from django.core.urlresolvers import resolve
 
 from contentstore.utils import course_image_url
-from contentstore.course_group_config import GroupConfiguration, RANDOM_SCHEME
+from contentstore.course_group_config import GroupConfiguration
 from course_modes.models import CourseMode
 from eventtracking import tracker
 from search.search_engine_base import SearchEngine

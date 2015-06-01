@@ -10,7 +10,7 @@ Globals - contains global stack_book dictionary , also regular expression filter
 CallStackManager -  stores all stacks in global dictionary and logs
 
 How to use-
-1. Import following in the file where class to be track resides
+1. Import following in the file where class to be tracked resides
     from openedx.core.lib.call_stack_manager import CallStackManager
 2. Override objects of default manager by writing following in any model class which you want to track-
     objects = CallStackManager()

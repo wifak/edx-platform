@@ -45,9 +45,11 @@ define(['backbone', 'jquery', 'underscore', 'js/common_helpers/ajax_helpers', 'j
                 setBookmarkButtonView(false);
                 verifyBookmarkButtonState(false);
 
+                var $bookmarkButton = bookmarkButtonView.$('.bookmark-button');
                 spyOn(bookmarkButtonView, 'addBookmark').andCallThrough();
+                spyOnEvent($bookmarkButton, 'bookmark:add');
 
-                bookmarkButtonView.$('.bookmark-button').click();
+                $bookmarkButton.click();
 
                 var flag;
                 runs(function () {
@@ -64,6 +66,7 @@ define(['backbone', 'jquery', 'underscore', 'js/common_helpers/ajax_helpers', 'j
                     expect(bookmarkButtonView.addBookmark).toHaveBeenCalled();
                     AjaxHelpers.respondWithJson(requests, {});
                     verifyBookmarkButtonState(true);
+                    expect('bookmark:add').toHaveBeenTriggeredOn($bookmarkButton);
                 });
             });
 
@@ -72,9 +75,11 @@ define(['backbone', 'jquery', 'underscore', 'js/common_helpers/ajax_helpers', 'j
                 setBookmarkButtonView(true);
                 verifyBookmarkButtonState(true);
 
+                var $bookmarkButton = bookmarkButtonView.$('.bookmark-button');
                 spyOn(bookmarkButtonView, 'removeBookmark').andCallThrough();
+                spyOnEvent($bookmarkButton, 'bookmark:remove');
 
-                bookmarkButtonView.$('.bookmark-button').click();
+                $bookmarkButton.click();
 
                 var flag;
                 runs(function() {
@@ -91,6 +96,7 @@ define(['backbone', 'jquery', 'underscore', 'js/common_helpers/ajax_helpers', 'j
                     expect(bookmarkButtonView.removeBookmark).toHaveBeenCalled();
                     AjaxHelpers.respondWithJson(requests, {});
                     verifyBookmarkButtonState(false);
+                    expect('bookmark:remove').toHaveBeenTriggeredOn($bookmarkButton);
                 });
             });
 

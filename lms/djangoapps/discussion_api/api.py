@@ -1,10 +1,12 @@
 """
 Discussion API internal interface
 """
+from collections import defaultdict
+
 from django.core.exceptions import ValidationError
 from django.http import Http404
 
-from collections import defaultdict
+from rest_framework.exceptions import PermissionDenied
 
 from opaque_keys import InvalidKeyError
 from opaque_keys.edx.locator import CourseLocator
@@ -37,6 +39,33 @@ def _get_course_or_404(course_key, user):
     if not any([isinstance(tab, DiscussionTab) for tab in course.tabs]):
         raise Http404
     return course
+
+
+def _get_thread_and_context(thread_id, request, parent_id=None, retrieve_kwargs=None):
+    """
+    Retrieve the given thread and build a serializer context for it, returning
+    both. This function also enforces access control for the thread (checking
+    both the user's access to the course and to the thread's cohort if
+    applicable). Raises Http404 if the thread does not exist or the user cannot
+    access it.
+    """
+    retrieve_kwargs = retrieve_kwargs or {}
+    try:
+        if "mark_as_read" not in retrieve_kwargs:
+            retrieve_kwargs["mark_as_read"] = False
+        cc_thread = Thread(id=thread_id).retrieve(**retrieve_kwargs)
+        course_key = CourseLocator.from_string(cc_thread["course_id"])
+        course = _get_course_or_404(course_key, request.user)
+        context = get_context(course, request, cc_thread, parent_id)
+        if not context["is_requester_privileged"] and cc_thread["group_id"]:
+            requester_cohort = get_cohort_id(request.user, course.id)
+            if requester_cohort is not None and cc_thread["group_id"] != requester_cohort:
+                raise Http404
+        return cc_thread, context
+    except CommentClientRequestError:
+        # params are validated at a higher level, so the only possible request
+        # error is if the thread doesn't exist
+        raise Http404
 
 
 def get_course_topics(course_key, user):
@@ -163,28 +192,17 @@ def get_comment_list(request, thread_id, endorsed, page, page_size):
         discussion_api.views.CommentViewSet for more detail.
     """
     response_skip = page_size * (page - 1)
-    try:
-        cc_thread = Thread(id=thread_id).retrieve(
-            recursive=True,
-            user_id=request.user.id,
-            mark_as_read=True,
-            response_skip=response_skip,
-            response_limit=page_size
-        )
-    except CommentClientRequestError:
-        # page and page_size are validated at a higher level, so the only
-        # possible request error is if the thread doesn't exist
-        raise Http404
-
-    course_key = CourseLocator.from_string(cc_thread["course_id"])
-    course = _get_course_or_404(course_key, request.user)
-    context = get_context(course, request, cc_thread)
-
-    # Ensure user has access to the thread
-    if not context["is_requester_privileged"] and cc_thread["group_id"]:
-        requester_cohort = get_cohort_id(request.user, course_key)
-        if requester_cohort is not None and cc_thread["group_id"] != requester_cohort:
-            raise Http404
+    cc_thread, context = _get_thread_and_context(
+        thread_id,
+        request,
+        retrieve_kwargs={
+            "recursive": True,
+            "user_id": request.user.id,
+            "mark_as_read": True,
+            "response_skip": response_skip,
+            "response_limit": page_size,
+        }
+    )
 
     # Responses to discussion threads cannot be separated by endorsed, but
     # responses to question threads must be separated by endorsed due to the
@@ -286,29 +304,55 @@ def create_comment(request, comment_data):
         detail.
     """
     thread_id = comment_data.get("thread_id")
+    parent_id = comment_data.get("parent_id")
     if not thread_id:
         raise ValidationError({"thread_id": ["This field is required."]})
     try:
-        thread = Thread(id=thread_id).retrieve(mark_as_read=False)
-        course_key = CourseLocator.from_string(thread["course_id"])
-        course = _get_course_or_404(course_key, request.user)
-    except (Http404, CommentClientRequestError):
+        cc_thread, context = _get_thread_and_context(thread_id, request, parent_id)
+    except Http404:
         raise ValidationError({"thread_id": ["Invalid value."]})
 
-    parent_id = comment_data.get("parent_id")
-    context = get_context(course, request, thread, parent_id)
     serializer = CommentSerializer(data=comment_data, context=context)
     if not serializer.is_valid():
         raise ValidationError(serializer.errors)
     serializer.save()
 
-    comment = serializer.object
+    cc_comment = serializer.object
     track_forum_event(
         request,
-        get_comment_created_event_name(comment),
-        course,
-        comment,
-        get_comment_created_event_data(comment, thread["commentable_id"], followed=False)
+        get_comment_created_event_name(cc_comment),
+        context["course"],
+        cc_comment,
+        get_comment_created_event_data(cc_comment, cc_thread["commentable_id"], followed=False)
     )
 
+    return serializer.data
+
+
+def update_thread(request, thread_id, update_data):
+    """
+    Update a thread.
+
+    Parameters:
+
+        request: The django request object used for build_absolute_uri and
+          determining the requesting user.
+
+        thread_id: The id for the thread to update.
+
+        update_data: The data to update in the thread.
+
+    Returns:
+
+        The updated thread; see discussion_api.views.ThreadViewSet for more
+        detail.
+    """
+    cc_thread, context = _get_thread_and_context(thread_id, request)
+    is_author = str(request.user.id) == cc_thread["user_id"]
+    if not (context["is_requester_privileged"] or is_author):
+        raise PermissionDenied()
+    serializer = ThreadSerializer(cc_thread, data=update_data, partial=True, context=context)
+    if not serializer.is_valid():
+        raise ValidationError(serializer.errors)
+    serializer.save()
     return serializer.data

@@ -33,88 +33,71 @@ where frame is a tuple of
 import logging
 import traceback
 import re
-import threading
+import collections
 
 from django.db.models import Manager
+from django.db import models
 
 
 log = logging.getLogger(__name__)
 
 
-class Globals(threading.local):
-    """
-    stores necessary global data structures for Call Stacks and runs a method necessary for
-    """
-    # dictionary which stores call stacks.
-    # { "ModelClasses" : [ListOfFrames]}
-    # Frames - ('FilePath','LineNumber','Context')
-    # ex. {"<class 'courseware.models.StudentModule'>" : [[(file,line number,context),(---,---,---)],
-    #                                                     [(file,line number,context),(---,---,---)]]}
-    stack_book = {}
 
-    # filter to trickle down call stacks.
-    exclude = ['^.*python2.7.*$', '^.*call_stack_manager.*$']
-    regular_expressions = [re.compile(x) for x in exclude]
+# Module Level variables
+# dictionary which stores call stacks.
+# { "ModelClasses" : [ListOfFrames]}
+# Frames - ('FilePath','LineNumber','Context')
+# ex. {"<class 'courseware.models.StudentModule'>" : [[(file,line number,context),(---,---,---)],
+#                                                     [(file,line number,context),(---,---,---)]]}
+stack_book = {}
+stack_book = collections.defaultdict(list)
 
-# Instantiate Globals Class.
-GLOBAL_DICT = Globals()
+# filter to trickle down call stacks.
+exclude = ['^.*python2.7.*$', '^.*call_stack_manager.*$']
+regular_expressions = [re.compile(x) for x in exclude]
 
 
-class CallStackManager(Manager):
+class CallStackManager(Manager, models.Model):
     """
     gets call stacks of model classes
     """
-    def __init__(self):
-        super(CallStackManager, self).__init__()
-
-    def get_call_stack(self):
+    def capture_call_stack(self):
         """
         stores customised call stacks in global dictionary `stack_book`, and logs it.
         """
         # get name of current model class
         current_model = str(self.model)
-        current_model = current_model[current_model.find('\'') + 1: current_model.rfind('\'')]
 
         # holds temporary callstack
-        temp_call_stack = []
-
-        for line in traceback.format_stack():
-            line = line.replace("\n", "")
-            temp_call_stack.append(line.split(',')[0].strip() + "+" + line.split(',')[1].strip() + "+" +
-                                   line.split(',')[2].strip())
-
-        filtered_call_stack = [frame for frame in temp_call_stack
-                               if not len([reg for reg in GLOBAL_DICT.regular_expressions if reg.match(frame)])]
-        call_stack = [(x[0][6:-1], x[1][6:], x[2][3:]) for x in [tuple(x.split("+")) for x in filtered_call_stack]]
+        temp_call_stack = [(line.split(',')[0].strip().replace("\n", "")[6:-1],
+                            line.split(',')[1].strip().replace("\n", "")[6:],
+                            line.split(',')[2].strip().replace("\n", "")[3:])
+                           for line in traceback.format_stack()
+                           if not any(reg.match(line.replace("\n", "")) for reg in regular_expressions)]
 
         # avoid duplication.
-        if current_model in GLOBAL_DICT.stack_book.keys():
-            if temp_call_stack not in GLOBAL_DICT.stack_book[current_model]:
-                GLOBAL_DICT.stack_book.setdefault(current_model, []).append(call_stack)
-                log.info("logging new call in global stack book")
-                log.info(GLOBAL_DICT.stack_book)
-        else:
-            GLOBAL_DICT.stack_book.setdefault(current_model, []).append(call_stack)
-            log.info("logging new model class in global stack book")
-            log.info(GLOBAL_DICT.stack_book)
+        if temp_call_stack not in stack_book[current_model]:
+            stack_book[current_model].append(temp_call_stack)
+            log.info("logging new call in global stack book")
+            log.info(stack_book)
 
     def get_query_set(self):
         """
         overriding the default queryset API methods
         """
-        self.get_call_stack()
+        self.capture_call_stack()
         return super(CallStackManager, self).get_query_set()
 
     def save(self, *args, **kwargs):
         """
         Logs before save and overrides respective model API save()
         """
-        self.get_call_stack()
+        self.capture_call_stack()
         return super(CallStackManager, self).save(*args, **kwargs)
 
     def delete(self, *args, **kwargs):
         """
         Logs before delete and overrides respective model API delete()
         """
-        self.get_call_stack()
+        self.capture_call_stack()
         return super(CallStackManager, self).save(*args, **kwargs)

@@ -20,7 +20,7 @@ LOGGER = get_task_logger(__name__)
 # pylint: disable=not-callable
 @task(default_retry_delay=settings.CREDIT_TASK_DEFAULT_RETRY_DELAY, max_retries=settings.CREDIT_TASK_MAX_RETRIES)
 def update_course_requirements(course_id):
-    """ Updates course requirements table for a course.
+    """Updates course requirements table for a course.
 
      Args:
         course_id(str): A string representation of course identifier
@@ -36,7 +36,8 @@ def update_course_requirements(course_id):
             requirements = [
                 {
                     "namespace": "grade",
-                    "name": "grade",
+                    "name": "Grade",
+                    "location": "grade",
                     "criteria": {
                         "min_grade": get_min_grade_for_credit(course)
                     }

@@ -6,7 +6,7 @@ from openedx.core.djangoapps.credit.exceptions import InvalidCreditCourse
 
 
 def set_credit_requirements(course_key, requirements):
-    """ Add requirements to given course
+    """Add requirements to given course.
 
     Args:
         course_key(CourseKey): The identifier for course
@@ -17,23 +17,21 @@ def set_credit_requirements(course_key, requirements):
                 "course-v1-edX-DemoX-1T2015",
                 [
                     {
-                        "namespace": "verification",
-                        "name": "verification",
-                        "criteria": {},
-                    },
-                    {
                         "namespace": "reverification",
-                        "name": "midterm",
+                        "name": "Assessment 1",
+                        "location": "i4x://edX/DemoX/edx-reverification-block/assessment_uuid"
                         "criteria": {},
                     },
                     {
                         "namespace": "proctored_exam",
-                        "name": "final",
+                        "name": "Final Exam",
+                        "location": "i4x://edX/DemoX/proctoring-block/final_uuid"
                         "criteria": {},
                     },
                     {
                         "namespace": "grade",
-                        "name": "grade",
+                        "name": "Grade",
+                        "location": "grade"
                         "criteria": {"min_grade": 0.8},
                     },
                 ])
@@ -65,7 +63,7 @@ def set_credit_requirements(course_key, requirements):
 
 
 def get_credit_requirements(course_key, namespace=None):
-    """ Returns the requirements of a given course and namespace
+    """Get credit eligibility requirements of a given course and namespace.
 
     Args:
         course_key(CourseKey): The identifier for course
@@ -77,23 +75,21 @@ def get_credit_requirements(course_key, namespace=None):
                     requirements =
                     [
                         {
-                            "namespace": "verification",
-                            "name": "verification",
-                            "criteria": {},
-                        },
-                        {
                             "namespace": "reverification",
-                            "name": "midterm",
+                            "name": "Assessment 1",
+                            "location": "i4x://edX/DemoX/edx-reverification-block/assessment_uuid"
                             "criteria": {},
                         },
                         {
                             "namespace": "proctored_exam",
-                            "name": "final",
+                            "name": "Final Exam",
+                            "location": "i4x://edX/DemoX/proctoring-block/final_uuid"
                             "criteria": {},
                         },
                         {
                             "namespace": "grade",
-                            "name": "grade",
+                            "name": "Grade",
+                            "location": "grade"
                             "criteria": {"min_grade": 0.8},
                         },
                     ]
@@ -108,6 +104,7 @@ def get_credit_requirements(course_key, namespace=None):
         {
             "namespace": requirement.namespace,
             "name": requirement.name,
+            "location": requirement.location,
             "criteria": requirement.criteria
         }
         for requirement in requirements
@@ -115,7 +112,8 @@ def get_credit_requirements(course_key, namespace=None):
 
 
 def _get_requirements_to_disable(old_requirements, new_requirements):
-    """ Returns the ids of CreditRequirement to be disabled that are deleted from the courseware
+    """Get the ids of 'CreditRequirement' entries to be disabled that are
+    deleted from the courseware.
 
     Args:
         old_requirements(QuerySet): QuerySet of CreditRequirement
@@ -128,7 +126,8 @@ def _get_requirements_to_disable(old_requirements, new_requirements):
     for old_req in old_requirements:
         found_flag = False
         for req in new_requirements:
-            if req["namespace"] == old_req.namespace and req["name"] == old_req.name:
+            # check if an already added requirement is modified
+            if req["namespace"] == old_req.namespace and req["location"] == old_req.location:
                 found_flag = True
                 break
         if not found_flag:
@@ -137,7 +136,7 @@ def _get_requirements_to_disable(old_requirements, new_requirements):
 
 
 def _validate_requirements(requirements):
-    """ Validate the requirements
+    """Validate the requirements.
 
     Args:
         requirements(list): List of requirements
@@ -152,6 +151,8 @@ def _validate_requirements(requirements):
             invalid_params.append("namespace")
         if not requirement.get("name"):
             invalid_params.append("name")
+        if not requirement.get("location"):
+            invalid_params.append("location")
         if "criteria" not in requirement:
             invalid_params.append("criteria")
 

@@ -42,9 +42,7 @@ class TeamsListView(GenericAPIView):
 
             POST /api/team/v0/teams
 
-        **Response Values for GET**
-
-            The following options can be specified as query parameters:
+        **Query Parameters for GET**
 
             * course_id: Filters the result to teams belonging to the given
               course. Required.
@@ -69,7 +67,9 @@ class TeamsListView(GenericAPIView):
             * include_inactive: If true, inactive teams will be returned. The
               default is to not include inactive teams.
 
-            If the user is logged in, the response contains:
+        **Response Values for GET**
+
+            If the user is logged in and enrolled, the response contains:
 
             * count: The total number of teams matching the request.
 

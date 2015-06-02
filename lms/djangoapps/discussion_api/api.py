@@ -86,7 +86,7 @@ def get_course_topics(request, course_key):
             "thread_list_url": get_thread_list_url(
                 request,
                 course_key,
-                [item.discussion_id for item in modules_by_category[category]]
+                [item.discussion_id for item in sorted(modules_by_category[category], key=get_module_sort_key)]
             ),
             "children": [
                 {

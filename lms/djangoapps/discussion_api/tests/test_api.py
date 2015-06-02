@@ -115,10 +115,11 @@ class GetCourseTopicsTest(UrlResetMixin, ModuleStoreTestCase):
         """
         return get_course_topics(self.request, self.course.id)
 
-    def make_expected_tree(self, topic_id_list, name, children=None):
+    def make_expected_tree(self, topic_id, name, children=None):
         """
         Build an expected result tree given a topic id, display name, children
         """
+        topic_id_list = [topic_id] if topic_id else [child["id"] for child in children]
         children = children or []
         node = {
             "name": name,
@@ -152,7 +153,7 @@ class GetCourseTopicsTest(UrlResetMixin, ModuleStoreTestCase):
         expected = {
             "courseware_topics": [],
             "non_courseware_topics": [
-                self.make_expected_tree(["non-courseware-topic-id"], "Test Topic")
+                self.make_expected_tree("non-courseware-topic-id", "Test Topic")
             ],
         }
         self.assertEqual(actual, expected)
@@ -163,13 +164,13 @@ class GetCourseTopicsTest(UrlResetMixin, ModuleStoreTestCase):
         expected = {
             "courseware_topics": [
                 self.make_expected_tree(
-                    ["courseware-topic-id"],
+                    "courseware-topic-id",
                     "Foo",
-                    [self.make_expected_tree(["courseware-topic-id"], "Bar")]
+                    [self.make_expected_tree("courseware-topic-id", "Bar")]
                 ),
             ],
             "non_courseware_topics": [
-                self.make_expected_tree(["non-courseware-topic-id"], "Test Topic")
+                self.make_expected_tree("non-courseware-topic-id", "Test Topic")
             ],
         }
         self.assertEqual(actual, expected)
@@ -189,30 +190,30 @@ class GetCourseTopicsTest(UrlResetMixin, ModuleStoreTestCase):
         expected = {
             "courseware_topics": [
                 self.make_expected_tree(
-                    ["courseware-1", "courseware-2"],
+                    None,
                     "A",
                     [
-                        self.make_expected_tree(["courseware-1"], "1"),
-                        self.make_expected_tree(["courseware-2"], "2"),
+                        self.make_expected_tree("courseware-1", "1"),
+                        self.make_expected_tree("courseware-2", "2"),
                     ]
                 ),
                 self.make_expected_tree(
-                    ["courseware-3", "courseware-4"],
+                    None,
                     "B",
                     [
-                        self.make_expected_tree(["courseware-3"], "1"),
-                        self.make_expected_tree(["courseware-4"], "2"),
+                        self.make_expected_tree("courseware-3", "1"),
+                        self.make_expected_tree("courseware-4", "2"),
                     ]
                 ),
                 self.make_expected_tree(
-                    ["courseware-5"],
+                    None,
                     "C",
-                    [self.make_expected_tree(["courseware-5"], "1")]
+                    [self.make_expected_tree("courseware-5", "1")]
                 ),
             ],
             "non_courseware_topics": [
-                self.make_expected_tree(["non-courseware-1"], "A"),
-                self.make_expected_tree(["non-courseware-2"], "B"),
+                self.make_expected_tree("non-courseware-1", "A"),
+                self.make_expected_tree("non-courseware-2", "B"),
             ],
         }
         self.assertEqual(actual, expected)
@@ -236,30 +237,30 @@ class GetCourseTopicsTest(UrlResetMixin, ModuleStoreTestCase):
         expected = {
             "courseware_topics": [
                 self.make_expected_tree(
-                    ["courseware-1", "courseware-2", "courseware-3"],
+                    None,
                     "First",
                     [
-                        self.make_expected_tree(["courseware-2"], "B"),
-                        self.make_expected_tree(["courseware-1"], "A"),
-                        self.make_expected_tree(["courseware-3"], "C"),
+                        self.make_expected_tree("courseware-2", "B"),
+                        self.make_expected_tree("courseware-1", "A"),
+                        self.make_expected_tree("courseware-3", "C"),
                     ]
                 ),
                 self.make_expected_tree(
-                    ["courseware-4", "courseware-5", "courseware-6", "courseware-7"],
+                    None,
                     "Second",
                     [
-                        self.make_expected_tree(["courseware-7"], "D"),
-                        self.make_expected_tree(["courseware-6"], "C"),
-                        self.make_expected_tree(["courseware-4"], "A"),
-                        self.make_expected_tree(["courseware-5"], "B"),
+                        self.make_expected_tree("courseware-7", "D"),
+                        self.make_expected_tree("courseware-6", "C"),
+                        self.make_expected_tree("courseware-4", "A"),
+                        self.make_expected_tree("courseware-5", "B"),
                     ]
                 ),
             ],
             "non_courseware_topics": [
-                self.make_expected_tree(["non-courseware-4"], "Z"),
-                self.make_expected_tree(["non-courseware-2"], "X"),
-                self.make_expected_tree(["non-courseware-3"], "Y"),
-                self.make_expected_tree(["non-courseware-1"], "W"),
+                self.make_expected_tree("non-courseware-4", "Z"),
+                self.make_expected_tree("non-courseware-2", "X"),
+                self.make_expected_tree("non-courseware-3", "Y"),
+                self.make_expected_tree("non-courseware-1", "W"),
             ],
         }
         self.assertEqual(actual, expected)
@@ -316,16 +317,16 @@ class GetCourseTopicsTest(UrlResetMixin, ModuleStoreTestCase):
         student_expected = {
             "courseware_topics": [
                 self.make_expected_tree(
-                    ["courseware-1", "courseware-2"],
+                    None,
                     "First",
                     [
-                        self.make_expected_tree(["courseware-2"], "Cohort A"),
-                        self.make_expected_tree(["courseware-1"], "Everybody"),
+                        self.make_expected_tree("courseware-2", "Cohort A"),
+                        self.make_expected_tree("courseware-1", "Everybody"),
                     ]
                 ),
             ],
             "non_courseware_topics": [
-                self.make_expected_tree(["non-courseware-topic-id"], "Test Topic"),
+                self.make_expected_tree("non-courseware-topic-id", "Test Topic"),
             ],
         }
         self.assertEqual(student_actual, student_expected)
@@ -334,21 +335,21 @@ class GetCourseTopicsTest(UrlResetMixin, ModuleStoreTestCase):
         beta_expected = {
             "courseware_topics": [
                 self.make_expected_tree(
-                    ["courseware-1", "courseware-3"],
+                    None,
                     "First",
                     [
-                        self.make_expected_tree(["courseware-3"], "Cohort B"),
-                        self.make_expected_tree(["courseware-1"], "Everybody"),
+                        self.make_expected_tree("courseware-3", "Cohort B"),
+                        self.make_expected_tree("courseware-1", "Everybody"),
                     ]
                 ),
                 self.make_expected_tree(
-                    ["courseware-5"],
+                    None,
                     "Second",
-                    [self.make_expected_tree(["courseware-5"], "Future Start Date")]
+                    [self.make_expected_tree("courseware-5", "Future Start Date")]
                 ),
             ],
             "non_courseware_topics": [
-                self.make_expected_tree(["non-courseware-topic-id"], "Test Topic"),
+                self.make_expected_tree("non-courseware-topic-id", "Test Topic"),
             ],
         }
         self.assertEqual(beta_actual, beta_expected)
@@ -358,25 +359,25 @@ class GetCourseTopicsTest(UrlResetMixin, ModuleStoreTestCase):
         staff_expected = {
             "courseware_topics": [
                 self.make_expected_tree(
-                    ["courseware-1", "courseware-2", "courseware-3"],
+                    None,
                     "First",
                     [
-                        self.make_expected_tree(["courseware-2"], "Cohort A"),
-                        self.make_expected_tree(["courseware-3"], "Cohort B"),
-                        self.make_expected_tree(["courseware-1"], "Everybody"),
+                        self.make_expected_tree("courseware-2", "Cohort A"),
+                        self.make_expected_tree("courseware-3", "Cohort B"),
+                        self.make_expected_tree("courseware-1", "Everybody"),
                     ]
                 ),
                 self.make_expected_tree(
-                    ["courseware-4", "courseware-5"],
+                    None,
                     "Second",
                     [
-                        self.make_expected_tree(["courseware-5"], "Future Start Date"),
-                        self.make_expected_tree(["courseware-4"], "Staff Only"),
+                        self.make_expected_tree("courseware-5", "Future Start Date"),
+                        self.make_expected_tree("courseware-4", "Staff Only"),
                     ]
                 ),
             ],
             "non_courseware_topics": [
-                self.make_expected_tree(["non-courseware-topic-id"], "Test Topic"),
+                self.make_expected_tree("non-courseware-topic-id", "Test Topic"),
             ],
         }
         self.assertEqual(staff_actual, staff_expected)

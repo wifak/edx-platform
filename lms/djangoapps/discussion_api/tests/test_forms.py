@@ -3,6 +3,8 @@ Tests for Discussion API forms
 """
 from unittest import TestCase
 
+from django.http import QueryDict
+
 from opaque_keys.edx.locator import CourseLocator
 
 from discussion_api.forms import CommentListGetForm, ThreadListGetForm
@@ -82,6 +84,19 @@ class ThreadListGetFormTest(FormTestMixin, PaginationTestMixin, TestCase):
                 "page": 2,
                 "page_size": 13,
                 "topic_id": ["example topic_id"],
+            }
+        )
+
+    def test_multiple_topic_ids(self):
+        self.form_data["topic_id"].append("2nd example topic_id")
+        form = self.get_form(expected_valid=True)
+        self.assertEqual(
+            form.cleaned_data,
+            {
+                "course_id": CourseLocator.from_string("Foo/Bar/Baz"),
+                "page": 2,
+                "page_size": 13,
+                "topic_id": ["example topic_id", "2nd example topic_id"],
             }
         )
 

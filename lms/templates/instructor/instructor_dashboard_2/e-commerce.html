@@ -631,8 +631,11 @@
    });
    var reset_input_fields = function () {
      $('#error-msg').val('');
-     $('#error-msg').hide()
+     $('#error-msg').hide();
      $('#add_coupon_form #coupon_form_error').attr('style', 'display: none');
+     $("form#set_regcode_status_form").next().remove();
+     $('#set_regcode_status_form #regcode_status_form_error').attr('style', 'display: none');
+     $('#set_regcode_status_form #regcode_status_form_success').attr('style', 'display: none');
      $('#set_price_form #course_form_error').attr('style', 'display: none');
      $('#generate_codes #registration_code_form_error').attr('style', 'display: none');
      $('#add_coupon_form #coupon_form_error').text();
@@ -641,6 +644,7 @@
      $('input#coupon_discount').val('');
      $('textarea#coupon_description').val('');
      $('input[name="company_name"]').val('');
+     $('input[name="regcode_code"]').val('');
      $('input[name="total_registration_codes"]').val('');
      $('input[name="address_line_1"]').val('');
      $('input[name="address_line_2"]').val('');

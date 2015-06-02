@@ -22,6 +22,7 @@
       </div>
       <form id="set_regcode_status_form">
         <div id="regcode_status_form_error" class="modal-form-error"></div>
+        <div class="success-msgs" id="regcode_status_form_success"></div>
         <fieldset class="group group-form group-form-requiredinformation">
           <legend class="is-hidden">${_("Required Information")}</legend>
 
@@ -33,24 +34,8 @@
           </ol>
         </fieldset>
         <div class="submit">
-          <input name="submit" type="button" id="lookup_regcode" value="${_('Lookup Registration Code')}"/>
+          <input name="submit" type="button" id="lookup_regcode" data-endpoint="${section_data['look_up_registration_code']}" value="${_('Lookup Registration Code')}"/>
         </div>
-        <table style="width: 100%; color: #555;">
-          <thead>
-            <th>Code</th>
-            <th>Redeemed</th>
-            <th>Value</th>
-            <th>Actions</th>
-          </thead>
-          <tbody>
-            <tr>
-              <td>8797y7</td>
-              <td>T/F</td>
-              <td>T/F</td>
-              <td><a href="#">Mark as Valid/invalid</a><a href="#">Mark as Unredeemed</a></td>
-            </tr>
-          </tbody>
-        </table>
       </form>
     </div>
   </div>

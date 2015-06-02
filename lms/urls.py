@@ -359,6 +359,10 @@ if settings.COURSEWARE_ENABLED:
             'instructor.views.coupons.update_coupon', name="update_coupon"),
         url(r'^courses/{}/get_coupon_info$'.format(settings.COURSE_ID_PATTERN),
             'instructor.views.coupons.get_coupon_info', name="get_coupon_info"),
+        url(r'^courses/{}/look_up_registration_code$'.format(settings.COURSE_ID_PATTERN),
+            'instructor.views.registration_codes.look_up_registration_code', name="look_up_registration_code"),
+        url(r'^courses/{}/registration_code_details$'.format(settings.COURSE_ID_PATTERN),
+            'instructor.views.registration_codes.registration_code_details', name="registration_code_details"),
 
         # see ENABLE_INSTRUCTOR_LEGACY_DASHBOARD section for legacy dash urls
 

@@ -266,7 +266,7 @@ class BookmarksTest(BookmarksTestMixin):
         self.assertTrue(self.bookmarks_page.results_present())
         self.assertEqual(self.bookmarks_page.count(), 2)
 
-        self.bookmarks_page.click_bookmarked_unit(0)
+        self.bookmarks_page.click_bookmarked_unit(1)
         self.assertTrue(is_404_page(self.browser))
 
     def test_page_size_limit(self):

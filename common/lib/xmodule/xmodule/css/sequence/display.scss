@@ -118,6 +118,10 @@ $link-color: rgb(26, 161, 222);
           -webkit-font-smoothing: antialiased; // Clear up the lines on the icons
         }
 
+        i.fa-bookmark {
+          color: $link-color;
+        }
+
         &.inactive {
 
           .icon {
@@ -131,10 +135,6 @@ $link-color: rgb(26, 161, 222);
 
           .icon {
             color: rgb(10, 10, 10);
-          }
-
-          i.fa-bookmark {
-            color: $link-color;
           }
 
           &:hover, &:focus {

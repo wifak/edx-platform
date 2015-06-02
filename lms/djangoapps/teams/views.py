@@ -351,9 +351,7 @@ class TopicListView(GenericAPIView):
 
             GET /api/team/v0/topics/?course_id={course_id}
 
-        **Response Values for GET**
-
-            The following options can be specified as query parameters:
+        **Query Parameters for GET**
 
             * course_id: Filters the result to topics belonging to the given
               course (required).
@@ -364,6 +362,8 @@ class TopicListView(GenericAPIView):
             * page_size: Number of results to return per page.
 
             * page: Page number to retrieve.
+
+        **Response Values for GET**
 
             If the course_id is not given or an unsupported value is passed for
             order_by, returns a 400 error.
@@ -455,14 +455,14 @@ class TopicDetailView(APIView):
 
             GET /api/team/v0/topics/{topic_id},{course_id}
 
-        **Response Values for GET**
-
-            The following options can be specified as query parameters:
+        **Query Parameters for GET**
 
             * topic_id: The ID of the topic to retrieve (required).
 
             * course_id: The ID of the course to retrieve the topic from
               (required).
+
+        **Response Values for GET**
 
             If the topic_id course_id are not given or an unsupported value is
             passed for order_by, returns a 400 error.

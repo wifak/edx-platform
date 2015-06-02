@@ -59,14 +59,14 @@ log = logging.getLogger(__name__)
 AUDIT_LOG = logging.getLogger("audit")
 SessionStore = import_module(settings.SESSION_ENGINE).SessionStore  # pylint: disable=invalid-name
 
-UNENROLLED_TO_ALLOWEDTOENROLL = _('from unenrolled to allowed to enroll')
-ALLOWEDTOENROLL_TO_ENROLLED = _('from allowed to enroll to enrolled')
-ENROLLED_TO_ENROLLED = _('from enrolled to enrolled')
-ENROLLED_TO_UNENROLLED = _('from enrolled to unenrolled')
-UNENROLLED_TO_ENROLLED = _('from unenrolled to enrolled')
-ALLOWEDTOENROLL_TO_UNENROLLED = _('from allowed to enroll to enrolled')
-UNENROLLED_TO_UNENROLLED = _('from unenrolled to unenrolled')
-DEFAULT_TRANSITION_STATE = _('N/A')
+UNENROLLED_TO_ALLOWEDTOENROLL = 'from unenrolled to allowed to enroll'
+ALLOWEDTOENROLL_TO_ENROLLED = 'from allowed to enroll to enrolled'
+ENROLLED_TO_ENROLLED = 'from enrolled to enrolled'
+ENROLLED_TO_UNENROLLED = 'from enrolled to unenrolled'
+UNENROLLED_TO_ENROLLED = 'from unenrolled to enrolled'
+ALLOWEDTOENROLL_TO_UNENROLLED = 'from allowed to enroll to enrolled'
+UNENROLLED_TO_UNENROLLED = 'from unenrolled to unenrolled'
+DEFAULT_TRANSITION_STATE = 'N/A'
 
 TRANSITION_STATES = (
     (UNENROLLED_TO_ALLOWEDTOENROLL, UNENROLLED_TO_ALLOWEDTOENROLL),

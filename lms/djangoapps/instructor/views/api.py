@@ -420,7 +420,7 @@ def register_and_enroll_students(request, course_id):  # pylint: disable=too-man
                     # make sure user is enrolled in course
                     if not CourseEnrollment.is_enrolled(user, course_id):
                         enrollment_obj = CourseEnrollment.enroll(user, course_id)
-                        reason = 'Enrolling via csv upload'
+                        reason = _('Enrolling via csv upload')
                         ManualEnrollmentAudit.create_manual_enrollment_audit(
                             request.user, email, UNENROLLED_TO_ENROLLED, reason, enrollment_obj
                         )
@@ -438,7 +438,7 @@ def register_and_enroll_students(request, course_id):  # pylint: disable=too-man
 
                     try:
                         enrollment_obj = create_and_enroll_user(email, username, name, country, password, course_id)
-                        reason = 'Enrolling via csv upload'
+                        reason = _('Enrolling via csv upload')
                         ManualEnrollmentAudit.create_manual_enrollment_audit(
                             request.user, email, UNENROLLED_TO_ENROLLED, reason, enrollment_obj
                         )

@@ -79,6 +79,7 @@ class SplitTestCoursewareSearchTest(ContainerBase):
         Add a split test and a configuration to a test course fixture
         """
         # Create a new group configurations
+        # pylint: disable=W0212
         self.course_fixture._update_xblock(self.course_fixture._course_location, {
             "metadata": {
                 u"user_partitions": [

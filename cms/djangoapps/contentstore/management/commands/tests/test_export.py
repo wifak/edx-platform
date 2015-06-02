@@ -1,0 +1,68 @@
+"""
+Tests for exporting courseware to the desired path
+"""
+import unittest
+import shutil
+import ddt
+from django.core.management import CommandError
+from tempfile import mkdtemp
+
+from opaque_keys import InvalidKeyError
+from xmodule.modulestore.tests.factories import CourseFactory
+from contentstore.management.commands.export import Command
+from xmodule.modulestore import ModuleStoreEnum
+from xmodule.modulestore.tests.django_utils import ModuleStoreTestCase
+from xmodule.modulestore.django import modulestore
+
+
+class TestArgParsingCourseExport(unittest.TestCase):
+    """
+    Tests for parsing arguments for the `export` management command
+    """
+    def setUp(self):
+        super(TestArgParsingCourseExport, self).setUp()
+
+        self.command = Command()
+
+    def test_no_args(self):
+        errstring = "export requires two arguments: <course id> <output path>"
+        with self.assertRaisesRegexp(CommandError, errstring):
+            self.command.handle()
+
+
+@ddt.ddt
+class TestCourseExport(ModuleStoreTestCase):
+    """
+    Test exporting a course
+    """
+    def setUp(self):
+        super(TestCourseExport, self).setUp()
+
+        # Temp directories (temp_dir_1: relative path, temp_dir_2: absolute path)
+        self.temp_dir_1 = mkdtemp()
+        self.temp_dir_2 = mkdtemp(dir="")
+
+        self.command = Command()
+
+        # Clean temp directories
+        self.addCleanup(shutil.rmtree, self.temp_dir_1)
+        self.addCleanup(shutil.rmtree, self.temp_dir_2)
+
+    @ddt.data(ModuleStoreEnum.Type.mongo, ModuleStoreEnum.Type.split)
+    def test_export_course_with_directory_name(self, store):
+        """
+        Create a new course try exporting in a path specified
+        """
+        course = CourseFactory.create(default_store=store)
+        course_id = unicode(course.id)
+        self.assertTrue(
+            modulestore().has_course(course.id),
+            "Could not find course in {}".format(store)
+        )
+        # Test `export` management command with invalid course_id
+        with self.assertRaises(InvalidKeyError):
+            self.command.handle("InvalidCourseID", self.temp_dir_1)
+
+        # Test `export` management command with correct course_id
+        for output_dir in [self.temp_dir_1, self.temp_dir_2]:
+            self.command.handle(course_id, output_dir)

@@ -27,14 +27,15 @@ def look_up_registration_code(request, course_id):  # pylint: disable=unused-arg
     """
     course_key = SlashSeparatedCourseKey.from_deprecated_string(course_id)
     code = request.POST.get('registration_code')
+    course = get_course_by_id(course_key, depth=0)
     registration_code = CourseRegistrationCode.get_registration_code(code, course_key)
     if registration_code is None:
         return JsonResponse({
             'is_registration_code_exists': False,
             'is_registration_code_valid': False,
             'is_registration_code_redeemed': False,
-            'message': _('The registration code ({code}) was not found for the course id {{course_id}}.').format(
-                course_id=course_id, code=code
+            'message': _('The registration code ({code}) was not found for the {course_name} course.').format(
+                code=code, course_name=course.display_name
             )
         }, status=400)  # status code 200: OK by default
 
@@ -64,13 +65,13 @@ def registration_code_details(request, course_id):
     course_key = SlashSeparatedCourseKey.from_deprecated_string(course_id)
     code = request.POST.get('registration_code')
     action_type = request.POST.get('action_type')
+    course = get_course_by_id(course_key, depth=0)
     registration_code = CourseRegistrationCode.get_registration_code(code, course_key)
     if registration_code is None:
         return JsonResponse({
-            'message': _('The registration code ({code}) was not found for the course id {{course_id}}.').format(
-                course_id=course_id, code=code
-            ),
-        }, status=400)
+            'message': _('The registration code ({code}) was not found for the {course_name} course.').format(
+                code=code, course_name=course.display_name
+            )}, status=400)
     if action_type == 'invalidate_registration_code':
         registration_code.is_valid = False
         registration_code.save()

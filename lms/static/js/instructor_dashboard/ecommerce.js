@@ -123,19 +123,19 @@ var edx = edx || {};
                         }
 
                         for ( var i = 0; i < actions.length; i++ ) {
-                            actions_links += '<td><a class="registration_code_action_link" data-registration-code="'+
+                            actions_links += '<a class="registration_code_action_link" data-registration-code="'+
                             actions[i]["registration_code"] +'" data-action-type="'+ actions[i]["action_type"] +'"' +
                             ' href="#" data-endpoint="' + actions[i]["action_url"] +'">' +
-                            actions[i]["action_name"] + '</a></td>';
+                            actions[i]["action_name"] + '</a>';
                         }
-                        var registration_code_lookup_actions = $('<table style="width: 100%; color: #555;">' +
-                            '<thead> <th>' + gettext('Code') + '</th> <th>'+ gettext('Redeemed') + '</th>'+
-                            '<th>' + gettext('Valid') + '</th> <th>' + gettext('Actions') + '</th></thead><tbody><tr>'+
+                        var registration_code_lookup_actions = $('<table width="100%" class="tb_registration_code_status">' +
+                            '<thead> <th width="15%">' + gettext('Code') + '</th> <th width="20%">'+ gettext('Redeemed') + '</th>'+
+                            '<th width="14%">' + gettext('Valid') + '</th> <th>' + gettext('Actions') + '</th></thead><tbody><tr>'+
                             '<td>' + lookup_registration_code + '</td>' +
                             '<td>' + is_registration_code_redeemed +'</td>' +
-                            '<td>' + is_registration_code_valid + '</td>' +
+                            '<td>' + is_registration_code_valid + '</td><td>' +
                             actions_links +
-                            '</tr> </tbody> </table>'
+                            '</td></tr> </tbody> </table>'
                         );
                         // before insertAfter do this.
                         // remove the first element after the registration_code_status_form
@@ -169,6 +169,7 @@ var edx = edx || {};
                 },
                 url: url,
                 success: function (data) {
+                    $('#set_regcode_status_form input[name="regcode_code"]').val('');
                     registration_code_status_form.next().remove();
                     registration_code_status_form_error.attr('style', 'display: none');
                     registration_code_status_form_success.attr('style', 'display: none');

@@ -1690,6 +1690,25 @@ input[name="subject"] {
         margin-bottom: 0px !important;
       }
     }
+    table.tb_registration_code_status{
+      margin-top: $baseline;
+      color: #555;
+      thead {
+        font-size: 14px;
+        tr th:last-child {
+          text-align: center;
+        }
+      }
+      tbody {
+        font-size: 14px;
+        tr td:last-child {
+          text-align: center;
+          a:first-child{
+            margin-right: 10px;
+          }
+        }
+      }
+    }
     form#generate_codes ol.list-input{
       li{
         width: 278px;

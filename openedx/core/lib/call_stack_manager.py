@@ -42,7 +42,6 @@ from django.db import models
 log = logging.getLogger(__name__)
 
 
-
 # Module Level variables
 # dictionary which stores call stacks.
 # { "ModelClasses" : [ListOfFrames]}

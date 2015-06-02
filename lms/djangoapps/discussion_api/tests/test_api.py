@@ -3,7 +3,8 @@ Tests for Discussion API internal interface
 """
 from datetime import datetime, timedelta
 import itertools
-from urlparse import urlparse
+from urlparse import urlparse, urlunparse
+from urllib import urlencode
 
 import ddt
 import httpretty
@@ -11,6 +12,7 @@ import mock
 from pytz import UTC
 
 from django.core.exceptions import ValidationError
+from django.core.urlresolvers import reverse
 from django.http import Http404
 from django.test.client import RequestFactory
 
@@ -23,7 +25,6 @@ from discussion_api.api import (
     get_comment_list,
     get_course_topics,
     get_thread_list,
-    get_thread_list_url
 )
 from discussion_api.tests.utils import (
     CommentsServiceMockMixin,
@@ -99,6 +100,14 @@ class GetCourseTopicsTest(UrlResetMixin, ModuleStoreTestCase):
             **kwargs
         )
 
+    def get_thread_list_url(self, topic_id_list):
+        """
+        Returns the URL for the thread_list_url field, given a list of topic_ids
+        """
+        path = reverse("thread-list")
+        query_list = [("course_id", unicode(self.course.id))] + [("topic_id", topic_id) for topic_id in topic_id_list]
+        return self.request.build_absolute_uri(urlunparse(("", "", path, "", urlencode(query_list), "")))
+
     def get_course_topics(self):
         """
         Get course topics for self.course, using the given user or self.user if
@@ -115,7 +124,7 @@ class GetCourseTopicsTest(UrlResetMixin, ModuleStoreTestCase):
         node = {
             "name": name,
             "children": children,
-            "thread_list_url": get_thread_list_url(self.request, self.course.id, topic_id_list)
+            "thread_list_url": self.get_thread_list_url(topic_id_list)
         }
         if children:
             node["id"] = None
@@ -399,7 +408,7 @@ class GetThreadListTest(CommentsServiceMockMixin, UrlResetMixin, ModuleStoreTest
         get_thread_list and return the result.
         """
         course = course or self.course
-        self.register_get_threads_response(threads, page, num_pages, topic_id_list)
+        self.register_get_threads_response(threads, page, num_pages)
         ret = get_thread_list(self.request, course.id, page, page_size, topic_id_list)
         return ret
 
@@ -428,8 +437,8 @@ class GetThreadListTest(CommentsServiceMockMixin, UrlResetMixin, ModuleStoreTest
         )
 
     def test_get_threads_by_topic_id(self):
-        self.get_thread_list([], topic_id_list=["test_topic"])
-        self.assertEqual(urlparse(httpretty.last_request().path).path, "/api/v1/test_topic/threads")
+        self.get_thread_list([])
+        self.assertEqual(urlparse(httpretty.last_request().path).path, "/api/v1/threads")
 
     def test_basic_query_params(self):
         self.get_thread_list([], page=6, page_size=14)

@@ -9,13 +9,9 @@ import httpretty
 
 class CommentsServiceMockMixin(object):
     """Mixin with utility methods for mocking the comments service"""
-    def register_get_threads_response(self, threads, page, num_pages, topic_id_list=None):
+    def register_get_threads_response(self, threads, page, num_pages):
         """Register a mock response for GET on the CS thread list endpoint"""
-        if topic_id_list:
-            url = "http://localhost:4567/api/v1/{}/threads".format("/".join(topic_id_list))
-        else:
-            url = "http://localhost:4567/api/v1/threads"
-
+        url = "http://localhost:4567/api/v1/threads"
         httpretty.register_uri(
             httpretty.GET,
             url,

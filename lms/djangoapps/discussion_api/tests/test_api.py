@@ -1332,8 +1332,9 @@ class UpdateThreadTest(CommentsServiceMockMixin, UrlResetMixin, ModuleStoreTestC
 
     def register_thread(self, overrides=None):
         """
-        Make a thread with appropriate data overriden by the overrides parameter
-        and register mock responses for both GET and PUT on its endpoint.
+        Make a thread with appropriate data overridden by the overrides
+        parameter and register mock responses for both GET and PUT on its
+        endpoint.
         """
         cs_data = make_minimal_cs_thread({
             "id": "test_thread",

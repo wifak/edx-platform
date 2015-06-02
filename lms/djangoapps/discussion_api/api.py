@@ -41,7 +41,7 @@ def _get_course_or_404(course_key, user):
     return course
 
 
-def _get_thread_and_context(thread_id, request, parent_id=None, retrieve_kwargs=None):
+def _get_thread_and_context(request, thread_id, parent_id=None, retrieve_kwargs=None):
     """
     Retrieve the given thread and build a serializer context for it, returning
     both. This function also enforces access control for the thread (checking
@@ -193,8 +193,8 @@ def get_comment_list(request, thread_id, endorsed, page, page_size):
     """
     response_skip = page_size * (page - 1)
     cc_thread, context = _get_thread_and_context(
-        thread_id,
         request,
+        thread_id,
         retrieve_kwargs={
             "recursive": True,
             "user_id": request.user.id,
@@ -308,7 +308,7 @@ def create_comment(request, comment_data):
     if not thread_id:
         raise ValidationError({"thread_id": ["This field is required."]})
     try:
-        cc_thread, context = _get_thread_and_context(thread_id, request, parent_id)
+        cc_thread, context = _get_thread_and_context(request, thread_id, parent_id)
     except Http404:
         raise ValidationError({"thread_id": ["Invalid value."]})
 
@@ -347,7 +347,7 @@ def update_thread(request, thread_id, update_data):
         The updated thread; see discussion_api.views.ThreadViewSet for more
         detail.
     """
-    cc_thread, context = _get_thread_and_context(thread_id, request)
+    cc_thread, context = _get_thread_and_context(request, thread_id)
     is_author = str(request.user.id) == cc_thread["user_id"]
     if not (context["is_requester_privileged"] or is_author):
         raise PermissionDenied()

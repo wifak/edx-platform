@@ -504,17 +504,16 @@ class ThreadSerializerDeserializationTest(CommentsServiceMockMixin, UrlResetMixi
         for key in data:
             self.assertEqual(saved[key], data[key])
 
-    @ddt.data("topic_id", "title", "raw_body")
-    def test_update_empty_string(self, field):
+    def test_update_empty_string(self):
         serializer = ThreadSerializer(
             self.existing_thread,
-            data={field: ""},
+            data={field: "" for field in ["topic_id", "title", "raw_body"]},
             partial=True,
             context=get_context(self.course, self.request)
         )
         self.assertEqual(
             serializer.errors,
-            {field: ["This field is required."]}
+            {field: ["This field is required."] for field in ["topic_id", "title", "raw_body"]}
         )
 
     def test_update_course_id(self):

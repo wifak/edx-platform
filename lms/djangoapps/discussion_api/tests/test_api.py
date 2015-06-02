@@ -118,7 +118,6 @@ class GetCourseTopicsTest(UrlResetMixin, ModuleStoreTestCase):
     def make_expected_tree(self, topic_id_list, name, children=None):
         """
         Build an expected result tree given a topic id, display name, children
-        and thread_list_url
         """
         children = children or []
         node = {

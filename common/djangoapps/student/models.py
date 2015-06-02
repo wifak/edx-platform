@@ -38,6 +38,8 @@ from track import contexts
 from eventtracking import tracker
 from importlib import import_module
 
+from south.modelsinspector import add_introspection_rules
+
 from opaque_keys.edx.locations import SlashSeparatedCourseKey
 
 import lms.lib.comment_client as cc
@@ -1703,6 +1705,9 @@ class LanguageField(models.CharField):
             *args,
             **kwargs
         )
+
+
+add_introspection_rules([], [r"^student\.models\.LanguageField"])
 
 
 class LanguageProficiency(models.Model):

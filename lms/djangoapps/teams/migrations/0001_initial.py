@@ -19,7 +19,7 @@ class Migration(SchemaMigration):
             ('date_created', self.gf('django.db.models.fields.DateTimeField')(auto_now_add=True, blank=True)),
             ('description', self.gf('django.db.models.fields.CharField')(max_length=300)),
             ('country', self.gf('django_countries.fields.CountryField')(max_length=2, blank=True)),
-            ('language', self.gf('django.db.models.fields.CharField')(max_length=16, blank=True)),
+            ('language', self.gf('student.models.LanguageField')(max_length=16, blank=True)),
         ))
         db.send_create_signal('teams', ['CourseTeam'])
 
@@ -92,7 +92,7 @@ class Migration(SchemaMigration):
             'description': ('django.db.models.fields.CharField', [], {'max_length': '300'}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'is_active': ('django.db.models.fields.BooleanField', [], {'default': 'True'}),
-            'language': ('django.db.models.fields.CharField', [], {'max_length': '16', 'blank': 'True'}),
+            'language': ('student.models.LanguageField', [], {'max_length': '16', 'blank': 'True'}),
             'name': ('django.db.models.fields.CharField', [], {'max_length': '255'}),
             'team_id': ('django.db.models.fields.CharField', [], {'unique': 'True', 'max_length': '255'}),
             'topic_id': ('django.db.models.fields.CharField', [], {'db_index': 'True', 'max_length': '255', 'blank': 'True'}),

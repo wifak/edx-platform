@@ -114,7 +114,7 @@ def get_credit_requirements(course_key, namespace=None):
     ]
 
 
-def get_credit_requirement(course_key, namespace, name):
+def get_credit_requirement(course_key, namespace, location):
     """ Returns the requirement of a given course, namespace and name
 
     Args:
@@ -125,7 +125,7 @@ def get_credit_requirement(course_key, namespace, name):
     Returns:
         Credit Requirement object
     """
-    return CreditRequirement.get_course_requirement(course_key, namespace, name)
+    return CreditRequirement.get_course_requirement(course_key, namespace, location)
 
 
 def set_credit_requirement_status(user_name, requirement, status="satisfied"):
@@ -138,7 +138,6 @@ def set_credit_requirement_status(user_name, requirement, status="satisfied"):
         status(str): status of the requirement
     """
     CreditRequirementStatus.add_or_update_requirement_status(user_name, requirement, status)
-
 
 
 def _get_requirements_to_disable(old_requirements, new_requirements):

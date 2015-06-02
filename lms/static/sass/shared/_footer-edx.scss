@@ -4,9 +4,8 @@
 @import 'neat/neat'; // lib - Neat
 
 
-$edx-footer-link-color: rgb(0, 158, 231);
 $edx-footer-bg-color: rgb(252,252,252);
-
+$edx-footer-link-color: $link-color;
 
 // Aggressively scoped for Drupal
 // ==============================
@@ -85,7 +84,7 @@ footer#footer-edx-v3 {
     @include margin(0, 0, 10px, 12px);
     @include font-size(28);
     @include line-height(28);
-    width: 30px;
+    width: 34px;
     height: 30px;
     line-height: 1;
     position: relative;

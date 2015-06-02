@@ -50,16 +50,16 @@ class LmsSearchFilterGenerator(SearchFilterGenerator):
                     user_partition,
                 )
 
-        def get_groups_for_user(course, user):
-            """ Collect content groups for user for this course """
+        def get_group_ids_for_user(course, user):
+            """ Collect user partition group ids for user for this course """
             partition_groups = []
             for user_partition in course.user_partitions:
                 if user_partition.scheme in INCLUDE_SCHEMES:
                     group = get_group_for_user_partition(user_partition, course.id, user)
                     if group:
                         partition_groups.append(group)
-            content_groups = [unicode(partition_group.id) for partition_group in partition_groups]
-            return content_groups if content_groups else None
+            partition_group_ids = [unicode(partition_group.id) for partition_group in partition_groups]
+            return partition_group_ids if partition_group_ids else None
 
         filter_dictionary = super(LmsSearchFilterGenerator, self).filter_dictionary(**kwargs)
         if 'user' in kwargs:
@@ -77,16 +77,16 @@ class LmsSearchFilterGenerator(SearchFilterGenerator):
                 # Need to check course exist (if course gets deleted enrollments don't get cleaned up)
                 course = modulestore().get_course(course_key)
                 if course:
-                    filter_dictionary['content_groups'] = get_groups_for_user(course, user)
+                    filter_dictionary['content_groups'] = get_group_ids_for_user(course, user)
             else:
                 user_enrollments = self._enrollments_for_user(user)
                 content_groups = []
                 for enrollment in user_enrollments:
                     course = modulestore().get_course(enrollment.course_id)
                     if course:
-                        enrollment_content_groups = get_groups_for_user(course, user)
-                        if enrollment_content_groups:
-                            content_groups.extend(enrollment_content_groups)
+                        enrollment_group_ids = get_group_ids_for_user(course, user)
+                        if enrollment_group_ids:
+                            content_groups.extend(enrollment_group_ids)
 
                 filter_dictionary['content_groups'] = content_groups if content_groups else None
 

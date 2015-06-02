@@ -100,10 +100,10 @@ class TeamAPITestCase(APITestCase, ModuleStoreTestCase):
         else:
             return response
 
-    def get_teams_list(self, expected_status=200, data=None, **kwargs):
+    def get_teams_list(self, expected_status=200, data=None, no_course_id=False, **kwargs):
         """Gets the list of teams as the given user with data as query params. Verifies expected_status."""
         data = data if data else {}
-        if 'course_id' not in data:
+        if 'course_id' not in data and not no_course_id:
             data.update({'course_id': self.test_course_1.id})
         return self.make_call(reverse('teams_list'), expected_status, 'get', data, **kwargs)
 
@@ -168,6 +168,9 @@ class TestListTeamsAPI(TeamAPITestCase):
         teams = self.get_teams_list(user=user, expected_status=status)
         if status == 200:
             self.assertEqual(3, teams['count'])
+
+    def test_missing_course_id(self):
+        self.get_teams_list(400, no_course_id=True)
 
     def verify_names(self, data, status, names=None, **kwargs):
         """Gets a team listing with data as query params, verifies status, and then verifies team names if specified."""

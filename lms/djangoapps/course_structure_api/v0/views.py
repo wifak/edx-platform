@@ -473,7 +473,7 @@ class CourseBlocksAndNavigation(ListAPIView):
                     request=request,
                 ),
                 "block_url": reverse(
-                    "courseware.views.render_chromeless_xblock",
+                    "courseware.views.render_xblock",
                     kwargs={"usage_key_string": unicode(block.location)},
                     request=request,
                 ),

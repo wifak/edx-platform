@@ -56,7 +56,7 @@ exclude = ['^.*python2.7.*$', '^.*call_stack_manager.*$']
 regular_expressions = [re.compile(x) for x in exclude]
 
 
-class CallStackManager(Manager, models.Model):
+class CallStackManager(Manager):
     """
     gets call stacks of model classes
     """
